@@ -1,0 +1,55 @@
+/* public/css/suppliers.css */
+
+/* Style pour les badges de statut */
+.badge-pill {
+    border-radius: 50rem;
+}
+
+/* Style pour les liens dans le tableau */
+.table a {
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.table a:hover {
+    text-decoration: underline;
+}
+
+/* Style pour les icônes dans le tableau */
+.table i {
+    font-size: 0.9em;
+}
+
+/* Style pour les cartes de statistiques */
+.card .h2 {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.card small {
+    opacity: 0.9;
+    font-size: 0.85em;
+}
+
+/* Style pour le groupe de boutons */
+.btn-group .btn {
+    border-radius: 4px !important;
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+/* Style pour les lignes du tableau */
+.table > tbody > tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Style pour les en-têtes de tableau */
+.table-light th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+}

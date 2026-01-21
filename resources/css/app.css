@@ -1,0 +1,881 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* ============================================
+   RESPONSIVE STYLES FOR GESTION PARC INFORMATIQUE
+   ============================================ */
+
+/* ========== GLOBAL RESPONSIVE UTILITIES ========== */
+* {
+    box-sizing: border-box;
+}
+
+/* Container responsive */
+.container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+    .container {
+        max-width: 640px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 768px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        max-width: 1024px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .container {
+        max-width: 1280px;
+    }
+}
+
+/* ========== LAYOUT RESPONSIVE ========== */
+/* Main content adjustment for sidebar */
+main {
+    width: 100%;
+    transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 1024px) {
+    main {
+        margin-left: 16rem; /* 64 = 16rem */
+    }
+}
+
+/* Sidebar responsive */
+@media (max-width: 1023px) {
+    #sidebar {
+        position: fixed;
+        top: 4rem; /* 64px = 4rem */
+        left: 0;
+        z-index: 40;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    #sidebar.show {
+        transform: translateX(0);
+    }
+    
+    #sidebar-overlay {
+        display: block;
+    }
+}
+
+@media (min-width: 1024px) {
+    #sidebar {
+        transform: translateX(0);
+    }
+    
+    #sidebar-overlay {
+        display: none !important;
+    }
+}
+
+/* ========== NAVIGATION RESPONSIVE ========== */
+nav.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+}
+
+/* Logo and brand responsive */
+@media (max-width: 640px) {
+    .logo-text {
+        display: none;
+    }
+}
+
+/* User menu dropdown responsive */
+@media (max-width: 640px) {
+    .user-dropdown {
+        right: 0;
+        left: auto;
+        width: calc(100vw - 2rem);
+        max-width: 20rem;
+    }
+}
+
+/* ========== TABLES RESPONSIVE ========== */
+/* Table wrapper for horizontal scroll */
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+.table-wrapper table {
+    min-width: 640px;
+    width: 100%;
+}
+
+/* Responsive table - card view on mobile */
+@media (max-width: 767px) {
+    .table-responsive-card {
+        display: block;
+    }
+    
+    .table-responsive-card thead {
+        display: none;
+    }
+    
+    .table-responsive-card tbody,
+    .table-responsive-card tr,
+    .table-responsive-card td {
+        display: block;
+        width: 100%;
+    }
+    
+    .table-responsive-card tr {
+        margin-bottom: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        background: white;
+    }
+    
+    .table-responsive-card td {
+        padding: 0.5rem 0;
+        border: none;
+        text-align: left;
+    }
+    
+    .table-responsive-card td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #6b7280;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .table-responsive-card td:last-child {
+        border-top: 1px solid #e5e7eb;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+    }
+}
+
+/* Standard table responsive */
+@media (max-width: 767px) {
+    table {
+        font-size: 0.875rem;
+    }
+    
+    table th,
+    table td {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    table th {
+        font-size: 0.75rem;
+    }
+}
+
+/* Hide less important columns on tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .hide-tablet {
+        display: none;
+    }
+}
+
+/* ========== CARDS AND GRIDS RESPONSIVE ========== */
+/* Grid responsive */
+.grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+    .sm\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 768px) {
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    
+    .md\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    
+    .md\:grid-cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .lg\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    
+    .lg\:grid-cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    
+    .lg\:grid-cols-5 {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+
+/* Card responsive */
+.card {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: white;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+    .card {
+        padding: 1.5rem;
+    }
+}
+
+/* Statistics cards responsive */
+.stat-card {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: white;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 640px) {
+    .stat-card {
+        padding: 1.25rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .stat-card {
+        padding: 1.5rem;
+    }
+}
+
+/* ========== FORMS RESPONSIVE ========== */
+/* Form groups */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Form grid */
+.form-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Input fields */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="date"],
+    input[type="tel"],
+    select,
+    textarea {
+        padding: 0.625rem 0.875rem;
+        font-size: 1rem;
+    }
+}
+
+/* ========== BUTTONS RESPONSIVE ========== */
+/* Button groups */
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.btn-group .btn {
+    flex: 1 1 auto;
+    min-width: fit-content;
+}
+
+@media (min-width: 640px) {
+    .btn-group .btn {
+        flex: 0 1 auto;
+    }
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+    .btn {
+        padding: 0.625rem 1.25rem;
+        font-size: 1rem;
+    }
+}
+
+/* Icon buttons */
+.btn-icon {
+    padding: 0.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+}
+
+@media (min-width: 768px) {
+    .btn-icon {
+        padding: 0.625rem;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+    }
+}
+
+/* ========== HEADER AND ACTIONS RESPONSIVE ========== */
+/* Page header */
+.page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .page-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+/* Action toolbar */
+.action-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .action-toolbar {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+/* Search and filters */
+.search-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .search-filters {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.search-filters .search-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-filters .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* ========== MODALS RESPONSIVE ========== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 32rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .modal-content {
+        padding: 2rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .modal-content {
+        max-width: 42rem;
+    }
+}
+
+/* ========== BADGES AND STATUS RESPONSIVE ========== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+    .badge {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* ========== PAGINATION RESPONSIVE ========== */
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.pagination .page-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+    .pagination .page-link {
+        padding: 0.625rem 1rem;
+        font-size: 1rem;
+    }
+}
+
+/* ========== UTILITIES ========== */
+/* Hide on mobile */
+@media (max-width: 639px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* Hide on tablet */
+@media (min-width: 640px) and (max-width: 1023px) {
+    .hide-tablet {
+        display: none !important;
+    }
+}
+
+/* Show only on mobile */
+.show-mobile {
+    display: block;
+}
+
+@media (min-width: 640px) {
+    .show-mobile {
+        display: none !important;
+    }
+}
+
+/* Show only on desktop */
+.show-desktop {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .show-desktop {
+        display: block;
+    }
+}
+
+/* Text responsive */
+.text-responsive {
+    font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+    .text-responsive {
+        font-size: 1rem;
+    }
+}
+
+/* Spacing responsive */
+@media (max-width: 767px) {
+    .px-responsive {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .py-responsive {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    
+    .mb-responsive {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .px-responsive {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+    
+    .py-responsive {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+    
+    .mb-responsive {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* ========== FIXES FOR SPECIFIC COMPONENTS ========== */
+/* Fix for overflow issues */
+.overflow-fix {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for sidebar toggle */
+#toggle-sidebar {
+    display: block;
+}
+
+@media (min-width: 1024px) {
+    #toggle-sidebar {
+        display: none;
+    }
+}
+
+/* Fix for main content padding */
+@media (max-width: 1023px) {
+    main {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    main {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
+/* Fix for footer */
+footer {
+    margin-top: auto;
+}
+
+@media (min-width: 1024px) {
+    footer {
+        margin-left: 16rem;
+    }
+}
+
+/* ========== PRINT STYLES ========== */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .sidebar,
+    nav,
+    footer,
+    .btn,
+    .action-toolbar {
+        display: none !important;
+    }
+    
+    main {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .page-header {
+        page-break-after: avoid;
+    }
+    
+    table {
+        page-break-inside: avoid;
+    }
+}
+
+/* ========== ACCESSIBILITY ========== */
+/* Focus styles */
+*:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Skip to content link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Smooth transitions */
+.transition-smooth {
+    transition: all 0.3s ease;
+}
+
+/* ========== LOADING STATES ========== */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Boutons Cofina */
+.btn-cofina-primary {
+    @apply bg-cofina-red text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 transition duration-300;
+}
+
+.btn-cofina-secondary {
+    @apply bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition duration-300;
+}
+
+/* Cartes Cofina */
+.card-cofina {
+    @apply bg-white rounded-lg shadow-lg p-6 border border-gray-200;
+}
+
+/* Couleurs Cofina */
+.text-cofina-red {
+    color: #D32F2F;
+}
+
+.bg-cofina-red {
+    background-color: #D32F2F;
+}
+
+.border-cofina-red {
+    border-color: #D32F2F;
+}
+
+/* ============================================
+   FIX CRITIQUE - BOUTONS CLIQUABLES
+   Ajoutez ce code APRÈS vos imports Tailwind
+   ============================================ */
+
+/* Forcer tous les boutons à être cliquables */
+button,
+.btn,
+.btn-group button,
+.btn-group .btn,
+.btn-outline-danger,
+.delete-attachment {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    position: relative !important;
+    z-index: 100 !important;
+}
+
+/* Désactiver pointer-events uniquement pour les boutons disabled */
+button:disabled,
+.btn:disabled,
+button[disabled],
+.btn[disabled] {
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+}
+
+/* S'assurer que les cellules de tableau n'interfèrent pas */
+table td,
+table th {
+    position: relative;
+    z-index: 1;
+}
+
+/* Les boutons dans les cellules ont la priorité */
+table td button,
+table td .btn,
+table td .btn-group {
+    z-index: 100 !important;
+}
+
+/* Modal backdrop ne doit pas bloquer AVANT d'être visible */
+.modal-backdrop {
+    pointer-events: none !important;
+}
+
+.modal-backdrop.show,
+.modal-backdrop.fade.show {
+    pointer-events: auto !important;
+}
+
+/* Fix pour le tableau responsive */
+.table-responsive,
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 1;
+}
+
+/* Éviter les conflits avec les animations */
+.fade,
+.modal.fade {
+    pointer-events: none;
+}
+
+.fade.show,
+.modal.fade.show {
+    pointer-events: auto;
+}
+
+/* Les éléments en transition ne doivent pas bloquer */
+.transition-smooth,
+.animate-fade-in {
+    pointer-events: auto !important;
+}
+
+/* Fix spécifique pour les boutons Bootstrap dans un btn-group */
+.btn-group > .btn:not(:disabled):not(.disabled) {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 100 !important;
+}
+
+/* Assurer que rien ne se superpose aux boutons */
+.btn-group {
+    position: relative;
+    z-index: 100 !important;
+    isolation: isolate;
+}
+
+/* Fix pour les overlays qui pourraient bloquer */
+[class*="overlay"],
+[id*="overlay"] {
+    pointer-events: none !important;
+}
+
+[class*="overlay"].show,
+[id*="overlay"].show,
+[class*="overlay"].active,
+[id*="overlay"].active {
+    pointer-events: auto !important;
+}
+
+/* Debug visuel - Décommentez pour voir les zones cliquables */
+/*
+button:hover,
+.btn:hover {
+    outline: 3px solid red !important;
+    background: rgba(255, 0, 0, 0.1) !important;
+}
+*/

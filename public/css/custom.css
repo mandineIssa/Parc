@@ -1,0 +1,70 @@
+/* public/css/custom.css */
+
+/* Correction des couleurs d'icônes dans les boutons */
+.btn-primary i,
+.btn-secondary i,
+.btn-success i,
+.btn-danger i,
+.btn-warning i,
+.btn-info i,
+.btn-dark i {
+    color: white !important;
+}
+
+/* Boutons outline - garder la couleur d'origine */
+.btn-outline-primary i,
+.btn-outline-secondary i,
+.btn-outline-success i,
+.btn-outline-danger i,
+.btn-outline-warning i,
+.btn-outline-info i,
+.btn-outline-light i,
+.btn-outline-dark i {
+    color: inherit !important;
+}
+
+/* Bouton light spécial */
+.btn-light i {
+    color: #212529 !important;
+}
+
+.btn-light:hover i {
+    color: #212529 !important;
+}
+
+/* Style pour les badges */
+.badge {
+    font-weight: 500;
+}
+
+/* Amélioration des tables */
+.table > thead {
+    background-color: #f8f9fa;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Style pour les cartes */
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Espacement uniforme */
+.btn-group-sm > .btn,
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Boutons d'action */
+.btn-group .btn {
+    margin-right: 2px;
+    border-radius: 4px !important;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
