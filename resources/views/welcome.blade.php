@@ -742,16 +742,23 @@
     <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
         
         <!-- Navigation -->
-        <nav class="bg-white dark:bg-gray-800 shadow-lg">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+ <!-- Navigation -->
+        <nav class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">
+            <div class="w-full px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0 flex items-center">
-                            <i class="fas fa-server text-blue-600 text-2xl mr-3"></i>
-                            <span class="text-xl font-bold">Gestion<span class="text-blue-600">Parc</span></span>
-                        </div>
+                     <div class="flex-shrink-0 flex items-center">
+    <img src="{{ asset('images/Cofina1.png') }}"
+         alt="Cofina Logo"
+         class="h-10 sm:h-12 w-auto mr-2 sm:mr-3">
+
+<!--     <span class="text-lg sm:text-xl font-bold">
+        Gestion<span class="text-blue-600">Parc</span>
+    </span> -->
+</div>
+
                         
-                        <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
+                        <div class="hidden lg:ml-8 lg:flex lg:space-x-8">
                             <a href="{{ url('/') }}" class="border-blue-500 text-gray-900 dark:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                 Accueil
                             </a>
@@ -772,30 +779,35 @@
                         </div>
                     </div>
                     
-                    <div class="flex items-center">
+                    <div class="flex items-center space-x-2 sm:space-x-4">
                         @auth
-                        <div class="relative mr-4 hidden md:block">
+                        <div class="relative mr-2 hidden xl:block">
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center">
                                 <i class="fas fa-search text-gray-400"></i>
                             </span>
-                            <input type="text" class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700" placeholder="Rechercher...">
+                            <input type="text" class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 w-48 xl:w-64" placeholder="Rechercher...">
                         </div>
                         
-                        <div class="flex items-center space-x-4">
-                            <a href="{{ route('equipment.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300">
-                                <i class="fas fa-plus mr-2"></i>Nouvel équipement
-                            </a>
-                            
-                            <div class="relative">
-                                <img class="h-8 w-8 rounded-full border-2 border-white shadow" src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Admin' }}&background=2563eb&color=fff" alt="Profile">
-                                <span class="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-400 ring-2 ring-white"></span>
-                            </div>
+                        <a href="{{ route('equipment.create') }}" class="hidden sm:flex bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg transition duration-300 items-center text-sm">
+                            <i class="fas fa-plus mr-1 sm:mr-2"></i>
+                            <span class="hidden md:inline">Nouvel équipement</span>
+                            <span class="md:hidden">Nouveau</span>
+                        </a>
+                        
+                        <div class="relative">
+                            <img class="h-8 w-8 rounded-full border-2 border-white shadow cursor-pointer" src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Admin' }}&background=2563eb&color=fff" alt="Profile">
+                            <span class="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-400 ring-2 ring-white"></span>
                         </div>
+                        @else
+                        <a href="{{ route('login') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300 text-sm">
+                            Connexion
+                        </a>
                         @endauth
                     </div>
                 </div>
             </div>
         </nav>
+
 
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -823,10 +835,10 @@
                                 <i class="fas fa-play-circle mr-3"></i>
                                 Tutoriels vidéo
                             </a>
-                            <a href="{{ route('equipment.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-300">
+                           <!--  <a href="{{ route('equipment.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-300">
                                 <i class="fas fa-rocket mr-3"></i>
                                 Déployer maintenant
-                            </a>
+                            </a> -->
                         </div>
                     </div>
                 </div>
@@ -1147,7 +1159,7 @@
                                 </div>
                             </a>
                             
-                            <a href="{{ route('equipment.create') }}" class="flex items-center p-4 bg-green-50 dark:bg-gray-700 rounded-lg hover:bg-green-100 dark:hover:bg-gray-600 transition duration-300">
+                        <!--     <a href="{{ route('equipment.create') }}" class="flex items-center p-4 bg-green-50 dark:bg-gray-700 rounded-lg hover:bg-green-100 dark:hover:bg-gray-600 transition duration-300">
                                 <div class="mr-4">
                                     <i class="fas fa-rocket text-green-600 dark:text-green-400 text-xl"></i>
                                 </div>
@@ -1155,7 +1167,7 @@
                                     <h3 class="font-medium text-gray-800 dark:text-white">Déployer maintenant</h3>
                                     <p class="text-sm text-gray-600 dark:text-gray-400">Ajoutez votre premier équipement</p>
                                 </div>
-                            </a>
+                            </a> -->
                         </div>
                     </div>
                     
@@ -1184,7 +1196,7 @@
                     </div>
                     @else
                     <!-- Auth Links -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <!-- <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                         <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Connectez-vous</h2>
                         <p class="text-gray-600 dark:text-gray-400 mb-6">
                             Accédez à toutes les fonctionnalités de GestionParc en vous connectant à votre compte.
@@ -1195,15 +1207,9 @@
                                 <i class="fas fa-sign-in-alt mr-3"></i>
                                 Se connecter
                             </a>
-                            
-                            @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-3 rounded-lg transition duration-300 flex items-center justify-center">
-                                <i class="fas fa-user-plus mr-3"></i>
-                                Créer un compte
-                            </a>
-                            @endif
+                        
                         </div>
-                    </div>
+                    </div> -->
                     @endauth
                 </div>
             </div>
@@ -1238,7 +1244,7 @@
                 </div>
                 
                 <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-                    <p>&copy; 2024 GestionParc. Tous droits réservés. | 
+                    <p>&copy; 2026 GestionParc. Tous droits réservés. | 
                         <a href="#" class="hover:text-white transition duration-300">Confidentialité</a> | 
                         <a href="#" class="hover:text-white transition duration-300">Conditions</a>
                     </p>
