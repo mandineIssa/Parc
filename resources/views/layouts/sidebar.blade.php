@@ -274,7 +274,7 @@
                     <span>Administration</span>
                 </a>
             </div>
-        </div>
+        </div> 
 
         <hr class="my-4 border-gray-200">
 

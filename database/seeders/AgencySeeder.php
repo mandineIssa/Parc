@@ -1,7 +1,5 @@
 <?php
-
 namespace Database\Seeders;
-
 use Illuminate\Database\Seeder;
 use App\Models\Agency;
 
@@ -11,39 +9,44 @@ class AgencySeeder extends Seeder
     {
         $agencies = [
             [
+                'code' => '001',
                 'nom' => 'Siège Social', 
                 'ville' => 'Dakar', 
                 'adresse' => 'Plateau, Immeuble Alpha',
                 'telephone' => '+221 33 821 00 00',
-                'email' => 'siege@entreprise.sn'
+                'email' => 'siege@entreprise.sn',
             ],
             [
+                'code' => '002',
                 'nom' => 'Agence Mermoz', 
                 'ville' => 'Dakar', 
                 'adresse' => 'Rue de Mermoz, Villa 12',
                 'telephone' => '+221 33 821 01 01',
-                'email' => 'mermoz@entreprise.sn'
+                'email' => 'mermoz@entreprise.sn',
             ],
             [
+                'code' => '003',
                 'nom' => 'Agence Grand Dakar', 
                 'ville' => 'Dakar', 
                 'adresse' => 'Grand Dakar, Cité Keur Gorgui',
                 'telephone' => '+221 33 821 02 02',
-                'email' => 'granddakar@entreprise.sn'
+                'email' => 'granddakar@entreprise.sn',
             ],
             [
+                'code' => '004',
                 'nom' => 'Agence Thiès', 
                 'ville' => 'Thiès', 
                 'adresse' => 'Route de Khombole',
                 'telephone' => '+221 33 821 03 03',
-                'email' => 'thies@entreprise.sn'
+                'email' => 'thies@entreprise.sn',
             ],
             [
+                'code' => '005',
                 'nom' => 'Agence Saint-Louis', 
                 'ville' => 'Saint-Louis', 
                 'adresse' => 'Avenue Jean Mermoz',
                 'telephone' => '+221 33 821 04 04',
-                'email' => 'saintlouis@entreprise.sn'
+                'email' => 'saintlouis@entreprise.sn',
             ],
         ];
         
