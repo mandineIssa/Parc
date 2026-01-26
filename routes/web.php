@@ -548,26 +548,28 @@ Route::prefix('equipment/{equipment}/transition')->name('transitions.')->group(f
     | ADMIN – Gestion des utilisateurs
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['can:manage-users'])->prefix('admin')->group(function () {
-
-        Route::get('/users', [UserController::class, 'index'])
-            ->name('admin.users.index');
-
-        Route::get('/users/create', [UserController::class, 'create'])
-            ->name('users.create'); // ✅ CETTE ROUTE MANQUAIT
-
-        Route::post('/users', [UserController::class, 'store'])
-            ->name('users.store');
-
-        Route::get('/users/{user}/edit', [UserController::class, 'edit'])
-            ->name('users.edit');
-
-        Route::put('/users/{user}', [UserController::class, 'update'])
-            ->name('users.update');
-
-        Route::delete('/users/{user}', [UserController::class, 'destroy'])
-            ->name('users.destroy');
-    });
+Route::middleware(['can:manage-users'])->prefix('admin')->group(function () {
+    Route::get('/users', [UserController::class, 'index'])
+        ->name('users.index'); // Sans 'admin.' préfixe
+    
+    Route::get('/users/create', [UserController::class, 'create'])
+        ->name('users.create');
+    
+    Route::post('/users', [UserController::class, 'store'])
+        ->name('users.store');
+    
+    Route::get('/users/{user}', [UserController::class, 'show']) // AJOUTÉE
+        ->name('users.show');
+    
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+        ->name('users.edit');
+    
+    Route::put('/users/{user}', [UserController::class, 'update'])
+        ->name('users.update');
+    
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])
+        ->name('users.destroy');
+});
 // ===========================================================================
 // ROUTES DE DEBUG/DEVELOPPEMENT (à retirer en production)
 // ===========================================================================

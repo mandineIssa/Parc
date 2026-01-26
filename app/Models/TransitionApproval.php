@@ -13,6 +13,8 @@ class TransitionApproval extends Model
     use HasFactory;
 
     protected $table = 'transition_approvals';
+    protected $primaryKey = 'id'; // à ajouter si jamais la PK est différente
+
 
     protected $fillable = [
         // CHAMPS DE VOTRE MIGRATION
