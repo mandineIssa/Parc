@@ -13,7 +13,7 @@ class CelerElectroniqueDashboardController extends Controller
     public function index(Request $request)
     {
         // Récupérer les équipements de type Réseau avec statut stock
-        $query = Equipment::where('type', 'Electronique')
+        $query = Equipment::where('type', 'electronique')
                           ->where('statut', 'stock');
         
         // Appliquer les filtres
@@ -66,13 +66,13 @@ class CelerElectroniqueDashboardController extends Controller
         }
         
         // Récupérer les données pour les filtres
-        $marques = Equipment::where('type', 'Electronique')
+        $marques = Equipment::where('type', 'electronique')
                            ->where('statut', 'stock')
                            ->distinct()
                            ->pluck('marque');
         
         // Pour les fournisseurs
-        $fournisseurIds = Equipment::where('type', 'Electronique')
+        $fournisseurIds = Equipment::where('type', 'electronique')
                                   ->where('statut', 'stock')
                                   ->whereNotNull('fournisseur_id')
                                   ->distinct()
@@ -103,7 +103,7 @@ class CelerElectroniqueDashboardController extends Controller
             'equipments', 
             'stats', 
             'marques', 
-            'typesReseau',
+            'typesElectronique',
             'fournisseurs'
         ));
     }
