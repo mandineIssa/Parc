@@ -1460,7 +1460,7 @@ public function downloadFicheInstallation($id)
 /**
  * Afficher la page avec les fichiers attachés
  */
-public function showAttachments($id)
+public function showAttachments(TransitionApproval $approval)
 {
     try {
         // Récupérer l'approbation
