@@ -103,7 +103,7 @@ class CelerElectroniqueDashboardController extends Controller
             'equipments', 
             'stats', 
             'marques', 
-            'typesElectronique',
+            'typesReseau',
             'fournisseurs'
         ));
     }
