@@ -1463,8 +1463,18 @@ public function downloadFicheInstallation($id)
 public function showAttachments($id)
 {
     try {
-        // Récupérer l'approbation
-        $approval = TransitionApproval::findOrFail($id);
+        // Récupérer l'approbation avec gestion d'erreur
+        $approval = TransitionApproval::find($id);
+        
+        if (!$approval) {
+            Log::warning('TransitionApproval introuvable', [
+                'approval_id' => $id,
+                'requested_by' => auth()->user()->id ?? 'guest'
+            ]);
+            
+            return redirect()->route('transitions.index')
+                ->with('error', 'L\'approbation de transition demandée (ID: ' . $id . ') n\'existe pas ou a été supprimée.');
+        }
         
         // Récupérer les données de form_data
         $formData = $approval->form_data ?? [];
