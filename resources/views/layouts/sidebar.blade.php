@@ -215,12 +215,29 @@
                 </a>
                 
                 <!-- NOUVEAU BOUTON AJOUTÉ ICI -->
-                <a href="http://127.0.0.1:8000/approvals/27/attachments" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 text-gray-700 hover:bg-red-50 {{ request()->is('approvals/*/attachments') ? 'sidebar-active' : '' }}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                    </svg>
-                    <span>Pièces jointes Approbation</span>
-                </a>
+                {{-- Bouton Pièces jointes Approbation --}}
+@if(isset($approval) && $approval)
+    <a href="{{ route('approvals.attachments.show', $approval->id) }}"
+       class="flex items-center px-4 py-3 rounded-lg transition-all duration-200
+              text-gray-700 hover:bg-red-50
+              {{ request()->routeIs('approvals.attachments.show') ? 'sidebar-active' : '' }}">
+        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        <span>Pièces jointes Approbation</span>
+    </a>
+@else
+    <div class="flex items-center px-4 py-3 rounded-lg
+                text-gray-400 bg-gray-100 cursor-not-allowed">
+        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        <span>Pièces jointes Approbation</span>
+    </div>
+@endif
+
                 
                 <a href="{{ route('hors-service.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('hors-service.*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,12 +284,13 @@
                 </a>
                 
                 <!-- Bouton Admin -->
-                <a href="http://10.221.5.17:8080/admin/users" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->is('admin/users*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}" target="_blank">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                    <span>Administration</span>
-                </a>
+              <a href="{{ route('users.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span>Administration</span>
+                    </a>
+            </div>
             </div>
         </div> 
 

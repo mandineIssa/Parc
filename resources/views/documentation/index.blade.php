@@ -81,7 +81,7 @@
                     <a href="{{ route('documentation.download', 'pdf') }}" class="block text-blue-600 hover:underline">
                         <i class="fas fa-file-pdf mr-2"></i>Documentation PDF
                     </a>
-                    <a href="{{ route('equipment.export.template') }}" class="block text-blue-600 hover:underline">
+                    <a href="#" class="block text-blue-600 hover:underline">
                         <i class="fas fa-file-csv mr-2"></i>Template Import CSV
                     </a>
                 </div>
