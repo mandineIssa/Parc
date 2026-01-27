@@ -99,7 +99,7 @@ class CelerElectroniqueDashboardController extends Controller
         // Tableau vide pour typesReseau (colonne peut-être inexistante)
         $typesReseau = collect();
         
-        return view('dashboard.celer-Electronique', compact(
+        return view('dashboard.celer-electronique', compact(
             'equipments', 
             'stats', 
             'marques', 
