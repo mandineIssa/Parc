@@ -59,7 +59,7 @@
                 </li>
                 <li class="flex items-start">
                     <span class="font-bold mr-2">2.</span>
-                    <span>Remplissez le fichier avec vos données selon le format défini</span>
+                    <span>Remplissez le fichier avec vos données (utilisez les exemples comme référence)</span>
                 </li>
                 <li class="flex items-start">
                     <span class="font-bold mr-2">3.</span>
@@ -73,14 +73,9 @@
 
             <div class="mt-4 p-3 bg-white rounded border border-blue-200">
                 <p class="text-sm text-blue-700">
-                    <strong>💡 Astuce :</strong> Utilisez les valeurs prédéfinies pour les champs suivants :
+                    <strong>💡 Astuce :</strong> Le template contient 4 exemples complets (Switch, Caméra, PC Portable, Logiciel) 
+                    pour vous guider. Vous pouvez les modifier ou les supprimer.
                 </p>
-                <ul class="text-sm text-blue-700 mt-2 space-y-1">
-                    <li>• <strong>type</strong>: informatique, reseau, électronique</li>
-                    <li>• <strong>etat</strong>: neuf, occasion, reconditionné</li>
-                    <li>• <strong>statut</strong>: stock, parc, maintenance, hors_service</li>
-                    <li>• <strong>agency_nom</strong>: Siège Social, Agence Mermoz, Agence Grand Dakar</li>
-                </ul>
             </div>
         </div>
 
@@ -96,8 +91,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="font-semibold text-gray-900">template_equipements.csv</h3>
-                        <p class="text-sm text-gray-600">Template avec champs correspondant à votre base de données</p>
+                        <h3 class="font-semibold text-gray-900">template_import_equipements.csv</h3>
+                        <p class="text-sm text-gray-600">Template avec 4 exemples pré-remplis</p>
                     </div>
                 </div>
                 
@@ -116,17 +111,9 @@
                 <ul class="text-sm text-yellow-800 space-y-1">
                     <li>• Encodage : <strong>UTF-8</strong></li>
                     <li>• Séparateur : <strong>Point-virgule (;)</strong></li>
-                    <li>• Entêtes : <strong>Obligatoires (première ligne)</strong></li>
                     <li>• Taille max : <strong>10 MB</strong></li>
-                    <li>• Extension : <strong>.csv</strong></li>
+                    <li>• Extension : <strong>.csv ou .txt</strong></li>
                 </ul>
-                
-                <div class="mt-3 p-3 bg-white rounded border border-yellow-100">
-                    <p class="text-sm text-yellow-800"><strong>📋 Les entêtes doivent être exactement :</strong></p>
-                    <code class="text-xs text-gray-700 block mt-1 p-2 bg-gray-50 rounded">
-                        numero_serie;agency_nom;localisation;type;categorie_nom;nom;modele;marque;date_livraison;prix;etat;statut;departement;poste_staff;date_mise_service;fournisseur_nom
-                    </code>
-                </div>
             </div>
         </div>
 
@@ -151,7 +138,7 @@
                                 <p class="mb-2 text-sm text-gray-500">
                                     <span class="font-semibold">Cliquez pour sélectionner</span> ou glissez-déposez
                                 </p>
-                                <p class="text-xs text-gray-500">CSV (max 10 MB)</p>
+                                <p class="text-xs text-gray-500">CSV ou TXT (max 10 MB)</p>
                             </div>
                             
                             <div class="hidden items-center justify-center" id="file-selected-content">
@@ -167,7 +154,7 @@
                                 </div>
                             </div>
                             
-                            <input id="csv_file" name="csv_file" type="file" class="hidden" accept=".csv" required onchange="handleFileSelect(this)" />
+                            <input id="csv_file" name="csv_file" type="file" class="hidden" accept=".csv,.txt" required onchange="handleFileSelect(this)" />
                         </label>
                     </div>
                     
@@ -182,35 +169,27 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
                         <div class="flex items-center">
                             <span class="text-red-500 mr-2">•</span>
+                            <span><strong>type</strong> - Type d'équipement</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-red-500 mr-2">•</span>
+                            <span><strong>categorie</strong> - Catégorie</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-red-500 mr-2">•</span>
+                            <span><strong>sous_categorie</strong> - Sous-catégorie</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-red-500 mr-2">•</span>
                             <span><strong>numero_serie</strong> - Numéro de série (unique)</span>
                         </div>
                         <div class="flex items-center">
                             <span class="text-red-500 mr-2">•</span>
-                            <span><strong>agency_nom</strong> - Nom de l'agence (ex: "Siège Social")</span>
+                            <span><strong>marque</strong> - Marque (sauf Logiciel)</span>
                         </div>
                         <div class="flex items-center">
                             <span class="text-red-500 mr-2">•</span>
-                            <span><strong>localisation</strong> - Localisation précise</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-red-500 mr-2">•</span>
-                            <span><strong>type</strong> - Type (informatique, reseau, électronique)</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-red-500 mr-2">•</span>
-                            <span><strong>categorie_nom</strong> - Catégorie (ex: "Postes Utilisateurs")</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-red-500 mr-2">•</span>
-                            <span><strong>nom</strong> - Nom de l'équipement</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-red-500 mr-2">•</span>
-                            <span><strong>modele</strong> - Modèle</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-red-500 mr-2">•</span>
-                            <span><strong>marque</strong> - Marque</span>
+                            <span><strong>modele</strong> - Modèle (sauf Logiciel)</span>
                         </div>
                         <div class="flex items-center">
                             <span class="text-red-500 mr-2">•</span>
@@ -222,26 +201,8 @@
                         </div>
                         <div class="flex items-center">
                             <span class="text-red-500 mr-2">•</span>
-                            <span><strong>etat</strong> - État (neuf, occasion, reconditionné)</span>
+                            <span><strong>etat</strong> - État (neuf, bon, moyen, mauvais)</span>
                         </div>
-                        <div class="flex items-center">
-                            <span class="text-red-500 mr-2">•</span>
-                            <span><strong>statut</strong> - Statut (stock, parc, maintenance, hors_service)</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-red-500 mr-2">•</span>
-                            <span><strong>departement</strong> - Département</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-red-500 mr-2">•</span>
-                            <span><strong>fournisseur_nom</strong> - Nom du fournisseur</span>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
-                        <p class="text-sm text-yellow-800">
-                            <strong>📝 Note :</strong> Les champs <code>poste_staff</code> et <code>date_mise_service</code> sont optionnels.
-                        </p>
                     </div>
                 </div>
 
@@ -266,32 +227,16 @@
 
         {{-- Aide --}}
         <div class="mt-8 bg-white rounded-lg shadow p-6">
-            <h3 class="font-semibold text-gray-800 mb-3">❓ Questions fréquentes</h3>
-            <div class="space-y-4 text-sm text-gray-600">
-                <div>
-                    <p class="font-medium text-gray-700">Q: Que se passe-t-il si un numéro de série existe déjà ?</p>
-                    <p class="mt-1 ml-4">R: La ligne sera ignorée et signalée comme erreur. Chaque équipement doit avoir un numéro de série unique.</p>
-                </div>
+            <h3 class="font-semibold text-gray-800 mb-3">❓ Besoin d'aide ?</h3>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><strong>Q: Que se passe-t-il si un équipement existe déjà ?</strong></p>
+                <p class="ml-4">R: L'équipement sera ignoré et signalé dans les erreurs. Le numéro de série doit être unique.</p>
                 
-                <div>
-                    <p class="font-medium text-gray-700">Q: Comment formater les dates ?</p>
-                    <p class="mt-1 ml-4">R: Utilisez le format <code>AAAA-MM-JJ</code> (ex: <code>2024-01-15</code>).</p>
-                </div>
+                <p class="mt-3"><strong>Q: Puis-je importer des types différents dans le même fichier ?</strong></p>
+                <p class="ml-4">R: Oui ! Vous pouvez mélanger Réseau, Électronique, Informatique et Logiciel dans le même CSV.</p>
                 
-                <div>
-                    <p class="font-medium text-gray-700">Q: Puis-je importer plusieurs types d'équipements en même temps ?</p>
-                    <p class="mt-1 ml-4">R: Oui ! Vous pouvez mélanger <code>informatique</code>, <code>reseau</code> et <code>électronique</code> dans le même fichier.</p>
-                </div>
-                
-                <div>
-                    <p class="font-medium text-gray-700">Q: Que faire si une agence ou catégorie n'existe pas ?</p>
-                    <p class="mt-1 ml-4">R: Les agences et catégories doivent exister dans la base. Consultez la liste dans les instructions ci-dessus.</p>
-                </div>
-                
-                <div>
-                    <p class="font-medium text-gray-700">Q: Les fournisseurs sont-ils créés automatiquement ?</p>
-                    <p class="mt-1 ml-4">R: Oui, si un fournisseur n'existe pas, il sera créé automatiquement avec des informations par défaut.</p>
-                </div>
+                <p class="mt-3"><strong>Q: Comment gérer les champs avec des virgules ?</strong></p>
+                <p class="ml-4">R: Utilisez des guillemets doubles autour du texte : "Intel Core i5, 2.4GHz"</p>
             </div>
         </div>
     </div>
@@ -346,26 +291,6 @@ document.getElementById('importForm').addEventListener('submit', function(e) {
     if (!fileInput.files || !fileInput.files[0]) {
         e.preventDefault();
         alert('Veuillez sélectionner un fichier CSV à importer');
-        return false;
-    }
-    
-    // Vérifier l'extension
-    const fileName = fileInput.files[0].name;
-    const fileExt = fileName.split('.').pop().toLowerCase();
-    
-    if (fileExt !== 'csv') {
-        e.preventDefault();
-        alert('Veuillez sélectionner un fichier CSV (.csv)');
-        return false;
-    }
-    
-    // Vérifier la taille (10 MB)
-    const fileSize = fileInput.files[0].size;
-    const maxSize = 10 * 1024 * 1024; // 10 MB
-    
-    if (fileSize > maxSize) {
-        e.preventDefault();
-        alert('Le fichier est trop volumineux. Taille maximale: 10 MB');
         return false;
     }
     
