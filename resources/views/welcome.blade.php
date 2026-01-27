@@ -1139,15 +1139,15 @@
                         <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Pour commencer</h2>
                         
                         <div class="space-y-4">
-                            <a href="#" class="flex items-center p-4 bg-blue-50 dark:bg-gray-700 rounded-lg hover:bg-blue-100 dark:hover:bg-gray-600 transition duration-300">
-                                <div class="mr-4">
-                                    <i class="fas fa-book text-blue-600 dark:text-blue-400 text-xl"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-medium text-gray-800 dark:text-white">Documentation complète</h3>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Guide d'utilisation détaillé</p>
-                                </div>
-                            </a>
+                     <a href="{{ route('documentation.index') }}" class="flex items-center p-4 bg-blue-50 dark:bg-gray-700 rounded-lg hover:bg-blue-100 dark:hover:bg-gray-600 transition duration-300">
+                            <div class="mr-4">
+                                <i class="fas fa-book text-blue-600 dark:text-blue-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800 dark:text-white">Documentation complète</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Guide d'utilisation détaillé</p>
+                            </div>
+                        </a>
                             
                             <a href="#" class="flex items-center p-4 bg-purple-50 dark:bg-gray-700 rounded-lg hover:bg-purple-100 dark:hover:bg-gray-600 transition duration-300">
                                 <div class="mr-4">

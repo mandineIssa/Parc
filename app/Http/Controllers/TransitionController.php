@@ -1250,7 +1250,7 @@ public function showTransitionForm(Equipment $equipment)
             // Ajouter les données manquantes si nécessaires
             if (!isset($mouvementData['expediteur_nom']) && isset($data['agent_nom'])) {
                 $mouvementData['expediteur_nom'] = $data['agent_nom'];
-            }
+            } 
             if (!isset($mouvementData['expediteur_fonction']) && isset($data['agent_fonction'])) {
                 $mouvementData['expediteur_fonction'] = $data['agent_fonction'];
             }
@@ -1463,18 +1463,8 @@ public function downloadFicheInstallation($id)
 public function showAttachments($id)
 {
     try {
-        // Récupérer l'approbation avec gestion d'erreur
-        $approval = TransitionApproval::find($id);
-        
-        if (!$approval) {
-            Log::warning('TransitionApproval introuvable', [
-                'approval_id' => $id,
-                'requested_by' => auth()->user()->id ?? 'guest'
-            ]);
-            
-            return redirect()->back()
-                ->with('error', 'L\'approbation de transition demandée (ID: ' . $id . ') n\'existe pas ou a été supprimée.');
-        }
+        // Récupérer l'approbation
+        $approval = TransitionApproval::findOrFail($id);
         
         // Récupérer les données de form_data
         $formData = $approval->form_data ?? [];

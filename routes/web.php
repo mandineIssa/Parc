@@ -601,6 +601,25 @@ Route::prefix('reports')->name('reports.')->middleware(['auth'])->group(function
     Route::get('/generate-pdf', [ReportController::class, 'generatePdf'])->name('generate.pdf');
 });
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // ... vos autres routes ...
+    
+    // ✅ AJOUTEZ CETTE ROUTE POUR LA DOCUMENTATION
+    Route::get('/documentation', function () {
+        return view('documentation');
+    })->name('documentation.index');
+    
+    // OU si vous préférez utiliser un contrôleur (recommandé) :
+    /* Route::get('/documentation', [App\Http\Controllers\DocumentationController::class, 'index'])
+        ->name('documentation.index'); */
+});
+
+Route::middleware(['auth', 'verified'])->prefix('documentation')->name('documentation.')->group(function () {
+    Route::get('/', [App\Http\Controllers\DocumentationController::class, 'index'])->name('index');
+    Route::get('/{section}', [App\Http\Controllers\DocumentationController::class, 'show'])->name('show');
+    Route::get('/download/{format}', [App\Http\Controllers\DocumentationController::class, 'download'])->name('download');
+});
 
 if (app()->environment('local')) {
     
