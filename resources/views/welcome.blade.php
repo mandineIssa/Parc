@@ -827,7 +827,7 @@
                         </p>
                         
                         <div class="flex flex-col md:flex-row md:space-x-6 space-y-4 md:space-y-0">
-                            <a href="#" class="inline-flex items-center justify-center px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition duration-300">
+                            <a href="{{ route('documentation.index') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition duration-300">
                                 <i class="fas fa-book-open mr-3"></i>
                                 Lire la documentation
                             </a>

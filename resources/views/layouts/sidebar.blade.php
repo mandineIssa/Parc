@@ -1,8 +1,7 @@
 {{-- resources/views/layouts/sidebar.blade.php --}}
-<aside id="sidebar" class="fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 overflow-y-auto">
+<aside id="sidebar" class="fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-white border-r border-gray-200 shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 flex flex-col">
     
-
-    <nav class="p-4 sm:p-6 space-y-1">
+    <nav class="flex-1 p-4 sm:p-6 space-y-1 overflow-y-auto">
         
         <!-- ================= DASHBOARD ================= -->
         <!-- <div class="mb-4">
@@ -113,7 +112,7 @@
         </div>
 
         <hr class="my-4 border-gray-200">
-         <hr class="my-2 border-gray-200">
+        <hr class="my-2 border-gray-200">
 
         <!-- ================= STOCKS ================= -->
         <div class="mb-4">
@@ -214,29 +213,28 @@
                     <span>Maintenances</span>
                 </a>
                 
-                <!-- NOUVEAU BOUTON AJOUTÉ ICI -->
-                {{-- Bouton Pièces jointes Approbation --}}
-@if(isset($approval) && $approval)
-    <a href="{{ route('approvals.attachments.show', $approval->id) }}"
-       class="flex items-center px-4 py-3 rounded-lg transition-all duration-200
-              text-gray-700 hover:bg-red-50
-              {{ request()->routeIs('approvals.attachments.show') ? 'sidebar-active' : '' }}">
-        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-        </svg>
-        <span>Pièces jointes Approbation</span>
-    </a>
-@else
-    <div class="flex items-center px-4 py-3 rounded-lg
-                text-gray-400 bg-gray-100 cursor-not-allowed">
-        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-        </svg>
-        <span>Pièces jointes Approbation</span>
-    </div>
-@endif
+                <!-- Bouton Pièces jointes Approbation -->
+                @if(isset($approval) && $approval)
+                    <a href="{{ route('approvals.attachments.show', $approval->id) }}"
+                       class="flex items-center px-4 py-3 rounded-lg transition-all duration-200
+                              text-gray-700 hover:bg-red-50
+                              {{ request()->routeIs('approvals.attachments.show') ? 'sidebar-active' : '' }}">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <span>Pièces jointes Approbation</span>
+                    </a>
+                @else
+                    <div class="flex items-center px-4 py-3 rounded-lg
+                                text-gray-400 bg-gray-100 cursor-not-allowed">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <span>Pièces jointes Approbation</span>
+                    </div>
+                @endif
 
                 
                 <a href="{{ route('hors-service.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('hors-service.*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">
@@ -284,15 +282,14 @@
                 </a>
                 
                 <!-- Bouton Admin -->
-              <a href="{{ route('users.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        <span>Administration</span>
-                    </a>
+                <a href="{{ route('users.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <span>Administration</span>
+                </a>
             </div>
-            </div>
-        </div> 
+        </div>
 
         <hr class="my-4 border-gray-200">
 
@@ -306,16 +303,17 @@
             </a>
         </div>
 
-        <!-- ================= VERSION ================= -->
-        <div class="mt-8 pt-4 border-t border-gray-200">
-            <div class="px-4 text-xs text-gray-400">
-                <p class="font-medium">Gestion Parc Informatique</p>
-                <p class="mt-1">Version 1.0.0</p>
-                <p class="mt-1">© {{ date('Y') }} COFINA</p>
-            </div>
+            <div class="p-4 border-t border-gray-200 bg-white">
+        <div class="text-xs text-gray-400">
+            <p class="font-medium">Gestion Parc Informatique</p>
+            <p class="mt-1">Version 1.0.0</p>
+            <p class="mt-1">© {{ date('Y') }} COFINA</p>
         </div>
-
+    </div>
     </nav>
+
+    <!-- ================= VERSION ================= -->
+
 </aside>
 
 <!-- Sidebar overlay for mobile -->
