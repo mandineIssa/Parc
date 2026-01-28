@@ -205,7 +205,7 @@ class MaintenanceController extends Controller
             'observations' => $maintenance->observations . "\n\n=== FIN DE MAINTENANCE ===\n" . 
                 "Date retour: " . $request->date_retour_reelle . "\n" .
                 "Travaux réalisés: " . $request->travaux_realises . "\n" .
-                "Coût: " . $request->cout . " €\n" .
+                "Coût: " . $request->cout . " CAF\n" .
                 "Observations: " . ($request->observations_fin ?? '')
         ]);
         
