@@ -22,8 +22,8 @@ class MaintenanceController extends Controller
         $stats = [
             'total' => Maintenance::count(),
             'en_cours' => Maintenance::where('statut', 'en_cours')->count(),
-            'terminee' => Maintenance::where('statut', 'terminee')->count(),
-            'annulee' => Maintenance::where('statut', 'annulee')->count(),
+            'termine' => Maintenance::where('statut', 'termine')->count(),
+            'annule' => Maintenance::where('statut', 'en_attente')->count(),
             'cout_total' => Maintenance::sum('cout'),
             'retard' => Maintenance::where('statut', 'en_cours')
                 ->where('date_retour_prevue', '<', now())
@@ -57,7 +57,7 @@ class MaintenanceController extends Controller
             'type_maintenance' => 'required|in:preventive,corrective,contractuelle,autre',
             'prestataire' => 'required|string|max:200',
             'cout' => 'nullable|numeric|min:0',
-            'statut' => 'required|in:en_cours,terminee,annulee',
+            'statut' => 'required|in:en_cours,termine,en_attente',
             'description_panne' => 'required|string|max:1000',
             'travaux_realises' => 'nullable|string|max:1000',
             'observations' => 'nullable|string|max:1000'
@@ -121,7 +121,7 @@ class MaintenanceController extends Controller
             'type_maintenance' => 'required|in:preventive,corrective,contractuelle,autre',
             'prestataire' => 'required|string|max:200',
             'cout' => 'nullable|numeric|min:0',
-            'statut' => 'required|in:en_cours,terminee,annulee',
+            'statut' => 'required|in:en_cours,termine,en_attente',
             'description_panne' => 'required|string|max:1000',
             'travaux_realises' => 'nullable|string|max:1000',
             'observations' => 'nullable|string|max:1000'
@@ -154,7 +154,7 @@ class MaintenanceController extends Controller
         }
         
         // Si la maintenance est terminée, ajouter la date de retour réelle
-        if ($nouveauStatut == 'terminee' && !$maintenance->date_retour_reelle) {
+        if ($nouveauStatut == 'termine' && !$maintenance->date_retour_reelle) {
             $request->merge(['date_retour_reelle' => now()->toDateString()]);
         }
         
@@ -198,14 +198,14 @@ class MaintenanceController extends Controller
         ]);
         
         $maintenance->update([
-            'statut' => 'terminee',
+            'statut' => 'termine',
             'date_retour_reelle' => $request->date_retour_reelle,
             'travaux_realises' => $request->travaux_realises,
             'cout' => $request->cout,
             'observations' => $maintenance->observations . "\n\n=== FIN DE MAINTENANCE ===\n" . 
                 "Date retour: " . $request->date_retour_reelle . "\n" .
                 "Travaux réalisés: " . $request->travaux_realises . "\n" .
-                "Coût: " . $request->cout . " CAF\n" .
+                "Coût: " . $request->cout . " FCFA\n" .
                 "Observations: " . ($request->observations_fin ?? '')
         ]);
         
@@ -229,7 +229,7 @@ class MaintenanceController extends Controller
         ]);
         
         $maintenance->update([
-            'statut' => 'annulee',
+            'statut' => 'en_attente',
             'observations' => $maintenance->observations . "\n\n=== ANNULATION ===\n" . 
                 "Date: " . now()->format('Y-m-d') . "\n" .
                 "Raison: " . $request->raison_annulation

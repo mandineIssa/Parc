@@ -292,7 +292,7 @@
         </div>
 
         <hr class="my-4 border-gray-200">
-
+     
         <!-- ================= JOURNAL ================= -->
         <div class="mb-4">
             <a href="{{ route('audits.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('audits.*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">

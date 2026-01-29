@@ -137,8 +137,8 @@
             @php
                 $statsCards = [
                     ['label' => 'En cours', 'count' => $stats['en_cours'], 'color' => 'yellow', 'icon' => '🔄'],
-                    ['label' => 'Terminées', 'count' => $stats['terminee'], 'color' => 'green', 'icon' => '✓'],
-                    ['label' => 'Annulées', 'count' => $stats['annulee'], 'color' => 'gray', 'icon' => '✗'],
+                    ['label' => 'Terminées', 'count' => $stats['termine'], 'color' => 'green', 'icon' => '✓'],
+                    ['label' => 'Annulées', 'count' => $stats['annule'], 'color' => 'gray', 'icon' => '✗'],
                     ['label' => 'En retard', 'count' => $stats['retard'], 'color' => 'red', 'icon' => '⏰'],
                     ['label' => 'Coût total', 'count' => number_format($stats['cout_total'], 2, ',', ' ') . ' €', 'color' => 'blue', 'icon' => '💰'],
                 ];
