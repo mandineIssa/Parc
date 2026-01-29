@@ -401,6 +401,221 @@
 </div>
 
 <script>
+// Fonction de recherche dynamique
+document.addEventListener('DOMContentLoaded', function() {
+    // Récupérer les éléments
+    const searchInput = document.querySelector('input[placeholder="Rechercher une catégorie..."]');
+    const typeSelect = document.querySelector('select');
+    const filterButton = document.querySelector('button.bg-blue-600');
+    const categoryRows = document.querySelectorAll('tbody tr');
+    const totalCategoriesElement = document.querySelector('.text-sm.text-gray-600.mt-1');
+    const emptyStateRow = document.querySelector('tbody tr:last-child');
+    
+    // Stocker toutes les lignes originales (pour réinitialiser)
+    const allOriginalRows = Array.from(categoryRows);
+    
+    // Fonction pour normaliser le texte (supprime les accents)
+    function normalizeText(text) {
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+    
+    // Fonction pour mettre en surbrillance le texte correspondant
+    function highlightText(element, searchTerm) {
+        if (!searchTerm || !element) return;
+        
+        const text = element.textContent;
+        const normalizedText = normalizeText(text);
+        const normalizedSearch = normalizeText(searchTerm);
+        
+        if (normalizedText.includes(normalizedSearch)) {
+            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            element.innerHTML = text.replace(regex, '<span class="search-highlight">$1</span>');
+        }
+    }
+    
+    // Fonction pour enlever les surbrillances
+    function removeHighlights() {
+        document.querySelectorAll('.search-highlight').forEach(el => {
+            const parent = el.parentNode;
+            parent.replaceChild(document.createTextNode(el.textContent), el);
+            parent.normalize();
+        });
+    }
+    
+    // Fonction de filtrage
+    function filterCategories() {
+        const searchTerm = searchInput.value.trim();
+        const selectedType = typeSelect.value;
+        
+        let visibleCount = 0;
+        let hasVisibleRows = false;
+        
+        // Supprimer les anciennes surbrillances
+        removeHighlights();
+        
+        allOriginalRows.forEach(row => {
+            // Vérifier si c'est une ligne vide (état "aucune catégorie")
+            if (row.classList.contains('text-center') || row.querySelector('td[colspan]')) {
+                return;
+            }
+            
+            // Récupérer les données de la ligne
+            const categoryNameElement = row.querySelector('h3, h4');
+            const categoryDescriptionElement = row.querySelector('.text-sm.text-gray-600, .text-xs.text-gray-600');
+            const categoryName = categoryNameElement?.textContent || '';
+            const categoryDescription = categoryDescriptionElement?.textContent || '';
+            const categoryType = row.querySelector('.inline-flex.items-center')?.textContent?.trim() || '';
+            
+            // Vérifier la correspondance avec le type
+            const typeMatch = !selectedType || 
+                normalizeText(categoryType).includes(normalizeText(selectedType));
+            
+            // Vérifier la correspondance avec la recherche
+            const searchMatch = !searchTerm || 
+                normalizeText(categoryName).includes(normalizeText(searchTerm)) ||
+                normalizeText(categoryDescription).includes(normalizeText(searchTerm));
+            
+            // Afficher ou masquer la ligne
+            if (typeMatch && searchMatch) {
+                row.style.display = '';
+                visibleCount++;
+                hasVisibleRows = true;
+                
+                // Mettre en surbrillance le texte recherché
+                if (searchTerm) {
+                    if (categoryNameElement) highlightText(categoryNameElement, searchTerm);
+                    if (categoryDescriptionElement) highlightText(categoryDescriptionElement, searchTerm);
+                }
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Gérer les sous-catégories
+        document.querySelectorAll('tbody tr').forEach(row => {
+            if (row.classList.contains('bg-gray-50')) {
+                const parentRow = row.previousElementSibling;
+                if (!parentRow || parentRow.style.display === 'none') {
+                    row.style.display = 'none';
+                } else if (hasVisibleRows) {
+                    // Compter les sous-catégories visibles
+                    const subNameElement = row.querySelector('h4');
+                    const subDescElement = row.querySelector('.text-xs.text-gray-600');
+                    const subName = subNameElement?.textContent || '';
+                    const subDesc = subDescElement?.textContent || '';
+                    
+                    const subTypeMatch = !selectedType || true; // Les sous-catégories héritent du type parent
+                    const subSearchMatch = !searchTerm || 
+                        normalizeText(subName).includes(normalizeText(searchTerm)) ||
+                        normalizeText(subDesc).includes(normalizeText(searchTerm));
+                    
+                    if (subTypeMatch && subSearchMatch) {
+                        row.style.display = '';
+                        visibleCount++;
+                        
+                        // Mettre en surbrillance pour les sous-catégories
+                        if (searchTerm) {
+                            if (subNameElement) highlightText(subNameElement, searchTerm);
+                            if (subDescElement) highlightText(subDescElement, searchTerm);
+                        }
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            }
+        });
+        
+        // Gérer l'état "aucune catégorie"
+        if (emptyStateRow) {
+            if (hasVisibleRows) {
+                emptyStateRow.style.display = 'none';
+            } else {
+                emptyStateRow.style.display = '';
+                // Ajuster le message en fonction des filtres
+                const messageElement = emptyStateRow.querySelector('h3');
+                const descriptionElement = emptyStateRow.querySelector('p.text-gray-500');
+                
+                if (searchTerm || selectedType) {
+                    if (messageElement) messageElement.textContent = 'Aucune catégorie ne correspond aux critères';
+                    if (descriptionElement) descriptionElement.textContent = 'Essayez de modifier vos filtres de recherche';
+                } else {
+                    if (messageElement) messageElement.textContent = 'Aucune catégorie trouvée';
+                    if (descriptionElement) descriptionElement.textContent = 'Commencez par créer votre première catégorie';
+                }
+            }
+        }
+        
+        // Mettre à jour le compteur
+        if (totalCategoriesElement) {
+            totalCategoriesElement.textContent = `${visibleCount} catégorie${visibleCount > 1 ? 's' : ''} trouvée${visibleCount > 1 ? 's' : ''}`;
+        }
+    }
+    
+    // Événements
+    searchInput.addEventListener('input', function() {
+        filterCategories();
+    });
+    
+    typeSelect.addEventListener('change', function() {
+        filterCategories();
+    });
+    
+    // Remplacer le bouton Filtrer par une réinitialisation
+    if (filterButton) {
+        filterButton.innerHTML = `
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            Réinitialiser
+        `;
+        filterButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        filterButton.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-800');
+        
+        filterButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            searchInput.value = '';
+            typeSelect.value = '';
+            filterCategories();
+            searchInput.focus();
+        });
+    }
+    
+    // Ajouter un délai pour éviter trop d'exécutions
+    let debounceTimer;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        
+        // Afficher un indicateur de chargement rapide
+        const originalPlaceholder = searchInput.placeholder;
+        searchInput.placeholder = 'Recherche...';
+        
+        debounceTimer = setTimeout(() => {
+            filterCategories();
+            searchInput.placeholder = originalPlaceholder;
+        }, 300);
+    });
+    
+    // Recherche avec la touche Entrée
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            filterCategories();
+        }
+    });
+    
+    // Initialiser avec les valeurs de l'URL (si présentes)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('search')) {
+        searchInput.value = urlParams.get('search');
+    }
+    if (urlParams.has('type')) {
+        typeSelect.value = urlParams.get('type');
+    }
+    
+    // Appliquer le filtre initial
+    filterCategories();
+});
+
 // Fonctions pour le modal
 function showEquipmentList(equipmentList) {
     const modal = document.getElementById('equipmentModal');
@@ -465,6 +680,26 @@ document.addEventListener('DOMContentLoaded', function() {
     font-weight: 500;
 }
 
+/* Style pour la surbrillance de recherche */
+.search-highlight {
+    background-color: #FFEB3B;
+    padding: 0.1em 0.2em;
+    border-radius: 0.2em;
+    font-weight: bold;
+}
+
+/* Animation pour les résultats de recherche */
+tr {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+tr[style*="display: none"] {
+    opacity: 0;
+    transform: translateX(-10px);
+    height: 0;
+    overflow: hidden;
+}
+
 /* Animation pour le modal */
 @keyframes modalFadeIn {
     from {
@@ -486,6 +721,11 @@ tr.bg-gray-50 {
     border-left: 4px solid #e5e7eb;
 }
 
+/* Style pour le champ de recherche actif */
+input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {
@@ -504,6 +744,21 @@ tr.bg-gray-50 {
     .flex-col {
         flex-direction: column;
     }
+    
+    /* Amélioration de la recherche sur mobile */
+    input[type="text"], select {
+        font-size: 16px; /* Empêche le zoom sur iOS */
+    }
+    
+    .bg-gray-200 {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Animation douce pour les changements */
+.transition-all {
+    transition: all 0.3s ease;
 }
 </style>
 @endsection
