@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class User extends Authenticatable
 {
-    use Notifiable;
-    
+    use HasFactory,Notifiable;
+   
     protected $fillable = [
         'name',
         'prenom',           // Ajouté
@@ -56,4 +57,70 @@ class User extends Authenticatable
     {
         return $this->isSuperAdmin();
     }
+
+    
+    
+
+    // ... vos attributs existants ...
+
+    /**
+     * Vérifier si l'utilisateur peut approuver une approbation
+     */
+    public function canApprove($approval = null)
+    {
+        $role = strtolower(trim((string) ($this->role ?? '')));
+        
+        // Vérifier les rôles autorisés
+        $isAuthorized = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
+            || $this->email === 'superadmin@cofina.sn';
+        
+        // Si une approbation est fournie, vérifier des conditions supplémentaires
+        if ($approval) {
+            // Un utilisateur ne peut pas approuver sa propre demande (sauf si super admin)
+            if ($this->id === $approval->submitted_by && $role !== 'super_admin') {
+                return false;
+            }
+            
+            // Vérifier que l'approbation est en attente
+            if ($approval->status !== 'pending') {
+                return false;
+            }
+        }
+        
+        return $isAuthorized;
+    }
+
+    /**
+     * Vérifier si l'utilisateur peut rejeter une approbation
+     */
+    public function canReject($approval = null)
+    {
+        // Mêmes permissions que pour l'approbation
+        return $this->canApprove($approval);
+    }
+
+    /**
+     * Vérifier si l'utilisateur peut voir une approbation
+     */
+    public function canViewApproval($approval)
+    {
+        // Les administrateurs peuvent voir toutes les approbations
+        if ($this->canApprove()) {
+            return true;
+        }
+        
+        // L'utilisateur qui a soumis la demande peut la voir
+        if ($this->id === $approval->submitted_by) {
+            return true;
+        }
+        
+        // Les agents IT peuvent voir les approbations
+        $role = strtolower(trim((string) ($this->role ?? '')));
+        if (in_array($role, ['agent_it', 'admin', 'super_admin'])) {
+            return true;
+        }
+        
+        return false;
+    }
+
 }

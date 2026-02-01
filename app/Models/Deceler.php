@@ -18,7 +18,8 @@ class Deceler extends Model
         'diagnostic',
         'etat_retour',
         'valeur_residuelle',
-        'observations_retour'
+        'observations_retour',
+        'transition_approval_id'
     ];
     
     protected $casts = [

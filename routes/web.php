@@ -25,6 +25,7 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DashboardsController;
 
 
 /*
@@ -621,15 +622,210 @@ Route::middleware(['auth', 'verified'])->prefix('documentation')->name('document
     Route::get('/download/{format}', [App\Http\Controllers\DocumentationController::class, 'download'])->name('download');
 });
 
+// Routes pour les approbations hors service
+Route::get('/admin/approvals/{approval}/hors-service', 
+    [TransitionController::class, 'showHorsServiceApproval']
+)->name('admin.hors-service-approval')
+ ->middleware('auth');
+
+Route::post('/transitions/submit-hors-service', [TransitionController::class, 'submitHorsService'])
+    ->name('transitions.submit-hors-service');
+Route::post('/admin/approvals/{approval}/approve-hors-service', [TransitionController::class, 'approveHorsService'])
+    ->name('transitions.approve-hors-service')
+    ->middleware('auth');
+
+Route::post('/admin/approvals/{approval}/reject-hors-service', [TransitionController::class, 'rejectHorsService'])
+    ->name('transitions.reject-hors-service')
+    ->middleware('auth');
+
+    // routes/web.php
+Route::get('/admin/hors-service-approvals', 
+    [TransitionController::class, 'listHorsServiceApprovals']
+)->name('admin.hors-service-approvals.list')
+ ->middleware('auth');
+
+ // Routes pour les transitions maintenance
+Route::post('/transitions/submit-maintenance', [TransitionController::class, 'submitMaintenance'])
+    ->name('transitions.submit-maintenance');
+
+Route::post('/approvals/{approval}/approve-maintenance', [TransitionController::class, 'approveMaintenance'])
+    ->name('transitions.approve-maintenance')
+    ->middleware('auth');
+
+Route::post('/approvals/{approval}/reject-maintenance', [TransitionController::class, 'rejectMaintenance'])
+    ->name('transitions.reject-maintenance')
+    ->middleware('auth');
+
+// Route pour la liste des approbations maintenance
+Route::get('/admin/maintenance-approvals', [TransitionController::class, 'listMaintenanceApprovals'])
+    ->name('admin.maintenance-approvals.list')
+    ->middleware('auth');
+Route::get('/admin/maintenance-approvals', [TransitionController::class, 'listMaintenanceApprovals'])
+    ->name('admin.maintenance-approvals.list')
+    ->middleware('auth');
+// Cette route devrait déjà exister
+Route::get('/approvals/{approval}', [TransitionController::class, 'showApprovalDetails'])
+    ->name('transitions.approval.show')
+    ->middleware('auth');
+
+    Route::get('/admin/approvals/{approval}/maintenance', 
+    [TransitionController::class, 'showMaintenanceApproval']
+)->name('admin.maintenance-approval')
+ ->middleware('auth');
+
+ // ----------------------------------------------------
+// MODULE PARC → PERDU
+// ----------------------------------------------------
+Route::post('/transitions/submit-perdu', [TransitionController::class, 'submitPerdu'])
+    ->name('transitions.submit-perdu')
+    ->middleware('auth');
+
+Route::post('/approvals/{approval}/approve-perdu', [TransitionController::class, 'approvePerdu'])
+    ->name('transitions.approve-perdu')
+    ->middleware('auth');
+
+Route::post('/approvals/{approval}/reject-perdu', [TransitionController::class, 'rejectPerdu'])
+    ->name('transitions.reject-perdu')
+    ->middleware('auth');
+
+Route::get('/admin/perdu-approvals', [TransitionController::class, 'listPerduApprovals'])
+    ->name('admin.perdu-approvals.list')
+    ->middleware('auth');
+
+Route::get('/admin/approvals/{approval}/perdu', 
+    [TransitionController::class, 'showPerduApproval']
+)->name('admin.perdu-approval')
+ ->middleware('auth');
+ // Routes pour les transitions hors service
+Route::post('/transitions/submit-hors-service', [TransitionController::class, 'submitHorsService'])
+    ->name('transitions.submit-hors-service')
+    ->middleware('auth');
+
+// Nouvelle route pour parc → hors service
+Route::post('/transitions/submit-parc-hors-service', [TransitionController::class, 'submitParcHorsService'])
+    ->name('transitions.submit-parc-hors-service')
+    ->middleware('auth');
+
+// Routes pour l'approbation
+Route::post('/approvals/{approval}/approve-hors-service', [TransitionController::class, 'approveHorsService'])
+    ->name('transitions.approve-hors-service')
+    ->middleware('auth');
+
+Route::post('/approvals/{approval}/approve-parc-hors-service', [TransitionController::class, 'approveParcHorsService'])
+    ->name('transitions.approve-parc-hors-service')
+    ->middleware('auth');
+
+Route::post('/approvals/{approval}/reject-hors-service', [TransitionController::class, 'rejectHorsService'])
+    ->name('transitions.reject-hors-service')
+    ->middleware('auth');
+
+      // Routes pour visualiser les approbations hors service par type
+Route::get('/admin/hors-service-approvals/{approval}', [TransitionController::class, 'showHorsServiceApproval'])
+    ->name('admin.hors-service-approval')
+    ->middleware('auth');
+
+Route::get('/admin/parc-hors-service-approvals/{approval}', [TransitionController::class, 'showParcHorsServiceApproval'])
+    ->name('admin.parc-hors-service-approval')
+    ->middleware('auth');
+
+Route::get('/admin/maintenance-hors-service-approvals/{approval}', [TransitionController::class, 'showMaintenanceHorsServiceApproval'])
+    ->name('admin.maintenance-hors-service-approval')
+    ->middleware('auth');
+   
+        // Routes pour le rejet des demandes hors service
+Route::post('/approvals/{approval}/reject-hors-service', [TransitionController::class, 'rejectHorsService'])
+    ->name('transitions.reject-hors-service')
+    ->middleware('auth');
+
+Route::post('/approvals/{approval}/reject-parc-hors-service', [TransitionController::class, 'rejectParcHorsService'])
+    ->name('transitions.reject-parc-hors-service')
+    ->middleware('auth');
+
+Route::post('/approvals/{approval}/reject-maintenance-hors-service', [TransitionController::class, 'rejectMaintenanceHorsService'])
+    ->name('transitions.reject-maintenance-hors-service')
+    ->middleware('auth');
+    
+// Liste des approbations
+Route::get('/admin/maintenance-to-stock-approvals', [TransitionController::class, 'listMaintenanceToStockApprovals'])
+    ->name('admin.maintenance-to-stock-approvals.list')
+    ->middleware('auth');
+
+// Détails d'une approbation
+Route::get('/admin/maintenance-to-stock-approvals/{approval}', [TransitionController::class, 'showApprovalMaintenanceToStock'])
+    ->name('admin.maintenance-to-stock-approval')
+    ->middleware('auth');
+
+
+
+// Groupe des transitions
+Route::prefix('transitions')->name('transitions.')->group(function () {
+    
+    // Routes pour les soumissions
+    Route::post('/submit-maintenance-to-stock', [TransitionController::class, 'submitMaintenanceToStock'])
+        ->name('submit-maintenance-to-stock')
+        ->middleware('auth');
+    
+    // Routes pour les approbations (déjà existantes)
+    Route::post('/approvals/{approval}/approve-maintenance-to-stock', [TransitionController::class, 'approveMaintenanceToStock'])
+        ->name('approve-maintenance-to-stock')
+        ->middleware('auth');
+        
+    Route::post('/approvals/{approval}/reject-maintenance-to-stock', [TransitionController::class, 'rejectMaintenanceToStock'])
+        ->name('reject-maintenance-to-stock')
+        ->middleware('auth');
+        
+    // Autres routes de transition...
+});
+
+    // Routes pour les transitions maintenance → hors service
+Route::post('/transitions/submit-maintenance-hors-service', [TransitionController::class, 'submitMaintenanceHorsService'])
+    ->name('transitions.submit-maintenance-hors-service');
+
+Route::post('/approvals/{approval}/approve-maintenance-hors-service', [TransitionController::class, 'approveMaintenanceHorsService'])
+    ->name('transitions.approve-maintenance-hors-service')
+    ->middleware('auth');
+
+Route::post('/approvals/{approval}/reject-maintenance-hors-service', [TransitionController::class, 'rejectMaintenanceToHorsService'])
+    ->name('transitions.reject-maintenance-hors-service')
+    ->middleware('auth');
+
+Route::get('/admin/maintenance-hors-service-approvals', [TransitionController::class, 'listMaintenanceHorsServiceApprovals'])
+    ->name('admin.maintenance-hors-service-approvals.list')
+    ->middleware('auth');
+
+// Routes pour le DASHBOARD DES SOUMISSIONS (nouveau)
+Route::prefix('dashboards')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboards.index');
+    Route::get('/stats', [DashboardController::class, 'getStats'])->name('dashboards.stats');
+    Route::get('/submissions', [DashboardController::class, 'getSubmissions'])->name('dashboards.submissions');
+    Route::get('/charts', [DashboardController::class, 'getCharts'])->name('dashboards.charts');
+    Route::get('/export', [DashboardController::class, 'export'])->name('dashboards.export');
+    Route::get('/mobile', [DashboardController::class, 'mobileDashboard'])->name('dashboards.mobile');
+})->middleware('auth');
+
+// Dashboard routes
+Route::prefix('dashboard')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/redirect', [DashboardController::class, 'redirect'])->name('dashboard.redirect');
+    Route::get('/super-admin', [DashboardController::class, 'superAdmin'])->name('dashboard.super-admin');
+    Route::get('/agent', [DashboardController::class, 'agent'])->name('dashboard.agent');
+    Route::get('/user', [DashboardController::class, 'user'])->name('dashboard.user');
+    Route::get('/stats', [DashboardController::class, 'getStats'])->name('dashboard.stats');
+    Route::get('/submissions', [DashboardController::class, 'getSubmissions'])->name('dashboard.submissions');
+    Route::get('/charts', [DashboardController::class, 'getCharts'])->name('dashboard.charts');
+    Route::get('/export', [DashboardController::class, 'export'])->name('dashboard.export');
+})->middleware('auth');
+
+// Garder vos routes dashboard existantes (si elles existent)
+Route::get('/dashboard', [DashboardsController::class, 'index'])->name('dashboard');
+
 if (app()->environment('local')) {
     
     Route::get('/debug', function () {
         return view('debug');
     });
-    
-    Route::get('/routes', function () {
+     Route::get('/routes', function () {
         $routes = Route::getRoutes();
-        
         echo "<style>body{font-family:monospace;}</style>";
         echo "<h1>Routes disponibles</h1>";
         echo "<table border='1' cellpadding='5'>";

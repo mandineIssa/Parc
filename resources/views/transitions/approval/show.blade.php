@@ -125,6 +125,8 @@
             <div class="bg-gray-50 p-4 rounded-lg">
                 <p class="text-sm text-gray-600 font-semibold mb-2">Utilisateur final</p>
                 <p class="font-bold">{{ $formData['user_name'] ?? 'N/A' }}</p>
+                <p class="font-bold">{{ $formData['user_prenom'] ?? 'N/A' }}</p>
+                <p class="text-sm text-gray-600">{{ $formData['user_email'] ?? 'N/A' }}</p>
                 <p class="text-sm text-gray-600">{{ $formData['departement'] ?? 'N/A' }}</p>
                 <p class="text-sm text-gray-600">{{ $formData['poste_affecte'] ?? 'N/A' }}</p>
             </div>
@@ -182,6 +184,12 @@
                             <input type="text" name="expediteur_nom" 
                                    value="{{ $formData['agent_nom'] ?? $mouvementData['expediteur_nom'] ?? auth()->user()->name }}"
                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-gray-100" readonly>
+                                    <label class="block text-sm font-semibold mb-1">Prenom :</label>
+                            <input type="text" name="expediteur_prenom" 
+                                   value="{{ $formData['agent_prenom'] ?? $mouvementData['expediteur_prenom'] ?? auth()->user()->prenom }}"
+                                   class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-gray-100" readonly>
+                                   
+
                             <p class="text-xs text-gray-500 mt-1">Agent IT qui effectue le mouvement</p>
                         </div>
                         <div>
@@ -213,9 +221,14 @@
                     </h3>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-semibold mb-1">Nom et Prénom : *</label>
+                            <label class="block text-sm font-semibold mb-1">Nom : *</label>
                             <input type="text" name="receptionnaire_nom" 
                                    value="{{ $formData['user_name'] ?? $mouvementData['receptionnaire_nom'] ?? '' }}"
+                                   class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-gray-100" readonly>
+
+                                   <label class="block text-sm font-semibold mb-1">Prénom : *</label>
+                            <input type="text" name="receptionnaire_prenom" 
+                                   value="{{ $formData['user_prenom'] ?? $mouvementData['receptionnaire_prenom'] ?? '' }}"
                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-gray-100" readonly>
                             <p class="text-xs text-gray-500 mt-1">Utilisateur final qui reçoit l'équipement</p>
                         </div>
@@ -360,13 +373,21 @@
             </div>
 
             <!-- NOM DE L'AGENCE -->
-            <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+          <!--   <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
                 <label class="block font-bold text-lg mb-2 text-cofina-red">NOM DE L'AGENCE : *</label>
                 <input type="text" name="agence_nom" 
                        value="{{ $formData['departement'] ?? $installationData['agence_nom'] ?? '' }}"
                        class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-bold text-lg"
                        placeholder="Ex: SIÈGE, AGENCE NORD..." required>
-            </div>
+            </div> -->
+            <!-- NOM DE L'AGENCE -->
+<div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+    <label class="block font-bold text-lg mb-2 text-cofina-red">NOM DE L'AGENCE : *</label>
+    <input type="text" name="agence_nom" id="agence_nom_hidden"
+           value="{{ $installationData['agence_nom'] ?? $formData['agence_nom'] ?? $affectationData['agence_nom'] ?? $formData['departement'] ?? '',}}"
+           class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-bold text-lg"
+           placeholder="Ex: SIÈGE, AGENCE NORD..." required>
+</div>
 
             <!-- SECTION INSTALLATION -->
             <div class="mb-8 border-3 border-blue-600 p-6 rounded-lg bg-blue-50">
@@ -506,9 +527,9 @@
                             <div>
                                 <label class="block text-sm font-semibold mb-1">Prénom : *</label>
                                 <input type="text" name="installateur_prenom" 
-                                       value="{{ $installationData['installateur_prenom'] ?? $signatureDetails['installateur']['prenom'] ?? '' }}"
-                                       class="w-full px-3 py-2 border-2 border-gray-300 rounded" 
-                                       placeholder="Prénom de l'installateur" required>
+                                       value="{{$formData['agent_prenom'] ?? $installationData['installateur_prenom'] ?? $installationData['installateur']['prenom'] ?? auth()->user()->prenom }}"
+                                       
+                                       class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
                             </div>
                         </div>
                         
@@ -639,75 +660,85 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         <!-- ===== Signature Utilisateur (lecture seule) ===== -->
-        <div class="bg-white p-4 rounded-lg border-2 border-green-300">
-            <h4 class="font-bold mb-3 text-green-800">✍️ Signature de l’utilisateur</h4>
+       
 
-            <div class="space-y-2">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Nom</label>
-                    <input type="text"
-                           value="{{ $formData['utilisateur_nom'] ?? $formData['user_name'] ?? '' }}"
-                           class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded"
-                           readonly>
-                </div>
+    <!-- ===== Signature Utilisateur (lecture seule) ===== -->
+    <div class="bg-white p-4 rounded-lg border-2 border-gray-300">
+        <h4 class="font-bold mb-3 text-gray-800">👤 Signature de l'utilisateur *</h4>
 
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Fonction</label>
-                    <input type="text"
-                           value="{{ $formData['utilisateur_fonction'] ?? $formData['poste_affecte'] ?? '' }}"
-                           class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded"
-                           readonly>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Date</label>
-                    <input type="date"
-                           value="{{ date('Y-m-d') }}"
-                           class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded"
-                           readonly>
-                </div>
-            </div>
-
-            @if(!empty($signatures['utilisateur']))
-                <div class="mt-4 border border-gray-300 rounded p-2 bg-white">
-                    <img src="{{ $signatures['utilisateur'] }}"
-                         class="max-h-32 mx-auto">
-                </div>
-            @endif
-        </div>
-
-        <!-- ===== Signature Vérificateur ===== -->
-        <div class="bg-white p-4 rounded-lg border-2 border-green-300">
-            <h4 class="font-bold mb-3 text-green-800">✍️ Signature du vérificateur *</h4>
-
-            <div class="grid grid-cols-2 gap-4 mb-3">
-                <input type="text"
-                       name="verificateur_nom"
-                       value="{{ $formData['verificateur_nom'] ?? '' }}"
-                       placeholder="Nom"
-                       class="px-3 py-2 border-2 border-gray-300 rounded"
-                       required>
-
-                <input type="text"
-                       name="verificateur_prenom"
-                       value="{{ $formData['verificateur_prenom'] ?? '' }}"
-                       placeholder="Prénom"
-                       class="px-3 py-2 border-2 border-gray-300 rounded"
-                       required>
-            </div>
+        <div class="grid grid-cols-2 gap-4 mb-3">
+            <input type="text"
+                   name="user_nom"
+                   value="{{ $formData['utilisateur_nom'] ?? '' }}"
+                   placeholder="Nom"
+                   class="px-3 py-2 border-2 border-gray-300 rounded bg-gray-100"
+                   readonly>
 
             <input type="text"
-                   name="verificateur_fonction"
-                   value="{{ $formData['verificateur_fonction'] ?? 'Super Admin' }}"
-                   class="w-full px-3 py-2 border-2 border-gray-300 rounded mb-3"
+                   name="user_prenom"
+                   value="{{ $formData['utilisateur_prenom'] ?? '' }}"
+                   placeholder="Prénom"
+                   class="px-3 py-2 border-2 border-gray-300 rounded bg-gray-100"
+                   readonly>
+        </div>
+
+        <input type="text"
+               name="user_fonction"
+               value="{{ $formData['poste_affecte'] ?? '' }}"
+               class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-gray-100 mb-3"
+               readonly>
+
+        @if(!empty($signatures['utilisateur']))
+        <div class="border-2 border-gray-300 rounded bg-white h-32 mb-2 flex items-center justify-center">
+            <img src="{{ $signatures['utilisateur'] }}" 
+                 alt="Signature utilisateur" 
+                 class="max-h-28 mx-auto signature-image">
+        </div>
+        @else
+        <div class="border-2 border-gray-300 rounded bg-white h-32 mb-2 flex items-center justify-center">
+            <span class="text-sm text-gray-500">Signature Utilisateur (à compléter)</span>
+        </div>
+        @endif
+        
+        <!-- Note pour l'utilisateur -->
+        <p class="text-xs text-gray-500 text-center mt-2">
+            Ces informations sont issues de l'affectation
+        </p>
+    </div> <!-- Fin de la première div -->
+
+    <!-- ===== Signature Vérificateur ===== -->
+    <div class="bg-white p-4 rounded-lg border-2 border-green-300">
+        <h4 class="font-bold mb-3 text-green-800">✍️ Signature du vérificateur *</h4>
+
+        <div class="grid grid-cols-2 gap-4 mb-3">
+            <input type="text"
+                   name="verificateur_nom"
+                   value="{{ $formData['verificateur_nom'] ?? '' }}"
+                   placeholder="Nom"
+                   class="px-3 py-2 border-2 border-gray-300 rounded"
                    required>
 
-            <div class="border-2 border-gray-300 rounded bg-white h-32 mb-2">
-                <canvas id="signatureCanvasVerificateur" class="w-full h-full"></canvas>
-            </div>
+            <input type="text"
+                   name="verificateur_prenom"
+                   value="{{ $formData['verificateur_prenom'] ?? '' }}"
+                   placeholder="Prénom"
+                   class="px-3 py-2 border-2 border-gray-300 rounded"
+                   required>
+        </div>
 
-            <input type="hidden" name="signature_verificateur" id="signatureVerificateur">
-                    <div class="flex gap-2 mt-2">
+        <input type="text"
+               name="verificateur_fonction"
+               value="{{ $formData['verificateur_fonction'] ?? 'Super Admin' }}"
+               class="w-full px-3 py-2 border-2 border-gray-300 rounded mb-3"
+               required>
+
+        <div class="border-2 border-gray-300 rounded bg-white h-32 mb-2">
+            <canvas id="signatureCanvasVerificateur" class="w-full h-full"></canvas>
+        </div>
+
+        <input type="hidden" name="signature_verificateur" id="signatureVerificateur">
+        
+        <div class="flex gap-2 mt-2">
             <button type="button" onclick="clearSignature('verificateur')" 
                     class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-3 rounded text-sm">
                 Effacer
@@ -717,9 +748,9 @@
                 Sauvegarder
             </button>
         </div>
-        </div>
-         
-    </div>
+    </div> <!-- Fin de la deuxième div -->
+    
+</div> <!-- Fin de la grille -->
 </div>
 
                 <!-- Note importante -->
@@ -1304,6 +1335,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
     }
+});
+</script>
+<script>
+// Dans votre JavaScript, ajouter :
+document.querySelector('select[name="agency_id"]').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const agenceNom = selectedOption.textContent;
+    document.getElementById('agence_nom_hidden').value = agenceNom;
 });
 </script>
 

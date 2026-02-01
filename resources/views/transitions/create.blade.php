@@ -364,12 +364,12 @@
                 <!-- NOM DE L'AGENCE -->
 
                                 
-                <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+                <!-- <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
                     <label class="block font-bold text-lg mb-2 text-cofina-red">NOM DE L'AGENCE :</label>
                     <input type="text" name="agence_nom" placeholder="Ex: SIÈGE, AGENCE NORD..."
                         class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-bold text-lg" required>
-                </div> 
-                           <!-- AGENCE 
+                </div>  -->
+                            AGENCE 
             <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
                 <label class="block font-bold text-lg mb-2 text-cofina-red">
                     Agence <span class="text-red-600">*</span>
@@ -382,7 +382,7 @@
                         <option value="{{ $agency->id }}">{{ $agency->nom }}</option>
                     @endforeach
                 </select>
-            </div>-->
+            </div>
               
                 <!-- SECTION INSTALLATION -->
                 <div class="mb-8 border-3 border-blue-600 p-6 rounded-lg bg-blue-50">
@@ -588,7 +588,7 @@
 
                                <div>
                                     <label class="block text-sm font-semibold mb-1">Prénom:</label>
-                                    <input type="text" name="installateur_nom" value="{{ auth()->user()->prenom ?? '' }}"
+                                    <input type="text" name="installateur_prenom" value="{{ auth()->user()->prenom ?? '' }}"
                                         class="w-full px-3 py-2 border-2 border-gray-300 rounded" >
                                 </div> 
 
@@ -750,19 +750,29 @@
                 </h4>
 
                 <!-- Utilisateur * - Input texte au lieu de select -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">
-                        <span class="text-red-500">*</span> Utilisateur
-                    </label>
-                    <input type="text" name="utilisateur_nom" placeholder="Saisir le nom et prénom de l'utilisateur"
-                        class="w-full px-3 py-2 border-2 border-gray-300 rounded focus:border-cofina-red focus:ring-2 focus:ring-cofina-red focus:ring-opacity-20 transition duration-200" 
-                        required
-                        value="{{ old('utilisateur_nom') }}"
-                        autocomplete="off">
-                    <p class="text-xs text-gray-500 mt-1">
-                        Ex: John Doe, Marie Dupont
-                    </p>
-                </div>
+              <!-- Utilisateur - Nom et Prénom séparés -->
+<div class="mb-4 grid grid-cols-2 gap-4">
+    <div>
+        <label class="block text-sm font-semibold mb-2">
+            <span class="text-red-500">*</span> Nom
+        </label>
+        <input type="text" name="utilisateur_nom" placeholder="Saisir le nom"
+            class="w-full px-3 py-2 border-2 border-gray-300 rounded focus:border-cofina-red" 
+            required
+            value="{{ old('utilisateur_nom') }}"
+            autocomplete="off">
+    </div>
+    <div>
+        <label class="block text-sm font-semibold mb-2">
+            <span class="text-red-500">*</span> Prénom
+        </label>
+        <input type="text" name="utilisateur_prenom" placeholder="Saisir le prénom"
+            class="w-full px-3 py-2 border-2 border-gray-300 rounded focus:border-cofina-red" 
+            required
+            value="{{ old('utilisateur_prenom') }}"
+            autocomplete="off">
+    </div>
+</div>
 
                 <!-- Département * -->
                 <div class="mb-4">
@@ -867,20 +877,31 @@
             </div>
 
             <!-- Responsable -->
-            <div class="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
-                <h4 class="font-bold text-gray-800 mb-4">Responsable de l'affectation</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Nom:</label>
-                        <input type="text" name="responsable_name" value="{{ auth()->user()->name ?? '' }}"
-                            class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Fonction:</label>
-                        <input type="text" name="responsable_function" value="Agent IT"
-                            class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
-                    </div>
-                </div>
+           <!-- EXPÉDITEUR (Agent IT) -->
+<div class="border-2 border-blue-300 rounded-lg p-6 bg-blue-50">
+    <h3 class="text-lg font-bold text-blue-800 mb-4 text-center border-b-2 border-blue-300 pb-2">
+        EXPÉDITEUR
+    </h3>
+    <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Nom :</label>
+                <input type="text" name="expediteur_nom" value="{{ auth()->user()->name ?? '' }}"
+                    class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Prénom :</label>
+                <input type="text" name="expediteur_prenom" value="{{ auth()->user()->prenom ?? '' }}"
+                    class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white" required>
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-semibold mb-1">Fonction :</label>
+            <input type="text" name="expediteur_fonction" value="AGENT IT"
+                class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white" required>
+        </div>
+    </div>
+</div>
                 
                 <!-- Date de validation -->
                 <div class="mt-4">
@@ -915,42 +936,58 @@
                 <!-- Section EXPÉDITEUR et RÉCEPTIONNAIRE -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <!-- EXPÉDITEUR (Agent IT) -->
-                    <div class="border-2 border-blue-300 rounded-lg p-6 bg-blue-50">
-                        <h3 class="text-lg font-bold text-blue-800 mb-4 text-center border-b-2 border-blue-300 pb-2">
-                            EXPÉDITEUR
-                        </h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-semibold mb-1">Nom :</label>
-                                <input type="text" name="expediteur_nom" value="{{ auth()->user()->name ?? '' }}"
-                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-1">Fonction :</label>
-                                <input type="text" name="expediteur_fonction" value="AGENT IT"
-                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white" required>
-                            </div>
-                        </div>
-                    </div>
+                   <!-- EXPÉDITEUR (Agent IT) -->
+<div class="border-2 border-blue-300 rounded-lg p-6 bg-blue-50">
+    <h3 class="text-lg font-bold text-blue-800 mb-4 text-center border-b-2 border-blue-300 pb-2">
+        EXPÉDITEUR
+    </h3>
+    <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Nom :</label>
+                <input type="text" name="expediteur_nom" value="{{ auth()->user()->name ?? '' }}"
+                    class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Prénom :</label>
+                <input type="text" name="expediteur_prenom" value="{{ auth()->user()->prenom ?? '' }}"
+                    class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white" required>
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-semibold mb-1">Fonction :</label>
+            <input type="text" name="expediteur_fonction" value="AGENT IT"
+                class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white" required>
+        </div>
+    </div>
+</div>
 
                     <!-- RÉCEPTIONNAIRE (Utilisateur final - Champs à saisir) -->
-                    <div class="border-2 border-green-300 rounded-lg p-6 bg-green-50">
-                        <h3 class="text-lg font-bold text-green-800 mb-4 text-center border-b-2 border-green-300 pb-2">
-                            RÉCEPTIONNAIRE
-                        </h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-semibold mb-1">Nom et Prénom :</label>
-                                <input type="text" name="receptionnaire_nom" placeholder="Saisir le nom et prénom"
-                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-1">Fonction :</label>
-                                <input type="text" name="receptionnaire_fonction" placeholder="Saisir la fonction"
-                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
-                            </div>
-                        </div>
-                    </div>
+                 <!-- RÉCEPTIONNAIRE (Utilisateur final - Champs à saisir) -->
+<div class="border-2 border-green-300 rounded-lg p-6 bg-green-50">
+    <h3 class="text-lg font-bold text-green-800 mb-4 text-center border-b-2 border-green-300 pb-2">
+        RÉCEPTIONNAIRE
+    </h3>
+    <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Nom :</label>
+                <input type="text" name="receptionnaire_nom" placeholder="Saisir le nom"
+                    class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Prénom :</label>
+                <input type="text" name="receptionnaire_prenom" placeholder="Saisir le prénom"
+                    class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-semibold mb-1">Fonction :</label>
+            <input type="text" name="receptionnaire_fonction" placeholder="Saisir la fonction"
+                class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
+        </div>
+    </div>
+</div>
                 </div>
 
                 <!-- Section détails du mouvement -->

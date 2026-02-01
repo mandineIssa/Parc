@@ -329,6 +329,7 @@
     }
     
     $agenceNom = $data['agence_nom'] ?? '';
+    
     $installateurNom = $data['installateur_nom'] ?? '';
     $installateurPrenom = $data['installateur_prenom'] ?? '';
     $installateurFonction = $data['installateur_fonction'] ?? '';
@@ -339,7 +340,7 @@
     $verificateurFonction = $data['verificateur_fonction'] ?? '';
     
     $utilisateurNom = $data['utilisateur_nom'] ?? $data['user_name'] ?? '';
-    $utilisateurPrenom = $data['utilisateur_prenom'] ?? '';
+    $utilisateurPrenom = $data['utilisateur_prenom'] ?? $data['user_prenom'] ?? '';
     $utilisateurFonction = $data['utilisateur_fonction'] ?? $data['poste_affecte'] ?? '';
     
     $signatureInstallateur = $data['signature_installateur'] ?? null;
@@ -347,6 +348,15 @@
     $signatureUtilisateur = $data['signature_utilisateur_data'] ?? $data['signature_utilisateur'] ?? null;
 @endphp
 
+<?php
+// Ajouter la récupération de l'agence
+if (isset($data['agency_id']) && !empty($data['agency_id'])) {
+    $agency = App\Models\Agency::find($data['agency_id']);
+    if ($agency) {
+        $agenceNom = $agency->nom;
+    }
+}
+?>
 <!-- EN-TÊTE -->
 <div class="header-box">
     <table class="header-table">

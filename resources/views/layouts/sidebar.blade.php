@@ -254,6 +254,15 @@
         </div>
 
         <hr class="my-4 border-gray-200">
+      @auth
+<li class="nav-item">
+    <a href="{{ route('dashboard') }}" 
+       class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}">
+        <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+    </a>
+</li>
+@endauth
+        <hr class="my-4 border-gray-200">
 
         <!-- ================= CONFIGURATION ================= -->
         <div class="mb-4">
@@ -289,8 +298,11 @@
                     <span>Administration</span>
                 </a>
             </div>
+
+            
         </div>
 
+        
         <hr class="my-4 border-gray-200">
      
         <!-- ================= JOURNAL ================= -->

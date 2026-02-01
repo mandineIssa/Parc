@@ -269,10 +269,10 @@
             <span class="field-label">Nom :</span> 
             <span>{{ $expediteurData['nom'] }}</span>
         </div>
-<!--         <div class="field-row">
+        <div class="field-row">
             <span class="field-label">Prénom :</span> 
             <span>{{ $expediteurData['prenom'] }}</span>
-        </div> -->
+        </div> 
         <div class="field-row">
             <span class="field-label">Fonction :</span> 
             <span>{{ $expediteurData['fonction'] }}</span>
@@ -285,10 +285,10 @@
             <span class="field-label">Nom :</span> 
             <span>{{ $receptionnaireData['nom'] }}</span>
         </div>
-<!--         <div class="field-row">
+         <div class="field-row">
             <span class="field-label">Prénom :</span> 
             <span>{{ $receptionnaireData['prenom'] }}</span>
-        </div> -->
+        </div> 
         <div class="field-row">
             <span class="field-label">Fonction :</span> 
             <span>{{ $receptionnaireData['fonction'] }}</span>
