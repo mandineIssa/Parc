@@ -176,10 +176,10 @@ class Equipment extends Model
     {
         return $this->belongsTo(Category::class, 'categorie_id');
     }
-public function showTransition(Equipment $equipment)
+/* public function showTransition(Equipment $equipment)
 {
     return view('equipment.transition', compact('equipment'));
-}
+} */
 
     public function transitionApprovals()
     {

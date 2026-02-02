@@ -3927,7 +3927,7 @@ public function submitParcHorsService(Request $request)
         Log::info('=== DÉBUT submitParcHorsService ===');
         Log::info('Données reçues:', $request->all());
 
-        // Validation complète
+        // Validation complète avec checklist optionnelle
         $validated = $request->validate([
             'equipment_id' => 'required|exists:equipment,id',
             'transition_type' => 'required|string|in:parc_to_hors_service',
@@ -3937,6 +3937,9 @@ public function submitParcHorsService(Request $request)
             'description_incident' => 'required|string|min:10',
             'justificatif' => 'nullable|string|max:500',
             'observations' => 'nullable|string',
+            'checklist.verif' => 'nullable|array',
+            'checklist.verif.*' => 'nullable|boolean',
+            'checklist.justificatif' => 'nullable|string',
         ]);
 
         Log::info('Données validées:', $validated);
@@ -3957,13 +3960,12 @@ public function submitParcHorsService(Request $request)
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
             || $user->email === 'superadmin@cofina.sn';
 
-        // Récupérer les informations du parc - CORRECTION ICI
+        // Récupérer les informations du parc
         $parcInfo = null;
         $utilisateurInfo = null;
         
-        // Vérifier si la relation parc existe et si elle a des données
         if ($equipment->parc && $equipment->parc->isNotEmpty()) {
-            $parcInfo = $equipment->parc->first(); // Maintenant c'est sûr que parc n'est pas null
+            $parcInfo = $equipment->parc->first();
             
             if ($parcInfo->utilisateur_id) {
                 $utilisateurInfo = User::find($parcInfo->utilisateur_id);
@@ -3977,8 +3979,20 @@ public function submitParcHorsService(Request $request)
             Log::warning('Aucune information parc trouvée pour l\'équipement', ['equipment_id' => $equipment->id]);
         }
 
-        // Préparer les données pour l'approbation
-        $data = [
+        // Préparer les données pour l'approbation avec checklist optionnelle
+        $checklistData = [];
+        
+        // Inclure la checklist seulement si elle existe
+        if (isset($validated['checklist'])) {
+            $checklistData = [
+                'checklist' => [
+                    'verif' => $validated['checklist']['verif'] ?? [],
+                    'justificatif' => $validated['checklist']['justificatif'] ?? '',
+                ]
+            ];
+        }
+
+        $data = array_merge([
             'transition_type' => $validated['transition_type'],
             'raison' => $validated['raison'],
             'destinataire' => $validated['destinataire'],
@@ -4009,7 +4023,7 @@ public function submitParcHorsService(Request $request)
                 'date_affectation' => $parcInfo->date_affectation,
                 'statut_usage' => $parcInfo->statut_usage,
             ] : null
-        ];
+        ], $checklistData);
 
         // Créer l'approbation
         $approval = TransitionApproval::create([
@@ -4100,17 +4114,13 @@ private function processParcHorsService(Equipment $equipment, array $data, Trans
 
         // Créer l'entrée dans la table hors_service
         DB::table('hors_service')->insert([
-            'equipment_id' => $equipment->id,
             'numero_serie' => $equipment->numero_serie,
             'raison' => $data['raison'],
             'destinataire' => $data['destinataire'],
             'valeur_residuelle' => $data['valeur_residuelle'],
             'description_incident' => $data['description_incident'],
             'justificatif' => $data['justificatif'],
-            'origine' => 'parc',
             'date_hors_service' => now(),
-            'agent_id' => auth()->id(),
-            'transition_approval_id' => $approval->id,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -4135,7 +4145,6 @@ private function processParcHorsService(Equipment $equipment, array $data, Trans
         throw $e;
     }
 }
-
 /**
  * Approuver une demande de mise hors service depuis le parc
  */
@@ -4154,12 +4163,13 @@ public function approveParcHorsService(Request $request, TransitionApproval $app
     DB::beginTransaction();
 
     try {
+        // Validation ajustée - rendre le checklist optionnel ou avec valeurs par défaut
         $validated = $request->validate([
-            'checklist' => 'required|array',
-            'checklist.*' => 'boolean',
-            'checklist.verif_raison' => 'required|accepted',
-            'checklist.verif_justificatif' => 'required|accepted',
-            'checklist.verif_description' => 'required|accepted',
+            'checklist' => 'nullable|array',
+            'checklist.verif_diagnostic' => 'sometimes|accepted',
+            'checklist.verif_etat'       => 'sometimes|accepted',
+            'checklist.verif_cout'       => 'sometimes|accepted',
+            'checklist.verif_travaux'    => 'sometimes|accepted',
             'validation_notes' => 'nullable|string',
         ]);
 
@@ -4169,12 +4179,20 @@ public function approveParcHorsService(Request $request, TransitionApproval $app
         // Traiter la mise hors service
         $this->processParcHorsService($equipment, $data, $approval);
 
+        // Préparer les données de checklist
+        $checklistData = $validated['checklist'] ?? [
+            'verif_diagnostic' => false,
+            'verif_etat' => false,
+            'verif_cout' => false,
+            'verif_travaux' => false,
+        ];
+
         // Mettre à jour l'approbation
         $approval->update([
             'status' => 'approved',
             'approved_by' => $user->id,
             'approved_at' => now(),
-            'checklist_data' => json_encode($validated['checklist']),
+            'checklist_data' => json_encode($checklistData),
             'validation_notes' => $validated['validation_notes'] ?? null,
         ]);
 

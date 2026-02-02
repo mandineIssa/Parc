@@ -203,19 +203,19 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200" id="equipmentsTableBody">
-                    @forelse($equipments as $equipment)
-                    <tr class="equipment-row hover:bg-gray-50 transition-colors"
-                        data-id="{{ $equipment->id }}"
-                        data-nom="{{ strtolower($equipment->nom) }}"
-                        data-numero="{{ strtolower($equipment->numero_serie) }}"
-                        data-modele="{{ strtolower($equipment->modele) }}"
-                        data-marque="{{ strtolower($equipment->marque) }}"
-                        data-type="{{ strtolower($equipment->type) }}"
-                        data-etat="{{ strtolower($equipment->etat) }}"
-                        data-utilisateur="{{ strtolower($equipment->parc && $equipment->parc->utilisateur ? $equipment->parc->utilisateur->name : '') }}"
-                        data-localisation="{{ strtolower($equipment->localisation) }}"
-                        data-agence="{{ strtolower($equipment->agence->nom ?? '') }}">
+<tbody class="bg-white divide-y divide-gray-200" id="equipmentsTableBody">
+    @forelse($equipments as $equipment)
+    <tr class="equipment-row hover:bg-gray-50 transition-colors"
+        data-id="{{ $equipment->id }}"
+        data-nom="{{ strtolower($equipment->nom) }}"
+        data-numero="{{ strtolower($equipment->numero_serie) }}"
+        data-modele="{{ strtolower($equipment->modele) }}"
+        data-marque="{{ strtolower($equipment->marque) }}"
+        data-type="{{ strtolower($equipment->type) }}"
+        data-etat="{{ strtolower($equipment->etat) }}"
+        data-utilisateur="{{ strtolower($equipment->parc && $equipment->parc->utilisateur ? $equipment->parc->utilisateur->name : '') }}"
+        data-localisation="{{ strtolower($equipment->localisation) }}"
+        data-agence="{{ strtolower($equipment->agence->nom ?? '') }}">
                         <td class="px-6 py-4">
                             <div class="flex items-start">
                                 <div class="flex-shrink-0 h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center mr-3">
@@ -274,34 +274,39 @@
                         </td>
                         
                         <td class="px-6 py-4">
-                            @if($equipment->parc && $equipment->parc->utilisateur)
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-sm font-medium text-blue-600">
-                                        {{ substr($equipment->parc->utilisateur->name, 0, 1) }}
-                                    </span>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-gray-900 equipment-utilisateur">{{ $equipment->parc->utilisateur->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $equipment->parc->departement }}</div>
-                                </div>
-                            </div>
-                            @else
-                            <span class="text-gray-400 italic">Non affecté</span>
-                            @endif
-                        </td>
-                        
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                                </svg>
-                                <div>
-                                    <div class="font-medium text-gray-900 equipment-agence">{{ $equipment->agence->nom ?? 'Non assigné' }}</div>
-                                    <div class="text-sm text-gray-500 equipment-localisation">{{ $equipment->localisation }}</div>
-                                </div>
-                            </div>
-                        </td>
+    @if($equipment->parc)
+    <div class="flex items-center">
+        <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+            <span class="text-sm font-medium text-blue-600">
+                {{ substr($equipment->parc->utilisateur_nom ?? 'N', 0, 1) }}
+            </span>
+        </div>
+        <div>
+            <div class="font-medium text-gray-900 equipment-utilisateur">
+                {{ $equipment->parc->utilisateur_nom ?? 'N/A' }} {{ $equipment->parc->utilisateur_prenom ?? '' }}
+            </div>
+            <div class="text-sm text-gray-500">{{ $equipment->parc->department ?? 'N/A' }}</div>
+        </div>
+    </div>
+    @else
+    <span class="text-gray-400 italic">Non affecté</span>
+    @endif
+</td>
+                      <td class="px-6 py-4">
+    <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+        </svg>
+        <div>
+            <div class="font-medium text-gray-900 equipment-agence">
+                {{ $equipment->agency->nom ?? 'Non assigné' }}
+            </div>
+            <div class="text-sm text-gray-500 equipment-localisation">
+                {{ $equipment->parc->localisation ?? $equipment->localisation ?? 'N/A' }}
+            </div>
+        </div>
+    </div>
+</td>
                         
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ $equipment->date_livraison->format('d/m/Y') }}</div>
@@ -470,6 +475,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalEquipments = equipmentRows.length;
     let currentFilter = '';
     
+    // Filtrer les lignes
+equipmentRows.forEach(row => {
+    const nom = row.getAttribute('data-nom');
+    const numero = row.getAttribute('data-numero');
+    const modele = row.getAttribute('data-modele');
+    const marque = row.getAttribute('data-marque');
+    const type = row.getAttribute('data-type');
+    const etat = row.getAttribute('data-etat');
+    const utilisateur = row.getAttribute('data-utilisateur'); // Maintenant contient "nom prénom"
+    const localisation = row.getAttribute('data-localisation');
+    const agence = row.getAttribute('data-agence');
+    
+    // Reste du code...
+});
     // Fonction pour normaliser le texte (supprime les accents)
     function normalizeText(text) {
         return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
