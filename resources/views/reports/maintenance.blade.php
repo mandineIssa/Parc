@@ -626,6 +626,51 @@
         // Initialiser le premier graphique comme visible
         showChart('costEvolution');
     });
+    // AJAX pour filtrer sans rechargement
+document.querySelector('form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const params = new URLSearchParams(formData);
+    
+    // Afficher un indicateur de chargement
+    const loader = document.createElement('div');
+    loader.className = 'loading-indicator';
+    loader.innerHTML = 'Chargement des données...';
+    document.querySelector('.chart-container').prepend(loader);
+    
+    try {
+        const response = await fetch(`{{ route('reports.maintenance') }}?${params}`);
+        const html = await response.text();
+        
+        // Parser la réponse HTML
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Extraire les nouvelles données
+        const newMonths = JSON.parse(doc.querySelector('#months-data')?.textContent || '[]');
+        const newMonthlyCosts = JSON.parse(doc.querySelector('#monthly-costs-data')?.textContent || '[]');
+        
+        // Mettre à jour les graphiques
+        updateCharts(newMonths, newMonthlyCosts);
+        
+        // Mettre à jour le tableau aussi
+        updateTable(doc.querySelector('table tbody').innerHTML);
+        
+        loader.remove();
+    } catch (error) {
+        console.error('Erreur:', error);
+        loader.innerHTML = 'Erreur de chargement';
+    }
+});
+
+function updateCharts(months, monthlyCosts) {
+    if (window.costEvolutionChart) {
+        window.costEvolutionChart.data.labels = months;
+        window.costEvolutionChart.data.datasets[0].data = monthlyCosts;
+        window.costEvolutionChart.update();
+    }
+}
 </script>
 
 <style>
