@@ -10,8 +10,10 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use App\Models\User; // Pour technician si c'est un User
 use App\Models\Maintenance; // Assurez-vous que ce modèle existe
+use Carbon\Carbon; 
 
 class ReportController extends Controller
 {
@@ -715,7 +717,192 @@ public function maintenanceReport(Request $request)
             ];
         });
     
-    return view('reports.maintenance', compact('maintenances', 'stats', 'mostFailing'));
+    // ===========================================
+    // NOUVEAU : Graphique des coûts par mois
+    // ===========================================
+    
+    // Obtenir les 12 derniers mois
+    $months = collect();
+    $monthlyCosts = collect();
+    $monthlyCounts = collect();
+    
+    for ($i = 11; $i >= 0; $i--) {
+        $startOfMonth = Carbon::now()->subMonths($i)->startOfMonth();
+        $endOfMonth = Carbon::now()->subMonths($i)->endOfMonth();
+        
+        // Nom du mois (format: Jan 2024)
+        $monthName = $startOfMonth->translatedFormat('M Y');
+        $months->push($monthName);
+        
+        // Requête pour les coûts du mois avec filtres
+        $monthQuery = Maintenance::query();
+        
+        // Appliquer les mêmes filtres que le tableau principal
+        if ($request->filled('type_maintenance')) {
+            $monthQuery->where('type_maintenance', $request->type_maintenance);
+        }
+        
+        if ($request->filled('statut')) {
+            $monthQuery->where('statut', $request->statut);
+        }
+        
+        if ($request->filled('date_from')) {
+            $monthQuery->where('date_depart', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $monthQuery->where('date_depart', '<=', $request->date_to);
+        }
+        
+        // Filtrer pour le mois spécifique
+        $monthQuery->whereBetween('date_depart', [$startOfMonth, $endOfMonth]);
+        
+        // Calculer le coût total du mois
+        $monthlyCost = $monthQuery->sum('cout');
+        $monthlyCosts->push($monthlyCost);
+        
+        // Calculer le nombre d'interventions du mois
+        $monthlyCount = $monthQuery->count();
+        $monthlyCounts->push($monthlyCount);
+    }
+    
+    // ===========================================
+    // Graphique par type de maintenance
+    // ===========================================
+    
+    // Utiliser les types disponibles dans votre base de données
+    $availableTypes = Maintenance::distinct('type_maintenance')->pluck('type_maintenance')->toArray();
+    $types = !empty($availableTypes) ? $availableTypes : ['Préventive', 'Curative', 'Corrective', 'Prédictive'];
+    
+    $costsByType = [];
+    $countsByType = [];
+    
+    foreach ($types as $type) {
+        $typeQuery = Maintenance::where('type_maintenance', $type);
+        
+        // Appliquer les filtres
+        if ($request->filled('statut')) {
+            $typeQuery->where('statut', $request->statut);
+        }
+        
+        if ($request->filled('date_from')) {
+            $typeQuery->where('date_depart', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $typeQuery->where('date_depart', '<=', $request->date_to);
+        }
+        
+        $costsByType[$type] = $typeQuery->sum('cout');
+        $countsByType[$type] = $typeQuery->count();
+    }
+    
+    // ===========================================
+    // Graphique par statut
+    // ===========================================
+    
+    $statuses = ['en_cours', 'termine', 'terminee', 'planifie', 'annule'];
+    $statusLabels = [
+        'en_cours' => 'En Cours',
+        'termine' => 'Terminé',
+        'terminee' => 'Terminée',
+        'planifie' => 'Planifié',
+        'annule' => 'Annulé'
+    ];
+    
+    $costsByStatus = [];
+    $countsByStatus = [];
+    
+    foreach ($statuses as $status) {
+        $statusQuery = Maintenance::where('statut', $status);
+        
+        // Appliquer les filtres
+        if ($request->filled('type_maintenance')) {
+            $statusQuery->where('type_maintenance', $request->type_maintenance);
+        }
+        
+        if ($request->filled('date_from')) {
+            $statusQuery->where('date_depart', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $statusQuery->where('date_depart', '<=', $request->date_to);
+        }
+        
+        $costsByStatus[$status] = $statusQuery->sum('cout');
+        $countsByStatus[$status] = $statusQuery->count();
+    }
+    
+    // ===========================================
+    // Graphique des coûts par prestataire (si colonne existe)
+    // ===========================================
+    
+    $costsByPrestataire = [];
+    $countsByPrestataire = [];
+    
+    if (Schema::hasColumn('maintenance', 'prestataire')) {
+        $prestataires = Maintenance::select('prestataire')
+            ->whereNotNull('prestataire')
+            ->where('prestataire', '!=', '')
+            ->distinct()
+            ->pluck('prestataire')
+            ->take(10); // Limiter à 10 prestataires principaux
+            
+        foreach ($prestataires as $prestataire) {
+            $prestataireQuery = Maintenance::where('prestataire', $prestataire);
+            
+            // Appliquer les filtres
+            if ($request->filled('type_maintenance')) {
+                $prestataireQuery->where('type_maintenance', $request->type_maintenance);
+            }
+            
+            if ($request->filled('statut')) {
+                $prestataireQuery->where('statut', $request->statut);
+            }
+            
+            if ($request->filled('date_from')) {
+                $prestataireQuery->where('date_depart', '>=', $request->date_from);
+            }
+            
+            if ($request->filled('date_to')) {
+                $prestataireQuery->where('date_depart', '<=', $request->date_to);
+            }
+            
+            $costsByPrestataire[$prestataire] = $prestataireQuery->sum('cout');
+            $countsByPrestataire[$prestataire] = $prestataireQuery->count();
+        }
+        
+        // Trier par coût décroissant
+        arsort($costsByPrestataire);
+    }
+    
+    // Retourner la vue avec toutes les données
+    return view('reports.maintenance', [
+        'maintenances' => $maintenances,
+        'stats' => $stats,
+        'mostFailing' => $mostFailing,
+        
+        // Nouvelles données pour les graphiques
+        'months' => $months,
+        'monthlyCosts' => $monthlyCosts,
+        'monthlyCounts' => $monthlyCounts,
+        
+        'types' => $types,
+        'costsByType' => $costsByType,
+        'countsByType' => $countsByType,
+        
+        'statuses' => $statuses,
+        'statusLabels' => $statusLabels,
+        'costsByStatus' => $costsByStatus,
+        'countsByStatus' => $countsByStatus,
+        
+        'costsByPrestataire' => $costsByPrestataire,
+        'countsByPrestataire' => $countsByPrestataire,
+        'hasPrestataireColumn' => Schema::hasColumn('maintenance', 'prestataire'),
+        
+        // Passer les filtres pour les forms
+        'filters' => $request->all(),
+    ]);
 }
     
     /**

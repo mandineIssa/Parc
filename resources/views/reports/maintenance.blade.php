@@ -43,11 +43,11 @@
         <h2 class="text-xl font-bold text-cofina-red mb-4">🔍 Filtres de Recherche</h2>
         <form method="GET" action="{{ route('reports.maintenance') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-                <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                <select name="type" id="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cofina-red focus:border-transparent">
+                <label for="type_maintenance" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <select name="type_maintenance" id="type_maintenance" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cofina-red focus:border-transparent">
                     <option value="">Tous les types</option>
-                    @foreach(['Préventive', 'Curative', 'Corrective', 'Prédictive'] as $typeOption)
-                        <option value="{{ $typeOption }}" {{ request('type') == $typeOption ? 'selected' : '' }}>{{ $typeOption }}</option>
+                    @foreach($types as $typeOption)
+                        <option value="{{ $typeOption }}" {{ request('type_maintenance') == $typeOption ? 'selected' : '' }}>{{ $typeOption }}</option>
                     @endforeach
                 </select>
             </div>
@@ -93,6 +93,94 @@
         </form>
     </div>
 
+    <!-- Graphiques de maintenance -->
+    <div class="card-cofina mb-6">
+        <h2 class="text-xl font-bold text-cofina-red mb-4">📈 Statistiques de Maintenance</h2>
+        
+        <!-- Sélecteur de graphique -->
+        <div class="mb-6">
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="showChart('costEvolution')" class="chart-btn active" id="btn-costEvolution">
+                    Évolution des Coûts
+                </button>
+                <button onclick="showChart('costByType')" class="chart-btn" id="btn-costByType">
+                    Coût par Type
+                </button>
+                <button onclick="showChart('costByStatus')" class="chart-btn" id="btn-costByStatus">
+                    Coût par Statut
+                </button>
+                <button onclick="showChart('interventionsByMonth')" class="chart-btn" id="btn-interventionsByMonth">
+                    Interventions par Mois
+                </button>
+                @if($hasPrestataireColumn && count($costsByPrestataire) > 0)
+                <button onclick="showChart('costByPrestataire')" class="chart-btn" id="btn-costByPrestataire">
+                    Coût par Prestataire
+                </button>
+                @endif
+            </div>
+        </div>
+
+        <!-- Conteneur des graphiques -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Graphique 1: Évolution des coûts -->
+            <div class="chart-container" id="chart-costEvolution">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">📈 Évolution des Coûts (12 derniers mois)</h3>
+                    <canvas id="costEvolutionChart" height="250"></canvas>
+                    <div class="mt-4 text-sm text-gray-600">
+                        <p>Coût total sur 12 mois: <strong>{{ number_format(array_sum($monthlyCosts->toArray()), 0, ',', ' ') }} FCFA</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphique 2: Coût par type -->
+            <div class="chart-container hidden" id="chart-costByType">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">🔧 Coût par Type de Maintenance</h3>
+                    <canvas id="costByTypeChart" height="250"></canvas>
+                    <div class="mt-4 text-sm text-gray-600">
+                        <p>Coût moyen par intervention: <strong>{{ number_format($stats['cout_moyen'], 0, ',', ' ') }} FCFA</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphique 3: Coût par statut -->
+            <div class="chart-container hidden" id="chart-costByStatus">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">📊 Coût par Statut d'Intervention</h3>
+                    <canvas id="costByStatusChart" height="250"></canvas>
+                    <div class="mt-4 text-sm text-gray-600">
+                        <p>Taux de complétion: <strong>{{ $stats['total'] > 0 ? round(($stats['termines'] / $stats['total']) * 100, 1) : 0 }}%</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphique 4: Interventions par mois -->
+            <div class="chart-container hidden" id="chart-interventionsByMonth">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">📅 Interventions par Mois</h3>
+                    <canvas id="interventionsByMonthChart" height="250"></canvas>
+                    <div class="mt-4 text-sm text-gray-600">
+                        <p>Total d'interventions sur 12 mois: <strong>{{ array_sum($monthlyCounts->toArray()) }}</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphique 5: Coût par prestataire -->
+            @if($hasPrestataireColumn && count($costsByPrestataire) > 0)
+            <div class="chart-container hidden" id="chart-costByPrestataire">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">👥 Coût par Prestataire</h3>
+                    <canvas id="costByPrestataireChart" height="250"></canvas>
+                    <div class="mt-4 text-sm text-gray-600">
+                        <p>Nombre de prestataires: <strong>{{ count($costsByPrestataire) }}</strong></p>
+                    </div>
+                </div>
+            </div>
+            @endif
+        </div>
+    </div>
+
     <!-- Tableau des maintenances -->
     <div class="card-cofina mb-6">
         <h2 class="text-xl font-bold text-cofina-red mb-4">📋 Liste des Interventions de Maintenance</h2>
@@ -129,41 +217,38 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
-                                {{ $maintenance->type ?? 'Non spécifié' }}
+                                {{ $maintenance->type_maintenance ?? 'Non spécifié' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm">{{ $maintenance->date_intervention ? $maintenance->date_intervention->format('d/m/Y') : 'N/A' }}</div>
-                            @if($maintenance->date_fin_prevue)
-                                <div class="text-xs text-gray-500">Fin: {{ $maintenance->date_fin_prevue->format('d/m/Y') }}</div>
+                            <div class="text-sm">{{ $maintenance->date_depart ? \Carbon\Carbon::parse($maintenance->date_depart)->format('d/m/Y') : 'N/A' }}</div>
+                            @if($maintenance->date_retour_prevue)
+                                <div class="text-xs text-gray-500">Fin: {{ \Carbon\Carbon::parse($maintenance->date_retour_prevue)->format('d/m/Y') }}</div>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($maintenance->technician)
-                                {{ $maintenance->technician->name }}
-                            @else
-                                <span class="text-gray-400">Non assigné</span>
-                            @endif
+                            {{ $maintenance->prestataire ?? 'Non spécifié' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
                                 $statutColors = [
                                     'en_cours' => 'bg-yellow-100 text-yellow-800',
                                     'termine' => 'bg-green-100 text-green-800',
+                                    'terminee' => 'bg-green-100 text-green-800',
                                     'planifie' => 'bg-blue-100 text-blue-800',
                                     'annule' => 'bg-red-100 text-red-800',
                                 ];
                             @endphp
                             <span class="px-2 py-1 text-xs rounded-full {{ $statutColors[$maintenance->statut] ?? 'bg-gray-100 text-gray-800' }}">
-                                {{ ucfirst(str_replace('_', ' ', $maintenance->statut)) }}
+                                {{ $statusLabels[$maintenance->statut] ?? ucfirst(str_replace('_', ' ', $maintenance->statut)) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap font-bold {{ $maintenance->cout > 0 ? 'text-red-600' : 'text-gray-500' }}">
                             {{ number_format($maintenance->cout, 0, ',', ' ') }} FCFA
                         </td>
                         <td class="px-6 py-4">
-                            <div class="max-w-xs truncate" title="{{ $maintenance->description }}">
-                                {{ Str::limit($maintenance->description, 50) }}
+                            <div class="max-w-xs truncate" title="{{ $maintenance->description_panne ?? $maintenance->description }}">
+                                {{ Str::limit($maintenance->description_panne ?? $maintenance->description, 50) }}
                             </div>
                         </td>
                     </tr>
@@ -222,71 +307,24 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             @php
-                                $lastMaintenance = \App\Models\Maintenance::where('equipment_id', 
-                                    \App\Models\Equipment::where('numero_serie', explode(' - ', $item['equipment'])[1] ?? '')->first()?->id ?? 0)
-                                    ->latest('date_intervention')
+                                // Solution simplifiée : chercher par numéro de série
+                                $serial = $item['numero_serie'] ?? '';
+                                if (empty($serial) && str_contains($item['equipment'] ?? '', ' - ')) {
+                                    $parts = explode(' - ', $item['equipment']);
+                                    $serial = end($parts);
+                                }
+                                
+                                $lastMaintenance = \App\Models\Maintenance::where('numero_serie', $serial)
+                                    ->latest('date_depart')
                                     ->first();
                             @endphp
-                            {{ $lastMaintenance && $lastMaintenance->date_intervention ? $lastMaintenance->date_intervention->format('d/m/Y') : 'N/A' }}
+                            {{ $lastMaintenance && $lastMaintenance->date_depart ? 
+                                \Carbon\Carbon::parse($lastMaintenance->date_depart)->format('d/m/Y') : 'N/A' }}
                         </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
-    </div>
-    @endif
-
-    <!-- Graphique des coûts par mois -->
-    <div class="card-cofina">
-        <h2 class="text-xl font-bold text-cofina-red mb-4">📈 Évolution des Coûts de Maintenance</h2>
-        <div class="text-center py-8 text-gray-500">
-            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            <p>Les données pour le graphique d'évolution des coûts ne sont pas encore disponibles.</p>
-            <p class="text-sm mt-2">Cette fonctionnalité sera bientôt implémentée.</p>
-        </div>
-    </div>
-
-    <!-- Résumé des filtres -->
-    @if(request()->hasAny(['type', 'statut', 'date_from', 'date_to']))
-    <div class="card-cofina mt-6">
-        <h2 class="text-xl font-bold text-cofina-red mb-4">📌 Filtres Actifs</h2>
-        <div class="flex flex-wrap gap-2">
-            @if(request('type'))
-                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                    Type: {{ request('type') }}
-                    <a href="{{ route('reports.maintenance', array_merge(request()->except('type'), ['type' => ''])) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
-                </span>
-            @endif
-            
-            @if(request('statut'))
-                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                    Statut: {{ ucfirst(str_replace('_', ' ', request('statut'))) }}
-                    <a href="{{ route('reports.maintenance', array_merge(request()->except('statut'), ['statut' => ''])) }}" class="ml-1 text-green-600 hover:text-green-800">×</a>
-                </span>
-            @endif
-            
-            @if(request('date_from'))
-                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
-                    Début: {{ \Carbon\Carbon::parse(request('date_from'))->format('d/m/Y') }}
-                    <a href="{{ route('reports.maintenance', array_merge(request()->except('date_from'), ['date_from' => ''])) }}" class="ml-1 text-yellow-600 hover:text-yellow-800">×</a>
-                </span>
-            @endif
-            
-            @if(request('date_to'))
-                <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                    Fin: {{ \Carbon\Carbon::parse(request('date_to'))->format('d/m/Y') }}
-                    <a href="{{ route('reports.maintenance', array_merge(request()->except('date_to'), ['date_to' => ''])) }}" class="ml-1 text-purple-600 hover:text-purple-800">×</a>
-                </span>
-            @endif
-            
-            @if(request()->hasAny(['type', 'statut', 'date_from', 'date_to']))
-                <a href="{{ route('reports.maintenance') }}" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200">
-                    Effacer tous les filtres
-                </a>
-            @endif
         </div>
     </div>
     @endif
@@ -296,8 +334,328 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Vous pouvez ajouter du JavaScript pour les graphiques ici
-        // lorsqu'ils seront implémentés dans le contrôleur
+        // Variables PHP converties en JavaScript
+        const months = @json($months);
+        const monthlyCosts = @json($monthlyCosts);
+        const monthlyCounts = @json($monthlyCounts);
+        
+        const types = @json($types);
+        const costsByType = @json($costsByType);
+        const countsByType = @json($countsByType);
+        
+        const statuses = @json($statuses);
+        const statusLabels = @json($statusLabels);
+        const costsByStatus = @json($costsByStatus);
+        const countsByStatus = @json($countsByStatus);
+        
+        const costsByPrestataire = @json($costsByPrestataire);
+        const countsByPrestataire = @json($countsByPrestataire);
+        
+        // Couleurs pour les graphiques
+        const colors = {
+            primary: '#3B82F6',    // Blue
+            success: '#10B981',    // Green
+            warning: '#F59E0B',    // Yellow
+            danger: '#EF4444',     // Red
+            info: '#8B5CF6',       // Purple
+            secondary: '#6B7280'   // Gray
+        };
+
+        // ===========================================
+        // 1. Graphique d'évolution des coûts
+        // ===========================================
+        const costEvolutionCtx = document.getElementById('costEvolutionChart')?.getContext('2d');
+        if (costEvolutionCtx) {
+            const costEvolutionChart = new Chart(costEvolutionCtx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Coût mensuel (FCFA)',
+                        data: monthlyCosts,
+                        borderColor: colors.danger,
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Coût: ${context.raw.toLocaleString()} FCFA`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' FCFA';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===========================================
+        // 2. Graphique des coûts par type
+        // ===========================================
+        const costByTypeCtx = document.getElementById('costByTypeChart')?.getContext('2d');
+        if (costByTypeCtx) {
+            const costByTypeChart = new Chart(costByTypeCtx, {
+                type: 'bar',
+                data: {
+                    labels: types,
+                    datasets: [{
+                        label: 'Coût total (FCFA)',
+                        data: types.map(type => costsByType[type] || 0),
+                        backgroundColor: [
+                            colors.primary,
+                            colors.success,
+                            colors.warning,
+                            colors.info,
+                            colors.secondary
+                        ],
+                        borderColor: [
+                            colors.primary,
+                            colors.success,
+                            colors.warning,
+                            colors.info,
+                            colors.secondary
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Coût: ${context.raw.toLocaleString()} FCFA`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' FCFA';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===========================================
+        // 3. Graphique des coûts par statut
+        // ===========================================
+        const costByStatusCtx = document.getElementById('costByStatusChart')?.getContext('2d');
+        if (costByStatusCtx) {
+            const costByStatusChart = new Chart(costByStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statuses.map(status => statusLabels[status]),
+                    datasets: [{
+                        data: statuses.map(status => costsByStatus[status] || 0),
+                        backgroundColor: [
+                            colors.warning,   // en_cours
+                            colors.success,   // termine/terminee
+                            colors.primary,   // planifie
+                            colors.danger,    // annule
+                            colors.info       // autres
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${context.label}: ${value.toLocaleString()} FCFA (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===========================================
+        // 4. Graphique des interventions par mois
+        // ===========================================
+        const interventionsByMonthCtx = document.getElementById('interventionsByMonthChart')?.getContext('2d');
+        if (interventionsByMonthCtx) {
+            const interventionsByMonthChart = new Chart(interventionsByMonthCtx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Nombre d\'interventions',
+                        data: monthlyCounts,
+                        backgroundColor: colors.info,
+                        borderColor: colors.info,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===========================================
+        // 5. Graphique des coûts par prestataire
+        // ===========================================
+        const costByPrestataireCtx = document.getElementById('costByPrestataireChart')?.getContext('2d');
+        if (costByPrestataireCtx && Object.keys(costsByPrestataire).length > 0) {
+            const prestataireLabels = Object.keys(costsByPrestataire);
+            const prestataireCosts = Object.values(costsByPrestataire);
+            const prestataireCounts = Object.values(countsByPrestataire);
+            
+            const costByPrestataireChart = new Chart(costByPrestataireCtx, {
+                type: 'bar',
+                data: {
+                    labels: prestataireLabels,
+                    datasets: [{
+                        label: 'Coût total (FCFA)',
+                        data: prestataireCosts,
+                        backgroundColor: colors.primary,
+                        borderColor: colors.primary,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const prestataire = prestataireLabels[context.dataIndex];
+                                    const cost = context.raw;
+                                    const count = prestataireCounts[context.dataIndex];
+                                    return `${prestataire}: ${cost.toLocaleString()} FCFA (${count} interventions)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' FCFA';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===========================================
+        // Fonctions pour changer de graphique
+        // ===========================================
+        function showChart(chartName) {
+            // Cacher tous les conteneurs de graphiques
+            document.querySelectorAll('.chart-container').forEach(container => {
+                container.classList.add('hidden');
+            });
+            
+            // Désactiver tous les boutons
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Afficher le graphique sélectionné
+            const chartElement = document.getElementById(`chart-${chartName}`);
+            const btnElement = document.getElementById(`btn-${chartName}`);
+            
+            if (chartElement) {
+                chartElement.classList.remove('hidden');
+            }
+            if (btnElement) {
+                btnElement.classList.add('active');
+            }
+        }
+        
+        // Initialiser le premier graphique comme visible
+        showChart('costEvolution');
     });
 </script>
+
+<style>
+    .chart-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        background-color: #f3f4f6;
+        color: #4b5563;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .chart-btn:hover {
+        background-color: #e5e7eb;
+    }
+    
+    .chart-btn.active {
+        background-color: #dc2626;
+        color: white;
+    }
+    
+    .chart-container {
+        transition: opacity 0.3s ease;
+    }
+    
+    .chart-container.hidden {
+        display: none;
+    }
+</style>
 @endsection
