@@ -270,6 +270,33 @@ class RoleManager {
         }
     }
     
+    // Helper pour vérifier si un élément est lié à la déconnexion
+    isLogoutElement(element) {
+        if (!element) return false;
+        
+        // Vérifier l'élément lui-même
+        const href = element.getAttribute?.('href') || element.href || '';
+        const action = element.getAttribute?.('action') || element.action || '';
+        const dataAction = element.getAttribute?.('data-action') || '';
+        
+        if (href.includes('/logout') || 
+            action.includes('/logout') || 
+            dataAction === 'logout' ||
+            element.classList?.contains('logout-btn') ||
+            element.classList?.contains('logout-link') ||
+            element.classList?.contains('logout-form')) {
+            return true;
+        }
+        
+        // Vérifier les parents proches
+        const closestLogoutForm = element.closest?.('form[action*="/logout"]');
+        const closestLogoutLink = element.closest?.('a[href*="/logout"]');
+        const closestLogoutBtn = element.closest?.('.logout-btn, .logout-link, .logout-form');
+        const closestDataAction = element.closest?.('[data-action="logout"]');
+        
+        return !!(closestLogoutForm || closestLogoutLink || closestLogoutBtn || closestDataAction);
+    }
+    
     // ==================== GESTION DE L'INTERFACE ====================
     
     checkCurrentRoute() {
@@ -358,40 +385,56 @@ class RoleManager {
         const selectors = elementsToHide[this.userRole] || [];
         selectors.forEach(selector => {
             document.querySelectorAll(selector).forEach(element => {
-                element.style.display = 'none';
+                // Ne pas cacher si c'est un élément de déconnexion
+                if (!this.isLogoutElement(element)) {
+                    element.style.display = 'none';
+                }
             });
         });
         
         // Cacher avec data-role
         document.querySelectorAll('[data-role]').forEach(element => {
-            const requiredRoles = element.getAttribute('data-role').split('|');
-            if (!this.hasRole(requiredRoles)) {
-                element.style.display = 'none';
+            if (!this.isLogoutElement(element)) {
+                const requiredRoles = element.getAttribute('data-role').split('|');
+                if (!this.hasRole(requiredRoles)) {
+                    element.style.display = 'none';
+                }
             }
         });
         
         // Cacher avec data-permission
         document.querySelectorAll('[data-permission]').forEach(element => {
-            const requiredPermission = element.getAttribute('data-permission');
-            if (!this.hasPermission(requiredPermission)) {
-                element.style.display = 'none';
+            if (!this.isLogoutElement(element)) {
+                const requiredPermission = element.getAttribute('data-permission');
+                if (!this.hasPermission(requiredPermission)) {
+                    element.style.display = 'none';
+                }
             }
         });
         
         // Cacher les boutons d'action selon le rôle
         this.hideActionButtonsByRole();
+        
+        // EXCEPTION : Forcer l'affichage des éléments de déconnexion
+        document.querySelectorAll('form[action*="/logout"], a[href*="/logout"], [data-action="logout"], .logout-btn, .logout-link, .logout-form').forEach(element => {
+            element.style.display = '';
+            element.style.visibility = 'visible';
+            element.style.opacity = '1';
+        });
     }
 
     hideActionButtonsByRole() {
         // Pour les utilisateurs : cacher TOUS les boutons CRUD
         if (this.hasRole('user')) {
             document.querySelectorAll('.btn-create, .btn-edit, .btn-delete, .btn-import, .btn-export').forEach(btn => {
-                btn.style.display = 'none';
+                if (!this.isLogoutElement(btn)) {
+                    btn.style.display = 'none';
+                }
             });
             
             // Cacher les liens de création
             document.querySelectorAll('a[href*="/create"], a[href*="/edit/"], a[href*="/delete/"]').forEach(link => {
-                if (!link.href.includes('/profile')) {
+                if (!this.isLogoutElement(link) && !link.href.includes('/profile')) {
                     link.style.display = 'none';
                 }
             });
@@ -401,7 +444,9 @@ class RoleManager {
         if (this.hasRole('agent_it')) {
             // Cacher les actions non autorisées
             document.querySelectorAll('.user-action, .settings-action, .admin-action').forEach(btn => {
-                btn.style.display = 'none';
+                if (!this.isLogoutElement(btn)) {
+                    btn.style.display = 'none';
+                }
             });
         }
     }
@@ -410,14 +455,20 @@ class RoleManager {
         // Désactiver les champs de formulaire pour les utilisateurs
         if (this.hasRole('user')) {
             document.querySelectorAll('input, select, textarea').forEach(field => {
-                if (!field.classList.contains('readonly-allowed')) {
+                if (!field.classList.contains('readonly-allowed') && !this.isLogoutElement(field)) {
                     field.disabled = true;
                     field.classList.add('readonly-field');
                 }
             });
             
-            // Désactiver les boutons de soumission
+            // Désactiver les boutons de soumission SAUF la déconnexion
             document.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(btn => {
+                if (this.isLogoutElement(btn)) {
+                    btn.disabled = false;
+                    btn.classList.remove('disabled-action');
+                    return;
+                }
+                
                 if (!btn.closest('form')?.classList.contains('profile-form')) {
                     btn.disabled = true;
                     btn.classList.add('disabled-action');
@@ -427,15 +478,23 @@ class RoleManager {
         
         // Désactiver selon data-readonly-if
         document.querySelectorAll('[data-readonly-if]').forEach(element => {
-            const condition = element.getAttribute('data-readonly-if');
-            if (this.evaluateCondition(condition)) {
-                element.disabled = true;
-                element.classList.add('readonly-field');
+            if (!this.isLogoutElement(element)) {
+                const condition = element.getAttribute('data-readonly-if');
+                if (this.evaluateCondition(condition)) {
+                    element.disabled = true;
+                    element.classList.add('readonly-field');
+                }
             }
         });
         
         // Désactiver selon data-requires
         document.querySelectorAll('button[data-requires], a[data-requires]').forEach(element => {
+            if (this.isLogoutElement(element)) {
+                element.disabled = false;
+                element.classList.remove('disabled-action');
+                return;
+            }
+            
             const requirement = element.getAttribute('data-requires');
             
             if (requirement.startsWith('role:')) {
@@ -463,24 +522,33 @@ class RoleManager {
     protectFormsAndButtons() {
         // Empêcher les soumissions de formulaire non autorisées
         document.querySelectorAll('form').forEach(form => {
+            // EXCEPTION : Ne jamais protéger les formulaires de déconnexion
+            if (this.isLogoutElement(form)) {
+                return;
+            }
+            
             if (!this.isFormAuthorized(form)) {
                 form.addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.showAccessDeniedAlert();
-                });
+                }, { capture: true });
                 
-                // Marquer le formulaire comme lecture seule
                 form.classList.add('readonly-form');
             }
         });
         
-        // Protéger les liens d'action
+        // Protéger les liens d'action SAUF déconnexion
         document.querySelectorAll('a[href*="/edit/"], a[href*="/delete/"], a[href*="/create"]').forEach(link => {
+            // EXCEPTION : Ne jamais protéger les liens de déconnexion
+            if (this.isLogoutElement(link)) {
+                return;
+            }
+            
             if (!this.isLinkAuthorized(link)) {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     this.showAccessDeniedAlert();
-                });
+                }, { capture: true });
                 link.classList.add('disabled-link');
             }
         });
@@ -488,6 +556,11 @@ class RoleManager {
 
     isFormAuthorized(form) {
         const formAction = form.getAttribute('action') || '';
+        
+        // Toujours autoriser les formulaires de déconnexion
+        if (formAction.includes('/logout')) {
+            return true;
+        }
         
         // Les utilisateurs ne peuvent soumettre que les formulaires de profil
         if (this.hasRole('user')) {
@@ -504,6 +577,11 @@ class RoleManager {
 
     isLinkAuthorized(link) {
         const href = link.getAttribute('href') || '';
+        
+        // Toujours autoriser les liens de déconnexion
+        if (href.includes('/logout')) {
+            return true;
+        }
         
         // Vérifier les actions CRUD
         if (href.includes('/create')) {
@@ -602,9 +680,14 @@ class RoleManager {
 
     setupProtectedClickHandlers() {
         document.addEventListener('click', (e) => {
+            // EXCEPTION : Toujours autoriser les clics sur la déconnexion
+            if (this.isLogoutElement(e.target)) {
+                return; // Laisser passer
+            }
+            
             const protectedElement = e.target.closest('[data-protected-click]');
             
-            if (protectedElement) {
+            if (protectedElement && !this.isLogoutElement(protectedElement)) {
                 const requirement = protectedElement.getAttribute('data-protected-click');
                 
                 if (requirement.startsWith('role:')) {
@@ -631,16 +714,14 @@ class RoleManager {
                 }
             }
             
-            // Empêcher les clics sur les éléments désactivés
-            if (e.target.classList.contains('disabled-action') || 
-                e.target.classList.contains('disabled-link') ||
-                e.target.closest('.disabled-action') ||
-                e.target.closest('.disabled-link')) {
+            // Empêcher les clics sur les éléments désactivés (sauf déconnexion)
+            const disabledElement = e.target.closest('.disabled-action, .disabled-link');
+            if (disabledElement && !this.isLogoutElement(disabledElement)) {
                 e.preventDefault();
                 e.stopPropagation();
                 this.showAccessDeniedAlert();
             }
-        });
+        }, { capture: true }); // Utiliser capture pour intercepter avant
     }
 
     showAccessDeniedAlert(message = null) {

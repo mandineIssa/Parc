@@ -62,13 +62,15 @@
                             <i class="fas fa-user mr-2"></i>Profil
                         </a>
                         
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" 
-                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
-                            </button>
-                        </form>
+                        <form method="POST" action="{{ route('logout') }}" class="logout-form">
+    @csrf
+    <button type="submit" 
+            class="logout-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+            data-action="logout">
+        <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+    </button>
+</form>
+                        
                     </div>
                 </div>
                 @endauth

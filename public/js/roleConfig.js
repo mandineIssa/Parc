@@ -169,6 +169,7 @@ const RoleConfig = {
             '/it', '/it/*',
             '/dashboard',
             '/profile',
+            '/logout',  // ← AJOUTER
             '/reports', '/reports/*',
             '/settings', '/settings/*',
             '/equipment', '/equipment/*',
@@ -185,6 +186,7 @@ const RoleConfig = {
             '/it', '/it/*',
             '/dashboard',
             '/profile',
+            '/logout',  // ← AJOUTER
             '/equipment', '/equipment/*',
             '/approvals', '/approvals/*',
             '/maintenance', '/maintenance/*',
@@ -194,6 +196,7 @@ const RoleConfig = {
         user: [
             '/dashboard',
             '/profile',
+            '/logout',  // ← AJOUTER
             '/equipment/my-equipment',
             '/requests/my-requests'
         ]

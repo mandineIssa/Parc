@@ -12,10 +12,13 @@
         "alpinejs": "^3.4.2",
         "autoprefixer": "^10.4.2",
         "axios": "^1.11.0",
+        "browser-sync": "^3.0.4",
+        "browser-sync-webpack-plugin": "^2.4.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^2.0.0",
         "postcss": "^8.4.31",
         "tailwindcss": "^3.4.19",
-        "vite": "^7.0.7"
+        "vite": "^7.0.7",
+        "vite-plugin-browser-sync": "^6.0.0"
     }
 }

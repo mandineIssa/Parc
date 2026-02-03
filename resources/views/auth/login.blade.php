@@ -176,7 +176,7 @@
         <div class="left-side">
             <div class="emoji">🎉</div>
             <div class="logo">GPI!</div>
-            <div class="tagline">Votre plateforme de Gestion de parc informatique</div>
+            <div class="tagline">Votre plateforme de Gestion du parc informatique</div>
             <p>Accédez à vos tableaux de bord, rapports et stockez vos equipments en toute sécurité.</p>
         </div>
         
@@ -207,7 +207,7 @@
                         required 
                         autofocus 
                         autocomplete="username"
-                        placeholder="cofina.support@cofina.com"
+                        placeholder="support@cofinacorp.com"
                     >
                     @error('email')
                         <div class="error-message">{{ $message }}</div>

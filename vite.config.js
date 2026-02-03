@@ -4,8 +4,26 @@ import laravel from 'laravel-vite-plugin';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
-            refresh: true,
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+            ],
+            refresh: [
+                'resources/**',
+                'app/**/*.php',
+                'routes/**/*.php',
+                'resources/views/**/*.blade.php',
+                'resources/js/**/*.js',
+                'resources/css/**/*.css',
+            ],
         }),
     ],
+    server: {
+        hmr: {
+            host: 'localhost',
+        },
+        watch: {
+            usePolling: true,
+        }
+    }
 });
