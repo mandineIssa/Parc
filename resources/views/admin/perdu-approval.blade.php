@@ -328,10 +328,7 @@
             
             @if($approval->status == 'approved')
             <div class="flex gap-4">
-                <a href="{{ route('transitions.download-approval', $approval) }}" 
-                   class="btn-cofina-outline inline-flex items-center">
-                    📄 Télécharger PDF
-                </a>
+                
                 <a href="{{ route('equipment.show', $approval->equipment) }}" 
                    class="btn-cofina inline-flex items-center">
                     👁️ Voir l'équipement

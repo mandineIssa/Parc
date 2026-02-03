@@ -16,6 +16,7 @@ use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Traits\HasRolePermissions;
 
 class EquipmentController extends Controller
 {
@@ -36,6 +37,7 @@ public function showTransition(Equipment $equipment)
     /**
      * Stocker un nouvel équipement (VERSION SIMPLIFIÉE MAIS FONCTIONNELLE)
      */
+    
   public function store(Request $request)
 {
     DB::beginTransaction();

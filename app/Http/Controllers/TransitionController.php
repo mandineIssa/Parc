@@ -19,6 +19,7 @@ use App\Models\Deceler;
 use App\Models\Ceceler;
 class TransitionController extends Controller
 {
+    
     /**
      * Afficher le formulaire de transition
      */
@@ -5324,4 +5325,6 @@ public function listMaintenanceHorsServiceApprovals(Request $request)
 
     return view('admin.maintenance-hors-service-list', compact('approvals'));
 }
+
+
 }

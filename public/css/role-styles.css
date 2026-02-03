@@ -1,0 +1,74 @@
+/* Styles spécifiques aux rôles */
+body.role-super_admin {
+    --role-color: #dc3545;
+    --role-bg: rgba(220, 53, 69, 0.1);
+}
+
+body.role-agent_it {
+    --role-color: #ffc107;
+    --role-bg: rgba(255, 193, 7, 0.1);
+}
+
+body.role-user {
+    --role-color: #0d6efd;
+    --role-bg: rgba(13, 110, 253, 0.1);
+}
+
+/* Badge de rôle */
+.role-badge {
+    font-size: 0.75em;
+    font-weight: 600;
+    padding: 0.25em 0.75em;
+    border-radius: 50px;
+}
+
+/* Éléments désactivés */
+.disabled-action {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+.readonly-field {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+/* Panels spécifiques aux rôles */
+.admin-panel {
+    border-left: 4px solid #dc3545;
+    background-color: rgba(220, 53, 69, 0.05);
+}
+
+.it-panel {
+    border-left: 4px solid #ffc107;
+    background-color: rgba(255, 193, 7, 0.05);
+}
+
+.user-panel {
+    border-left: 4px solid #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Icônes de rôle */
+.role-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    margin-right: 8px;
+    border-radius: 50%;
+}
+
+.role-icon.super_admin { background-color: #dc3545; }
+.role-icon.agent_it { background-color: #ffc107; }
+.role-icon.user { background-color: #0d6efd; }
+
+/* Classes pour masquer selon le rôle */
+.super-admin-only { display: none; }
+.agent-it-only { display: none; }
+.user-only { display: none; }
+
+body.role-super_admin .super-admin-only { display: block !important; }
+body.role-agent_it .agent-it-only { display: block !important; }
+body.role-user .user-only { display: block !important; }
+

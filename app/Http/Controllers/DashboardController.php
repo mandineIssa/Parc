@@ -29,7 +29,7 @@ class DashboardController extends Controller
         // Déterminer le dashboard approprié
         if (in_array($role, ['super_admin', 'admin', 'responsable_approbation']) || $user->email === 'superadmin@cofina.sn') {
             return redirect()->route('dashboards.index');
-        } elseif (in_array($role, ['agent_it', 'technicien', 'gestionnaire'])) {
+        } elseif (in_array($role, ['agent_it', 'technicien', 'user'])) {
             return redirect()->route('dashboards.agent');
         } else {
             return redirect()->route('dashboards.user');
@@ -83,7 +83,7 @@ class DashboardController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         // Vérifier les autorisations
-        if (!in_array($role, ['agent_it', 'technicien', 'gestionnaire'])) {
+        if (!in_array($role, ['agent_it', 'technicien', 'user'])) {
             abort(403, 'Accès non autorisé');
         }
 
@@ -146,7 +146,7 @@ class DashboardController extends Controller
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
             || $user->email === 'superadmin@cofina.sn';
 
-        $isAgent = in_array($role, ['agent_it', 'technicien', 'gestionnaire']);
+        $isAgent = in_array($role, ['agent_it', 'technicien', 'user']);
 
         // Si Super Admin → dashboard super admin
         if ($isSuperAdmin) {

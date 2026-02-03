@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->role === 'agent_it' || $this->isSuperAdmin();
     }
 
+    public function isUser()
+{
+    return $this->role === 'user';
+}
+
         /**
      * Vérifier si l'utilisateur peut gérer les utilisateurs
      */

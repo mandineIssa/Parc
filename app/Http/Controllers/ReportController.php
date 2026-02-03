@@ -11,10 +11,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\User; // Pour technician si c'est un User
-
+use App\Models\Maintenance; // Assurez-vous que ce modèle existe
 
 class ReportController extends Controller
 {
+    
     /**
      * Afficher le tableau de bord des rapports
      */

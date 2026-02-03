@@ -15,6 +15,7 @@
                     <a href="{{ route('dashboard.celer-informatique') }}" class="btn-cofina-outline">
                         ↩️ Retour
                     </a>
+                    
                     <a href="{{ route('equipment.edit', $equipment) }}" class="btn-cofina-outline bg-blue-50 border-blue-200 hover:bg-blue-100">
                         ✏️ Modifier
                     </a>

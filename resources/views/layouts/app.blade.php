@@ -1,16 +1,26 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-)
 <head>
-
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    
+    <!-- META TAGS POUR ROLE MANAGER -->
+    <meta name="user-role" content="{{ auth()->check() ? auth()->user()->role : 'guest' }}">
+    <meta name="user-data" content="{{ auth()->check() ? json_encode([
+        'id' => auth()->user()->id,
+        'name' => auth()->user()->name,
+        'email' => auth()->user()->email,
+        'departement' => auth()->user()->departement,
+        'fonction' => auth()->user()->fonction
+    ]) : '{}' }}">
+    
     <title>{{ config('app.name') }} - @yield('title', 'Gestion Parc Informatique')</title>
     <link rel="icon" type="image/png" href="{{ asset('images/cofina.png') }}">
-     <!-- #region -->
-       @stack('styles')
+    
+    <!-- CSS pour les rôles -->
+    <link href="{{ asset('css/role-styles.css') }}" rel="stylesheet">
+    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -19,16 +29,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Custom CSS -->
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
     <link href="{{ asset('css/agencies.css') }}" rel="stylesheet">
-    <!-- Dans le <head> -->
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/suppliers.css') }}" rel="stylesheet">
+    
+    <!-- AlpineJS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <!-- Tailwind CSS via CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- SweetAlert2 -->
@@ -36,58 +48,11 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
-<link rel="stylesheet" href="{{ asset('css/suppliers.css') }}">
-
-@auth
-    @if(auth()->user()->role === 'super_admin')
-        <li class="relative">
-            <a href="{{ route('admin.dashboard') }}" 
-               class="flex items-center px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-700 rounded-lg transition">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804l-1.121-1.121a3 3 0 01-1.121-2.122V6a3 3 0 013-3h5a3 3 0 013 3v1.5"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.378 21H18a3 3 0 003-3v-5a3 3 0 00-3-3h-1.5"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.378 15l-3.086 3.086a2 2 0 01-2.828 0L11 15"/>
-                </svg>
-                Super Admin
-                @php
-                    $pendingCount = \App\Models\TransitionApproval::where('status', 'pending')->count();
-                @endphp
-                @if($pendingCount > 0)
-                    <span class="ml-auto px-2 py-0.5 text-xs bg-red-500 text-white rounded-full">
-                        {{ $pendingCount }}
-                    </span>
-                @endif
-            </a>
-        </li>
-    @endif
-@endauth
-    <style>
-        :root {
-            --cofina-red: #e60012;
-            --cofina-gray: #f0f0f0;
-            --sidebar-width: 16rem;
-        }
-
-        .text-cofina-red { color: var(--cofina-red); }
-        .bg-cofina-red { background-color: var(--cofina-red); }
-        .border-cofina-gray { border-color: var(--cofina-gray); }
-        
-        .sidebar-active {
-            background-color: #e60012;
-            color: white;
-        }
-        
-        .sidebar-active:hover {
-            background-color: #cc0010;
-        }
-    </style>
     
     @stack('styles')
 </head>
 
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="bg-gray-50 min-h-screen flex flex-col role-{{ auth()->check() ? auth()->user()->role : 'guest' }}">
 
     <!-- Top Navigation -->
     @include('layouts.navigation')
@@ -111,6 +76,29 @@
                             <p class="mt-2 text-sm sm:text-base text-gray-600 max-w-3xl break-words">
                                 @yield('subheader')
                             </p>
+                        @endif
+                    </div>
+                    
+                    <!-- Badge de rôle -->
+                    <div id="role-badge-container" class="hidden sm:block">
+                        @if(auth()->check())
+                            @php
+                                $roleColors = [
+                                    'super_admin' => 'danger',
+                                    'agent_it' => 'warning',
+                                    'user' => 'primary'
+                                ];
+                                $roleNames = [
+                                    'super_admin' => 'Super Admin',
+                                    'agent_it' => 'Agent IT',
+                                    'user' => 'Utilisateur'
+                                ];
+                                $color = $roleColors[auth()->user()->role] ?? 'secondary';
+                                $name = $roleNames[auth()->user()->role] ?? auth()->user()->role;
+                            @endphp
+                            <span class="badge bg-{{ $color }} role-badge">
+                                {{ $name }}
+                            </span>
                         @endif
                     </div>
                     
@@ -156,76 +144,112 @@
     <!-- Footer -->
     @include('layouts.footer')
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SCRIPTS ROLE MANAGER -->
+    <script src="{{ asset('js/roleConfig.js') }}"></script>
+    <script src="{{ asset('js/roleManager.js') }}"></script>
     
     <script>
-        // Toggle sidebar on mobile
-        const toggleSidebar = document.getElementById('toggle-sidebar');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        
-        toggleSidebar?.addEventListener('click', function() {
-            sidebar?.classList.toggle('-translate-x-full');
-            overlay?.classList.toggle('hidden');
-        });
-
-        // Close sidebar when clicking overlay
-        overlay?.addEventListener('click', function() {
-            sidebar?.classList.add('-translate-x-full');
-            this.classList.add('hidden');
-        });
-        
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            if (window.innerWidth < 1024) {
-                const isClickInsideSidebar = sidebar?.contains(event.target);
-                const isClickOnToggle = toggleSidebar?.contains(event.target);
-                
-                if (!isClickInsideSidebar && !isClickOnToggle && sidebar && !sidebar.classList.contains('-translate-x-full')) {
-                    sidebar.classList.add('-translate-x-full');
-                    overlay?.classList.add('hidden');
-                }
-            }
-        });
-
-        // Initialize tooltips
+        // Initialiser le RoleManager après le chargement du DOM
         document.addEventListener('DOMContentLoaded', function() {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
+            // Vérifier les routes
+            if (!window.RoleManager.checkCurrentRoute()) {
+                console.log('Redirection en cours...');
+                return;
+            }
+            
+            // Configurer les gestionnaires de clic protégés
+            window.RoleManager.setupProtectedClickHandlers();
+            
+            // Helper global pour vérifier les rôles
+            window.requireRole = function(role, callback) {
+                if (window.RoleManager.hasRole(role)) {
+                    callback();
+                } else {
+                    window.RoleManager.showAccessDeniedAlert();
+                }
+            };
+            
+            // Helper global pour vérifier les permissions
+            window.requirePermission = function(permission, callback) {
+                if (window.RoleManager.hasPermission(permission)) {
+                    callback();
+                } else {
+                    window.RoleManager.showAccessDeniedAlert();
+                }
+            };
+            
+            // Appliquer les règles d'interface
+            window.RoleManager.applyUIRules();
         });
-
-        // Handle flash messages with SweetAlert
-        @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Succès',
-                text: "{{ session('success') }}",
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
+        
+        // Bootstrap
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <script>
+            // Toggle sidebar on mobile
+            const toggleSidebar = document.getElementById('toggle-sidebar');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            toggleSidebar?.addEventListener('click', function() {
+                sidebar?.classList.toggle('-translate-x-full');
+                overlay?.classList.toggle('hidden');
             });
-        @endif
 
-        @if(session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Erreur',
-                text: "{{ session('error') }}",
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 4000,
-                timerProgressBar: true,
+            overlay?.addEventListener('click', function() {
+                sidebar?.classList.add('-translate-x-full');
+                this.classList.add('hidden');
             });
-        @endif
-    </script>
-    
-    @stack('scripts')
+            
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth < 1024) {
+                    const isClickInsideSidebar = sidebar?.contains(event.target);
+                    const isClickOnToggle = toggleSidebar?.contains(event.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnToggle && sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                        sidebar.classList.add('-translate-x-full');
+                        overlay?.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Tooltips
+            document.addEventListener('DOMContentLoaded', function() {
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            });
+
+            // SweetAlert pour les flash messages
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Succès',
+                    text: "{{ session('success') }}",
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: "{{ session('error') }}",
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true,
+                });
+            @endif
+        </script>
+        
+        @stack('scripts')
 
 </body>
 </html>

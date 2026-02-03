@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 
 class SousCategorieController extends Controller
 {
+    
     public function index()
     {
         $sousCategories = SousCategorie::with('categorie')->paginate(15);

@@ -189,14 +189,103 @@
                         </td>
                         
                         <!-- Type -->
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <!-- <td class="px-6 py-4 whitespace-nowrap">
                             @if($stock->equipment)
                                 <div class="font-medium text-gray-900">{{ $stock->equipment->type ?? 'Réseau' }}</div>
                                 <div class="text-xs text-gray-500 stock-categorie">{{ $stock->equipment->categorie ?? '' }}</div>
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
-                        </td>
+                        </td> -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+    @if($stock->equipment)
+        <div class="flex items-center gap-3">
+            {{-- Icône selon le type --}}
+            <div class="flex-shrink-0">
+                @php
+                    $type = strtolower($stock->equipment->type ?? 'autre');
+                    $iconClass = 'w-10 h-10 rounded-lg flex items-center justify-center';
+                    $icon = 'fas fa-laptop';
+                    $bgColor = 'bg-blue-100 text-blue-600';
+                    
+                    if (str_contains($type, 'réseau') || str_contains($type, 'network')) {
+                        $icon = 'fas fa-network-wired';
+                        $bgColor = 'bg-purple-100 text-purple-600';
+                    } elseif (str_contains($type, 'serveur') || str_contains($type, 'server')) {
+                        $icon = 'fas fa-server';
+                        $bgColor = 'bg-green-100 text-green-600';
+                    } elseif (str_contains($type, 'ordinateur') || str_contains($type, 'pc')) {
+                        $icon = 'fas fa-desktop';
+                        $bgColor = 'bg-blue-100 text-blue-600';
+                    } elseif (str_contains($type, 'imprimante') || str_contains($type, 'printer')) {
+                        $icon = 'fas fa-print';
+                        $bgColor = 'bg-gray-100 text-gray-600';
+                    } elseif (str_contains($type, 'téléphone') || str_contains($type, 'phone')) {
+                        $icon = 'fas fa-phone';
+                        $bgColor = 'bg-indigo-100 text-indigo-600';
+                    }
+                @endphp
+                
+                <div class="{{ $iconClass }} {{ $bgColor }}">
+                    <i class="{{ $icon }}"></i>
+                </div>
+            </div>
+            
+            {{-- Informations --}}
+            <div class="flex-1 min-w-0">
+                {{-- Type d'équipement --}}
+                <div class="font-semibold text-gray-900 truncate">
+                    {{ ucfirst($stock->equipment->type ?? 'Non spécifié') }}
+                </div>
+                
+                {{-- Catégorie --}}
+                @php
+                    $categorie = null;
+                    $categorieNom = 'Non catégorisé';
+                    
+                    // Si categorie est un objet ou un tableau
+                    if (is_object($stock->equipment->categorie)) {
+                        $categorieNom = $stock->equipment->categorie->nom ?? 
+                                       $stock->equipment->categorie->name ?? 
+                                       'Non catégorisé';
+                    } 
+                    // Si categorie est une chaîne JSON
+                    elseif (is_string($stock->equipment->categorie) && str_starts_with($stock->equipment->categorie, '{')) {
+                        $categorieData = json_decode($stock->equipment->categorie, true);
+                        $categorieNom = $categorieData['nom'] ?? $categorieData['name'] ?? 'Non catégorisé';
+                    }
+                    // Si categorie est un ID
+                    elseif (is_numeric($stock->equipment->categorie)) {
+                        $categorie = \App\Models\Category::find($stock->equipment->categorie);
+                        $categorieNom = $categorie->nom ?? $categorie->name ?? 'Non catégorisé';
+                    }
+                    // Si categorie est déjà un nom
+                    elseif (is_string($stock->equipment->categorie)) {
+                        $categorieNom = $stock->equipment->categorie;
+                    }
+                @endphp
+                
+                <div class="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                    <i class="fas fa-tag text-gray-400"></i>
+                    <span class="truncate">{{ $categorieNom }}</span>
+                </div>
+                
+                {{-- Quantité si disponible --}}
+                @if(isset($stock->quantite) && $stock->quantite > 1)
+                    <div class="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                        <i class="fas fa-boxes text-gray-400"></i>
+                        <span>Qty: {{ $stock->quantite }}</span>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @else
+        <div class="flex items-center justify-center text-gray-400">
+            <i class="fas fa-minus-circle mr-2"></i>
+            <span>Non assigné</span>
+        </div>
+    @endif
+</td>
                         
                         <!-- État retour -->
                         <td class="px-6 py-4 whitespace-nowrap">
