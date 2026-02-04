@@ -8,27 +8,33 @@
         <h1 class="text-3xl font-bold text-gray-900 mb-8">Modifier l'Équipement #{{ $equipment->numero_serie }}</h1>
         
         <div class="bg-white rounded-lg shadow-lg p-8">
-            <form action="{{ route('equipment.update', $equipment->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                
-                <!-- Informations de base -->
-                <div class="mb-8 pb-8 border-b">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-6">Informations de base</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- N° Série (lecture seule) -->
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">N° Série</label>
-                            <input type="text" value="{{ $equipment->numero_serie }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
-                            <p class="text-xs text-gray-500 mt-1">Le numéro de série ne peut pas être modifié</p>
-                        </div>
-                        
-                        <!-- Type (lecture seule) -->
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Type</label>
-                            <input type="text" value="{{ $equipment->type }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
-                        </div>
+          <form action="{{ route('equipment.update', $equipment->id) }}" method="POST">
+    @csrf
+    @method('PUT')
+    
+    <!-- Champs cachés pour type et numéro de série -->
+    <input type="hidden" name="type" value="{{ $equipment->type }}">
+    <input type="hidden" name="numero_serie" value="{{ $equipment->numero_serie }}">
+    
+    <!-- Informations de base -->
+    <div class="mb-8 pb-8 border-b">
+        <h2 class="text-xl font-semibold text-gray-800 mb-6">Informations de base</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- N° Série (lecture seule) -->
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">N° Série</label>
+                <input type="text" value="{{ $equipment->numero_serie }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                <p class="text-xs text-gray-500 mt-1">Le numéro de série ne peut pas être modifié</p>
+            </div>
+            
+            <!-- Type (lecture seule) -->
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Type</label>
+                <input type="text" value="{{ $equipment->type }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
+            </div>
+            
+            <!-- reste du formulaire... -->
                         
                         <!-- Marque -->
                         <div>

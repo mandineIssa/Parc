@@ -292,7 +292,7 @@ public function showApprovalDetails(TransitionApproval $approval)
             'date_verification' => $dateVerification,
             'signature_verificateur' => $signatures['verificateur'],
             
-            'agence_nom' => $agenceNom ?? $data['departement'] ?? '',
+            'agence_nom' => $agenceNom ??'N/A',
             'date_application' => $dateApplication ?? $data['date_application'] ?? null,
             'date_installation' => $dateInstallation ?? $data['date_installation'] ?? null,
             'sn' => $approval->equipment->numero_serie ?? '',

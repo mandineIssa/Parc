@@ -384,7 +384,7 @@
 <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
     <label class="block font-bold text-lg mb-2 text-cofina-red">NOM DE L'AGENCE : *</label>
     <input type="text" name="agence_nom" id="agence_nom_hidden"
-           value="{{ $installationData['agence_nom'] ?? $formData['agence_nom'] ?? $affectationData['agence_nom'] ?? $formData['departement'] ?? '',}}"
+           value="{{ $installationData['agence_nom'] ?? $formData['agence_nom'] ?? $affectationData['agence_nom'] ?? $formData['departement'] ?? $data['agence_nom'] ??'',}}"
            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-bold text-lg"
            placeholder="Ex: SIÈGE, AGENCE NORD..." required>
 </div>

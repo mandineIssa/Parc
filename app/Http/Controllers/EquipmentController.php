@@ -124,6 +124,104 @@ public function showTransition(Equipment $equipment)
             ->withInput();
     }
 }
+public function update(Request $request, $id)
+{
+    DB::beginTransaction();
+    
+    try {
+        // Find the equipment
+        $equipment = Equipment::findOrFail($id);
+        
+        // 1. VALIDATION DES DONNÉES DE BASE
+        $validated = $request->validate([
+            'type' => 'required|in:Réseau,Informatique,Électronique,Logiciel',
+            'numero_serie' => 'required|unique:equipment,numero_serie,' . $id,
+            'marque' => 'required_if:type,!=,Logiciel|string|max:255',
+            'modele' => 'required_if:type,!=,Logiciel|string|max:255',
+            'agency_id' => 'nullable|exists:agencies,id',
+            'localisation' => 'required|string|max:255',
+            'fournisseur_id' => 'nullable|exists:suppliers,id',
+            'date_livraison' => 'required|date',
+            'prix' => 'required|numeric|min:0',
+            'garantie' => 'required|string|max:100',
+            'reference_facture' => 'nullable|string|max:255',
+            'etat' => 'required|in:neuf,bon,moyen,mauvais',
+            'adresse_mac' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
+            'date_mise_service' => 'nullable|date',
+            'date_amortissement' => 'nullable|date',
+        ]);
+        
+        // 2. MISE À JOUR DE L'ÉQUIPEMENT
+        $equipment->update($validated);
+        
+        // 3. MISE À JOUR DES DÉTAILS
+        $detailsData = [
+            'categorie' => $request->categorie,
+            'sous_categorie' => $request->sous_categorie,
+            'contrat_maintenance' => $request->has('contrat_maintenance'),
+        ];
+        
+        // Ajouter les champs spécifiques selon le type
+        switch ($request->type) {
+            case 'Réseau':
+                $detailsData['etat_specifique'] = $request->input('etat_reseau');
+                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip');
+                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac');
+                break;
+                
+            case 'Électronique':
+                $detailsData['etat_specifique'] = $request->input('etat_electronique');
+                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_elec');
+                $detailsData['numero_codification_specifique'] = $request->input('numero_codification');
+                break;
+                
+            case 'Informatique':
+                $detailsData['etat_specifique'] = $request->input('etat_stock');
+                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_info');
+                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac_info');
+                $detailsData['departement_specifique'] = $request->input('departement');
+                $detailsData['poste_staff_specifique'] = $request->input('poste_staff');
+                break;
+        }
+        
+        // Contrat maintenance
+        if ($request->has('contrat_maintenance')) {
+            $detailsData['type_contrat'] = $request->input('type_contrat');
+            $detailsData['date_debut_contrat'] = $request->input('date_debut_contrat');
+            $detailsData['date_fin_contrat'] = $request->input('date_fin_contrat');
+            $detailsData['periodicite_maintenance'] = $request->input('periodicite_maintenance');
+        } else {
+            // Clear maintenance contract fields if checkbox is unchecked
+            $detailsData['type_contrat'] = null;
+            $detailsData['date_debut_contrat'] = null;
+            $detailsData['date_fin_contrat'] = null;
+            $detailsData['periodicite_maintenance'] = null;
+        }
+        
+        // Données spécifiques en JSON
+        $specificData = $this->extractSpecificData($request);
+        $detailsData['specific_data'] = json_encode($specificData);
+        
+        // Update or create equipment details
+        $equipment->details()->updateOrCreate(
+            ['equipment_id' => $equipment->id],
+            $detailsData
+        );
+        
+        DB::commit();
+        
+        return redirect()->route('equipment.index')
+            ->with('success', 'Équipement mis à jour avec succès !');
+            
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Erreur mise à jour équipement: ' . $e->getMessage());
+        
+        return back()->with('error', 'Erreur: ' . $e->getMessage())
+            ->withInput();
+    }
+}
 
     /**
      * Remove the specified resource from storage.
