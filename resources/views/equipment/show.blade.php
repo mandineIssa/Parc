@@ -349,10 +349,12 @@
                                     <span class="text-gray-500 italic">Aucune</span>
                                 @endif
                                 </div>
+                                @if($equipment->maintenance->isNotEmpty())
                                 <div class="flex items-center">
                                     <span class="w-40 text-gray-600">Prestataire:</span>
-                                    <span>{{ $equipment->maintenance->prestataire }}</span>
+                                    <span>{{ $equipment->maintenance->first()->prestataire }}</span>
                                 </div>
+                                @endif
                                 <div class="flex items-center">
                                     <span class="w-40 text-gray-600">Date Départ:</span>
                                     <span>{{ $equipment->maintenance->date_depart->format('d/m/Y') }}</span>
