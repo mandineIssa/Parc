@@ -338,45 +338,43 @@
                             @endif
                             @break
                             
-                        @case('maintenance')
-                            @if($equipment->maintenance)
-                            <div class="space-y-3">
-                                <div class="flex items-center">
-                                    <span class="w-40 text-gray-600">Type:</span>
-                                    @if($equipment->maintenance->isNotEmpty())
-                                    <span class="font-bold">{{ $equipment->maintenance->first()->type_maintenance }}</span>
-                                @else
-                                    <span class="text-gray-500 italic">Aucune</span>
-                                @endif
-                                </div>
-                                @if($equipment->maintenance->isNotEmpty())
-                                <div class="flex items-center">
-                                    <span class="w-40 text-gray-600">Prestataire:</span>
-                                    <span>{{ $equipment->maintenance->first()->prestataire }}</span>
-                                </div>
-                                @endif
-                                <div class="flex items-center">
-                                    <span class="w-40 text-gray-600">Date Départ:</span>
-                                    <span>{{ $equipment->maintenance->date_depart->format('d/m/Y') }}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="w-40 text-gray-600">Retour Prévu:</span>
-                                    <span>{{ $equipment->maintenance->date_retour_prevue->format('d/m/Y') }}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="w-40 text-gray-600">Statut:</span>
-                                    <span class="px-2 py-1 text-xs rounded-full 
-                                        @if($equipment->maintenance->statut == 'en_cours') bg-yellow-100 text-yellow-800
-                                        @elseif($equipment->maintenance->statut == 'terminee') bg-green-100 text-green-800
-                                        @else bg-gray-100 text-gray-800 @endif">
-                                        {{ $equipment->maintenance->statut }}
-                                    </span>
-                                </div>
-                            </div>
-                            @else
-                            <p class="text-gray-600 italic">Aucune information de maintenance disponible</p>
-                            @endif
-                            @break
+                      @case('maintenance')
+    @if($equipment->maintenance->isNotEmpty())
+        @php
+            // Récupérer la première maintenance (ou la dernière)
+            $currentMaintenance = $equipment->maintenance->first();
+        @endphp
+        <div class="space-y-3">
+            <div class="flex items-center">
+                <span class="w-40 text-gray-600">Type:</span>
+                <span class="font-bold">{{ $currentMaintenance->type_maintenance ?? 'N/A' }}</span>
+            </div>
+            <div class="flex items-center">
+                <span class="w-40 text-gray-600">Prestataire:</span>
+                <span>{{ $currentMaintenance->prestataire ?? 'N/A' }}</span>
+            </div>
+            <div class="flex items-center">
+                <span class="w-40 text-gray-600">Date Départ:</span>
+                <span>{{ $currentMaintenance->date_depart->format('d/m/Y') ?? 'N/A' }}</span>
+            </div>
+            <div class="flex items-center">
+                <span class="w-40 text-gray-600">Retour Prévu:</span>
+                <span>{{ $currentMaintenance->date_retour_prevue->format('d/m/Y') ?? 'N/A' }}</span>
+            </div>
+            <div class="flex items-center">
+                <span class="w-40 text-gray-600">Statut:</span>
+                <span class="px-2 py-1 text-xs rounded-full 
+                    @if(($currentMaintenance->statut ?? '') == 'en_cours') bg-yellow-100 text-yellow-800
+                    @elseif(($currentMaintenance->statut ?? '') == 'terminee') bg-green-100 text-green-800
+                    @else bg-gray-100 text-gray-800 @endif">
+                    {{ $currentMaintenance->statut ?? 'N/A' }}
+                </span>
+            </div>
+        </div>
+    @else
+        <p class="text-gray-600 italic">Aucune information de maintenance disponible</p>
+    @endif
+    @break
                             
                         @default
                             <p class="text-gray-600 italic">Aucune information supplémentaire pour ce statut</p>
