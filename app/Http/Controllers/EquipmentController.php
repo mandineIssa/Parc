@@ -129,12 +129,12 @@ public function update(Request $request, $id)
     DB::beginTransaction();
     
     try {
-        // Find the equipment
+        // Trouver l'équipement
         $equipment = Equipment::findOrFail($id);
         
         // 1. VALIDATION DES DONNÉES DE BASE
         $validated = $request->validate([
-            'type' => 'required|in:Réseau,Informatique,Électronique,Logiciel',
+            'type' => 'sometimes|required|in:Réseau,Informatique,Électronique,Logiciel',
             'numero_serie' => 'required|unique:equipment,numero_serie,' . $id,
             'marque' => 'required_if:type,!=,Logiciel|string|max:255',
             'modele' => 'required_if:type,!=,Logiciel|string|max:255',
@@ -150,60 +150,85 @@ public function update(Request $request, $id)
             'notes' => 'nullable|string',
             'date_mise_service' => 'nullable|date',
             'date_amortissement' => 'nullable|date',
+            'categorie' => 'sometimes|string|max:255',
+            'sous_categorie' => 'sometimes|string|max:255',
         ]);
         
         // 2. MISE À JOUR DE L'ÉQUIPEMENT
-        $equipment->update($validated);
+        // Filtrer seulement les champs qui ont changé
+        $equipmentData = array_filter($validated, function($key) {
+            return in_array($key, [
+                'type', 'numero_serie', 'marque', 'modele', 'agency_id', 
+                'localisation', 'fournisseur_id', 'date_livraison', 'prix', 
+                'garantie', 'reference_facture', 'etat', 'adresse_mac', 
+                'notes', 'date_mise_service', 'date_amortissement'
+            ]);
+        }, ARRAY_FILTER_USE_KEY);
+        
+        $equipment->update($equipmentData);
+        
+        // Utiliser le type existant ou celui de la requête
+        $type = $request->input('type', $equipment->type);
         
         // 3. MISE À JOUR DES DÉTAILS
+        $existingDetail = $equipment->detail;
+        
         $detailsData = [
-            'categorie' => $request->categorie,
-            'sous_categorie' => $request->sous_categorie,
+            'categorie' => $request->input('categorie', $existingDetail->categorie ?? null),
+            'sous_categorie' => $request->input('sous_categorie', $existingDetail->sous_categorie ?? null),
             'contrat_maintenance' => $request->has('contrat_maintenance'),
         ];
         
-        // Ajouter les champs spécifiques selon le type
-        switch ($request->type) {
+        // Ajouter les champs spécifiques selon le type (garder les anciennes valeurs)
+        switch ($type) {
             case 'Réseau':
-                $detailsData['etat_specifique'] = $request->input('etat_reseau');
-                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip');
-                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac');
+                $detailsData['etat_specifique'] = $request->input('etat_reseau', $existingDetail->etat_specifique ?? null);
+                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip', $existingDetail->adresse_ip_specifique ?? null);
+                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac', $existingDetail->adresse_mac_specifique ?? null);
                 break;
                 
             case 'Électronique':
-                $detailsData['etat_specifique'] = $request->input('etat_electronique');
-                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_elec');
-                $detailsData['numero_codification_specifique'] = $request->input('numero_codification');
+                $detailsData['etat_specifique'] = $request->input('etat_electronique', $existingDetail->etat_specifique ?? null);
+                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_elec', $existingDetail->adresse_ip_specifique ?? null);
+                $detailsData['numero_codification_specifique'] = $request->input('numero_codification', $existingDetail->numero_codification_specifique ?? null);
                 break;
                 
             case 'Informatique':
-                $detailsData['etat_specifique'] = $request->input('etat_stock');
-                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_info');
-                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac_info');
-                $detailsData['departement_specifique'] = $request->input('departement');
-                $detailsData['poste_staff_specifique'] = $request->input('poste_staff');
+                $detailsData['etat_specifique'] = $request->input('etat_stock', $existingDetail->etat_specifique ?? null);
+                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_info', $existingDetail->adresse_ip_specifique ?? null);
+                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac_info', $existingDetail->adresse_mac_specifique ?? null);
+                $detailsData['departement_specifique'] = $request->input('departement', $existingDetail->departement_specifique ?? null);
+                $detailsData['poste_staff_specifique'] = $request->input('poste_staff', $existingDetail->poste_staff_specifique ?? null);
                 break;
         }
         
-        // Contrat maintenance
+        // Contrat maintenance (garder les anciennes valeurs si non modifié)
         if ($request->has('contrat_maintenance')) {
-            $detailsData['type_contrat'] = $request->input('type_contrat');
-            $detailsData['date_debut_contrat'] = $request->input('date_debut_contrat');
-            $detailsData['date_fin_contrat'] = $request->input('date_fin_contrat');
-            $detailsData['periodicite_maintenance'] = $request->input('periodicite_maintenance');
+            $detailsData['type_contrat'] = $request->input('type_contrat', $existingDetail->type_contrat ?? null);
+            $detailsData['date_debut_contrat'] = $request->input('date_debut_contrat', $existingDetail->date_debut_contrat ?? null);
+            $detailsData['date_fin_contrat'] = $request->input('date_fin_contrat', $existingDetail->date_fin_contrat ?? null);
+            $detailsData['periodicite_maintenance'] = $request->input('periodicite_maintenance', $existingDetail->periodicite_maintenance ?? null);
         } else {
-            // Clear maintenance contract fields if checkbox is unchecked
+            // Vider les champs de maintenance si la case n'est pas cochée
             $detailsData['type_contrat'] = null;
             $detailsData['date_debut_contrat'] = null;
             $detailsData['date_fin_contrat'] = null;
             $detailsData['periodicite_maintenance'] = null;
         }
         
-        // Données spécifiques en JSON
-        $specificData = $this->extractSpecificData($request);
-        $detailsData['specific_data'] = json_encode($specificData);
+        // Données spécifiques en JSON (garder les anciennes si non modifiées)
+        $existingSpecificData = $existingDetail && $existingDetail->specific_data 
+            ? json_decode($existingDetail->specific_data, true) 
+            : [];
         
-        // Update or create equipment details
+        $newSpecificData = $this->extractSpecificData($request);
+        
+        // Fusionner les anciennes données avec les nouvelles (les nouvelles écrasent les anciennes)
+        $mergedSpecificData = array_merge($existingSpecificData, $newSpecificData);
+        
+        $detailsData['specific_data'] = json_encode($mergedSpecificData);
+        
+        // Mettre à jour ou créer les détails de l'équipement
         $equipment->details()->updateOrCreate(
             ['equipment_id' => $equipment->id],
             $detailsData

@@ -9,14 +9,16 @@
         
         <div class="bg-white rounded-lg shadow-lg p-8">
           <form action="{{ route('equipment.update', $equipment->id) }}" method="POST">
-    @csrf
-    @method('PUT')
-    
-    <!-- Champs cachés pour type et numéro de série -->
-    <input type="hidden" name="type" value="{{ $equipment->type }}">
-    <input type="hidden" name="numero_serie" value="{{ $equipment->numero_serie }}">
-    
-    <!-- Informations de base -->
+        @csrf
+         @method('PUT')
+
+    <!-- Champs cachés pour les données non modifiables -->
+        <input type="hidden" name="type" value="{{ $equipment->type }}">
+        <input type="hidden" name="numero_serie" value="{{ $equipment->numero_serie }}">
+        <input type="hidden" name="categorie" value="{{ $equipment->detail->categorie ?? '' }}">
+        <input type="hidden" name="sous_categorie" value="{{ $equipment->detail->sous_categorie ?? '' }}">
+        
+<!-- Informations de base -->
     <div class="mb-8 pb-8 border-b">
         <h2 class="text-xl font-semibold text-gray-800 mb-6">Informations de base</h2>
         
