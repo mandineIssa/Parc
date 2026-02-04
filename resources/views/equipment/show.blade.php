@@ -343,7 +343,11 @@
                             <div class="space-y-3">
                                 <div class="flex items-center">
                                     <span class="w-40 text-gray-600">Type:</span>
-                                    <span class="font-bold">{{ $equipment->maintenance->type_maintenance }}</span>
+                                    @if($equipment->maintenance->isNotEmpty())
+                                    <span class="font-bold">{{ $equipment->maintenance->first()->type_maintenance }}</span>
+                                @else
+                                    <span class="text-gray-500 italic">Aucune</span>
+                                @endif
                                 </div>
                                 <div class="flex items-center">
                                     <span class="w-40 text-gray-600">Prestataire:</span>
