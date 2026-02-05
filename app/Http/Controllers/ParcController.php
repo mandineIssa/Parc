@@ -97,37 +97,65 @@ class ParcController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'numero_serie' => 'required|exists:equipment,numero_serie',
-            'utilisateur_id' => 'required|exists:users,id',
-            'departement' => 'required|string|max:100',
-            'poste_affecte' => 'required|string|max:100',
-            'date_affectation' => 'required|date',
-            'date_retour_prevue' => 'nullable|date|after_or_equal:date_affectation',
-            'statut_usage' => 'required|in:en_service,reserve,maintenance',
-            'notes_affectation' => 'nullable|string|max:500'
-        ]);
+public function store(Request $request)
+{
+    // Validation étendue pour tous les champs du formulaire
+    $validated = $request->validate([
+        'numero_serie' => 'required|exists:equipment,numero_serie',
         
-        // Vérifier si l'équipement n'est pas déjà affecté
-        $existing = Parc::where('numero_serie', $request->numero_serie)->first();
-        if ($existing) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['numero_serie' => 'Cet équipement est déjà affecté.']);
-        }
+        // Champs de base
+        'utilisateur_nom' => 'required|string|max:100',
+        'utilisateur_prenom' => 'required|string|max:100',
+        'departement' => 'required|string|max:100',
+        'poste_affecte' => 'required|string|max:100',
+        'position' => 'required|in:Directeur,Manager,Chef de Projet,Technicien,Développeur,Analyste,Consultant,Administrateur,Assistant,Agent,Stagiaire,CC,RH,Finance,Caissier,recouvrement,juridique,CAF,Logistique,marketing,Autre',
         
-        // Créer l'affectation
-        $parc = Parc::create($request->all());
+        // Dates
+        'date_affectation' => 'required|date',
+        'date_retour_prevue' => 'nullable|date|after_or_equal:date_affectation',
         
-        // Mettre à jour le statut de l'équipement
-        Equipment::where('numero_serie', $request->numero_serie)
-            ->update(['statut' => 'parc']);
+        // Raison d'affectation
+        'affectation_reason' => 'nullable|in:Nouvelle embauche,Remplacement d\'équipement,Changement de poste,Besoins opérationnels,Mise à niveau,Dotation temporaire,Autre',
+        'affectation_reason_detail' => 'nullable|string|max:500',
         
-        return redirect()->route('parc.index')
-            ->with('success', 'Affectation créée avec succès.');
+        // Informations complémentaires
+        'localisation' => 'nullable|string|max:200',
+        'telephone' => 'nullable|string|max:20',
+        'email' => 'nullable|email|max:100',
+        
+        // Statut
+        'statut_usage' => 'required|in:actif,inactif,en_pret',
+        'notes_affectation' => 'nullable|string|max:500',
+        
+        // Champs cachés
+        'form_type' => 'required|in:affectation_simple',
+        'transition_type' => 'required|in:stock_to_parc',
+        'equipment_id' => 'required|exists:equipment,id',
+    ]);
+    
+    // Vérifier si l'équipement n'est pas déjà affecté
+    $existing = Parc::where('numero_serie', $request->numero_serie)->first();
+    if ($existing) {
+        return redirect()->back()
+            ->withInput()
+            ->withErrors(['numero_serie' => 'Cet équipement est déjà affecté.']);
     }
+    
+    // Ajouter les champs de tracking
+    $validated['affecte_par'] = auth()->id();
+    $validated['derniere_modification'] = now();
+    $validated['numero_bon_affectation'] = 'AFF-' . strtoupper(uniqid());
+    
+    // Créer l'affectation dans la table parc
+    $parc = Parc::create($validated);
+    
+    // Mettre à jour le statut de l'équipement
+    Equipment::where('numero_serie', $request->numero_serie)
+        ->update(['statut' => 'parc']);
+    
+    return redirect()->route('parc.index')
+        ->with('success', 'Affectation créée avec succès. Numéro de bon : ' . $validated['numero_bon_affectation']);
+}
 
     /**
      * Display the specified resource.

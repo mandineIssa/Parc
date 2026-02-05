@@ -278,12 +278,13 @@
     <div class="flex items-center">
         <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
             <span class="text-sm font-medium text-blue-600">
-                {{ substr($equipment->parc->utilisateur_nom ?? 'N', 0, 1) }}
+                {{ substr($equipment->parc->utilisateur->name ?? 'N', 0, 1) }}
             </span>
         </div>
         <div>
             <div class="font-medium text-gray-900 equipment-utilisateur">
-                {{ $equipment->parc->utilisateur_nom ?? 'N/A' }} {{ $equipment->parc->utilisateur_prenom ?? '' }}
+                {{ $equipment->parc->utilisateur->name ?? 'N/A' }} {{ $equipment->parc->utilisateur_prenom ?? '' }}
+                
             </div>
             <div class="text-sm text-gray-500">{{ $equipment->parc->department ?? 'N/A' }}</div>
         </div>
@@ -307,6 +308,8 @@
         </div>
     </div>
 </td>
+
+
                         
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ $equipment->date_livraison->format('d/m/Y') }}</div>

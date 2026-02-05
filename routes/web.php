@@ -26,6 +26,7 @@ use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardsController;
+use App\Http\Controllers\EquipmentImportController;
 
 
 /*
@@ -159,6 +160,31 @@ Route::prefix('equipment/{equipment}/transitions')
 // IMPORT / EXPORT / PAGES SPÉCIALES ÉQUIPEMENT
 // ⚠️ TOUJOURS AVANT resource
 // ============================================
+
+
+// routes/web.php
+Route::post('/parc', [ParcController::class, 'store'])->name('parc.store');
+
+// Utiliser "imports" au pluriel
+Route::prefix('equipment')->name('equipment.')->group(function () {
+    Route::get('/imports', [EquipmentImportController::class, 'showImportForm'])        // Au lieu de /import
+        ->name('imports.form');        // Au lieu de import.form
+});
+// Routes pour l'importation d'équipements
+Route::prefix('equipment')->name('equipment.')->group(function () {
+    
+    // Afficher le formulaire d'importation
+    Route::get('/imports', [EquipmentImportController::class, 'showImportForm'])
+        ->name('imports.form');
+    
+    // Télécharger le template Excel
+    Route::get('/imports/template', [EquipmentImportController::class, 'downloadTemplate'])
+        ->name('imports.template');
+    
+    // Traiter l'importation
+    Route::post('/imports/process', [EquipmentImportController::class, 'import'])
+        ->name('imports.process');
+});
 
 Route::get('/equipment/import', [EquipmentController::class, 'showImportForm'])
     ->name('equipment.import.form');
@@ -818,6 +844,10 @@ Route::prefix('dashboard')->group(function () {
 
 // Garder vos routes dashboard existantes (si elles existent)
 Route::get('/dashboard', [DashboardsController::class, 'index'])->name('dashboard');
+
+
+
+
 
 if (app()->environment('local')) {
     

@@ -310,71 +310,136 @@
                         @case('parc')
                             @if($equipment->parc)
                             <div class="space-y-3">
+                                <!-- Utiliser d'abord les colonnes directes de la table parc -->
+                                @if($equipment->parc->utilisateur_nom || $equipment->parc->utilisateur_prenom)
+                                <div class="flex items-center">
+                                    <span class="w-40 text-gray-600">Utilisateur:</span>
+                                    <span class="font-bold">
+                                        {{ trim($equipment->parc->utilisateur_nom ?? '') }} {{ trim($equipment->parc->utilisateur_prenom ?? '') }}
+                                    </span>
+                                </div>
+                                @elseif($equipment->parc->utilisateur)
+                                <!-- Fallback: utiliser la relation utilisateur si les colonnes directes sont vides -->
                                 <div class="flex items-center">
                                     <span class="w-40 text-gray-600">Utilisateur:</span>
                                     <span class="font-bold">{{ $equipment->parc->utilisateur->name ?? 'N/A' }}</span>
                                 </div>
+                                @endif
+                                
                                 <div class="flex items-center">
                                     <span class="w-40 text-gray-600">Département:</span>
                                     <span>{{ $equipment->parc->departement }}</span>
                                 </div>
+                                
+                                <!-- Utiliser la colonne position si elle existe -->
+                                @if($equipment->parc->position)
+                                <div class="flex items-center">
+                                    <span class="w-40 text-gray-600">Position:</span>
+                                    <span>{{ $equipment->parc->position }}</span>
+                                </div>
+                                @else
                                 <div class="flex items-center">
                                     <span class="w-40 text-gray-600">Poste:</span>
                                     <span>{{ $equipment->parc->poste_affecte }}</span>
                                 </div>
+                                @endif
+                                
                                 <div class="flex items-center">
                                     <span class="w-40 text-gray-600">Date Affectation:</span>
                                     <span>{{ $equipment->parc->date_affectation->format('d/m/Y') }}</span>
                                 </div>
+                                
+                                @if($equipment->parc->date_retour_prevue)
+                                <div class="flex items-center">
+                                    <span class="w-40 text-gray-600">Retour prévu:</span>
+                                    <span>{{ $equipment->parc->date_retour_prevue->format('d/m/Y') }}</span>
+                                </div>
+                                @endif
+                                
                                 <div class="flex items-center">
                                     <span class="w-40 text-gray-600">Statut Usage:</span>
                                     <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
                                         {{ $equipment->parc->statut_usage }}
                                     </span>
                                 </div>
+                                
+                                <!-- Afficher les nouvelles colonnes si elles existent -->
+                                @if($equipment->parc->affectation_reason)
+                                <div class="flex items-center">
+                                    <span class="w-40 text-gray-600">Motif affectation:</span>
+                                    <span>{{ $equipment->parc->affectation_reason }}</span>
+                                </div>
+                                @endif
+                                
+                                @if($equipment->parc->localisation)
+                                <div class="flex items-center">
+                                    <span class="w-40 text-gray-600">Localisation:</span>
+                                    <span>{{ $equipment->parc->localisation }}</span>
+                                </div>
+                                @endif
+                                
+                                @if($equipment->parc->telephone)
+                                <div class="flex items-center">
+                                    <span class="w-40 text-gray-600">Téléphone:</span>
+                                    <span>{{ $equipment->parc->telephone }}</span>
+                                </div>
+                                @endif
+                                
+                                @if($equipment->parc->email)
+                                <div class="flex items-center">
+                                    <span class="w-40 text-gray-600">Email:</span>
+                                    <span>{{ $equipment->parc->email }}</span>
+                                </div>
+                                @endif
+                                
+                                @if($equipment->parc->affectation_reason_detail)
+                                <div class="mt-2 pt-2 border-t border-gray-200">
+                                    <div class="text-sm text-gray-600 mb-1">Détails motif:</div>
+                                    <p class="text-sm text-gray-700">{{ $equipment->parc->affectation_reason_detail }}</p>
+                                </div>
+                                @endif
                             </div>
                             @else
                             <p class="text-gray-600 italic">Aucune information de parc disponible</p>
                             @endif
                             @break
                             
-                      @case('maintenance')
-    @if($equipment->maintenance->isNotEmpty())
-        @php
-            // Récupérer la première maintenance (ou la dernière)
-            $currentMaintenance = $equipment->maintenance->first();
-        @endphp
-        <div class="space-y-3">
-            <div class="flex items-center">
-                <span class="w-40 text-gray-600">Type:</span>
-                <span class="font-bold">{{ $currentMaintenance->type_maintenance ?? 'N/A' }}</span>
-            </div>
-            <div class="flex items-center">
-                <span class="w-40 text-gray-600">Prestataire:</span>
-                <span>{{ $currentMaintenance->prestataire ?? 'N/A' }}</span>
-            </div>
-            <div class="flex items-center">
-                <span class="w-40 text-gray-600">Date Départ:</span>
-                <span>{{ $currentMaintenance->date_depart->format('d/m/Y') ?? 'N/A' }}</span>
-            </div>
-            <div class="flex items-center">
-                <span class="w-40 text-gray-600">Retour Prévu:</span>
-                <span>{{ $currentMaintenance->date_retour_prevue->format('d/m/Y') ?? 'N/A' }}</span>
-            </div>
-            <div class="flex items-center">
-                <span class="w-40 text-gray-600">Statut:</span>
-                <span class="px-2 py-1 text-xs rounded-full 
-                    @if(($currentMaintenance->statut ?? '') == 'en_cours') bg-yellow-100 text-yellow-800
-                    @elseif(($currentMaintenance->statut ?? '') == 'terminee') bg-green-100 text-green-800
-                    @else bg-gray-100 text-gray-800 @endif">
-                    {{ $currentMaintenance->statut ?? 'N/A' }}
-                </span>
-            </div>
-        </div>
-    @else
-        <p class="text-gray-600 italic">Aucune information de maintenance disponible</p>
-    @endif
-    @break
+                        @case('maintenance')
+                            @if($equipment->maintenance->isNotEmpty())
+                                @php
+                                    $currentMaintenance = $equipment->maintenance->first();
+                                @endphp
+                                <div class="space-y-3">
+                                    <div class="flex items-center">
+                                        <span class="w-40 text-gray-600">Type:</span>
+                                        <span class="font-bold">{{ $currentMaintenance->type_maintenance ?? 'N/A' }}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="w-40 text-gray-600">Prestataire:</span>
+                                        <span>{{ $currentMaintenance->prestataire ?? 'N/A' }}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="w-40 text-gray-600">Date Départ:</span>
+                                        <span>{{ $currentMaintenance->date_depart->format('d/m/Y') ?? 'N/A' }}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="w-40 text-gray-600">Retour Prévu:</span>
+                                        <span>{{ $currentMaintenance->date_retour_prevue->format('d/m/Y') ?? 'N/A' }}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="w-40 text-gray-600">Statut:</span>
+                                        <span class="px-2 py-1 text-xs rounded-full 
+                                            @if(($currentMaintenance->statut ?? '') == 'en_cours') bg-yellow-100 text-yellow-800
+                                            @elseif(($currentMaintenance->statut ?? '') == 'terminee') bg-green-100 text-green-800
+                                            @else bg-gray-100 text-gray-800 @endif">
+                                            {{ $currentMaintenance->statut ?? 'N/A' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @else
+                                <p class="text-gray-600 italic">Aucune information de maintenance disponible</p>
+                            @endif
+                            @break
                             
                         @default
                             <p class="text-gray-600 italic">Aucune information supplémentaire pour ce statut</p>
