@@ -286,7 +286,7 @@
                                         {{ $equipment->parc->utilisateur_nom ?? 'N/A' }} {{ $equipment->parc->utilisateur_prenom ?? '' }}
                                         
                                     </div>
-                                    <div class="text-sm text-gray-500">{{ $equipment->parc->department ?? 'N/A' }}</div>
+                                    <div class="text-sm text-gray-500">{{ $equipment->parc->departement ?? 'N/A' }}</div>
                                 </div>
                             </div>
                             @else
