@@ -274,40 +274,40 @@
                         </td>
                         
                         <td class="px-6 py-4">
-    @if($equipment->parc)
-    <div class="flex items-center">
-        <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-            <span class="text-sm font-medium text-blue-600">
-                {{ substr($equipment->parc->utilisateur->name ?? 'N', 0, 1) }}
-            </span>
-        </div>
-        <div>
-            <div class="font-medium text-gray-900 equipment-utilisateur">
-                {{ $equipment->parc->utilisateur->name ?? 'N/A' }} {{ $equipment->parc->utilisateur_prenom ?? '' }}
-                
-            </div>
-            <div class="text-sm text-gray-500">{{ $equipment->parc->department ?? 'N/A' }}</div>
-        </div>
-    </div>
-    @else
-    <span class="text-gray-400 italic">Non affecté</span>
-    @endif
-</td>
-                      <td class="px-6 py-4">
-    <div class="flex items-center">
-        <svg class="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-        </svg>
-        <div>
-            <div class="font-medium text-gray-900 equipment-agence">
-                {{ $equipment->agency->nom ?? 'Non assigné' }}
-            </div>
-            <div class="text-sm text-gray-500 equipment-localisation">
-                {{ $equipment->parc->localisation ?? $equipment->localisation ?? 'N/A' }}
-            </div>
-        </div>
-    </div>
-</td>
+                            @if($equipment->parc)
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-sm font-medium text-blue-600">
+                                        {{ substr($equipment->parc->utilisateur_nom ?? 'N', 0, 1) }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900 equipment-utilisateur">
+                                        {{ $equipment->parc->utilisateur_nom ?? 'N/A' }} {{ $equipment->parc->utilisateur_prenom ?? '' }}
+                                        
+                                    </div>
+                                    <div class="text-sm text-gray-500">{{ $equipment->parc->department ?? 'N/A' }}</div>
+                                </div>
+                            </div>
+                            @else
+                            <span class="text-gray-400 italic">Non affecté</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                </svg>
+                                <div>
+                                    <div class="font-medium text-gray-900 equipment-agence">
+                                        {{ $equipment->agency->nom ?? 'Non assigné' }}
+                                    </div>
+                                    <div class="text-sm text-gray-500 equipment-localisation">
+                                        {{ $equipment->parc->localisation ?? $equipment->localisation ?? 'N/A' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
 
 
                         

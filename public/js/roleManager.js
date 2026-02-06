@@ -631,6 +631,24 @@ class RoleManager {
             'agent_it': 'Agent IT',
             'user': 'Utilisateur (Lecture seule)'
         }; */
+            const userNameElement = document.querySelector('.user-name');
+    if (!userNameElement) return;
+
+    // ✅ DÉFINIR roleNames LOCALEMENT
+    const roleNames = {
+        'super_admin': 'Super Admin',
+        'admin': 'Administrateur',
+        'agent_it': 'Agent IT',
+        'user': 'Utilisateur'
+    };
+
+    const roleName = roleNames[this.userRole] || this.userRole;
+    const roleColors = {
+        'super_admin': 'bg-red-500',
+        'admin': 'bg-blue-500',
+        'agent_it': 'bg-green-500',
+        'user': 'bg-gray-500'
+    };
         
         const badgeContainer = document.getElementById('role-badge-container');
         if (badgeContainer) {
