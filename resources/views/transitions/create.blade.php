@@ -712,13 +712,9 @@
         </form>
 
 <!-- ÉTAPE 2: Affectation Simple -->
-
-<form id="affectation-step-form" class="step-form hidden" data-step="2" method="POST" action="{{ route('parc.store') }}">
-    @csrf
+<form id="affectation-step-form" class="step-form hidden" data-step="2">
     <input type="hidden" name="form_type" value="affectation_simple">
     <input type="hidden" name="transition_type" value="stock_to_parc">
-    <input type="hidden" name="equipment_id" value="{{ $equipment->id ?? '' }}">
-    <input type="hidden" name="transition_approval_id" value="{{ $approvalId ?? null }}">
 
     <div class="card-cofina bg-white border-2 border-cofina-blue">
         <div class="bg-cofina-blue text-white p-4 -mx-6 -mt-6 mb-6 rounded-t-lg">
@@ -739,7 +735,6 @@
                         <label class="block text-sm font-semibold text-gray-600 mb-1">N° Série:</label>
                         <input type="text" value="{{ $equipment->numero_serie }}"
                             class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-gray-50" readonly>
-                        <input type="hidden" name="numero_serie" value="{{ $equipment->numero_serie }}">
                     </div>
                 </div>
             </div>
@@ -754,96 +749,72 @@
                     Information du destinataire
                 </h4>
 
-                <!-- Utilisateur - Nom et Prénom séparés -->
-                <div class="mb-4 grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            <span class="text-red-500">*</span> Nom
-                        </label>
-                        <input type="text" name="utilisateur_nom" placeholder="Saisir le nom"
-                            class="w-full px-3 py-2 border-2 border-gray-300 rounded focus:border-cofina-red" 
-                            required
-                            value="{{ old('utilisateur_nom') }}"
-                            autocomplete="off">
-                        @error('utilisateur_nom')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            <span class="text-red-500">*</span> Prénom
-                        </label>
-                        <input type="text" name="utilisateur_prenom" placeholder="Saisir le prénom"
-                            class="w-full px-3 py-2 border-2 border-gray-300 rounded focus:border-cofina-red" 
-                            required
-                            value="{{ old('utilisateur_prenom') }}"
-                            autocomplete="off">
-                        @error('utilisateur_prenom')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
+                <!-- Utilisateur * - Input texte au lieu de select -->
+              <!-- Utilisateur - Nom et Prénom séparés -->
+<div class="mb-4 grid grid-cols-2 gap-4">
+    <div>
+        <label class="block text-sm font-semibold mb-2">
+            <span class="text-red-500">*</span> Nom
+        </label>
+        <input type="text" name="utilisateur_nom" placeholder="Saisir le nom"
+            class="w-full px-3 py-2 border-2 border-gray-300 rounded focus:border-cofina-red" 
+            required
+            value="{{ old('utilisateur_nom') }}"
+            autocomplete="off">
+    </div>
+    <div>
+        <label class="block text-sm font-semibold mb-2">
+            <span class="text-red-500">*</span> Prénom
+        </label>
+        <input type="text" name="utilisateur_prenom" placeholder="Saisir le prénom"
+            class="w-full px-3 py-2 border-2 border-gray-300 rounded focus:border-cofina-red" 
+            required
+            value="{{ old('utilisateur_prenom') }}"
+            autocomplete="off">
+    </div>
+</div>
 
                 <!-- Département * -->
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">
                         <span class="text-red-500">*</span> Département
                     </label>
-                    <input type="text" name="departement" placeholder="Saisir le département"
-                        class="w-full px-3 py-2 border-2 border-gray-300 rounded" 
-                        required
-                        value="{{ old('departement') }}">
-                    @error('departement')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                    <select name="department" class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
+                        <option value="">-- Sélectionner un département --</option>
+                        <option value="IT">IT</option>
+                        <option value="RH">Ressources Humaines</option>
+                        <option value="Comptabilité">Comptabilité</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Ventes">Ventes</option>
+                        <option value="Direction">Direction</option>
+                        <option value="Operations">Opérations</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Administratif">Administratif</option>
+                        <option value="Autre">Autre</option>
+                    </select>
                 </div>
 
-                <!-- Poste affecté * -->
+                <!-- Poste * -->
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">
-                        <span class="text-red-500">*</span> Poste affecté
-                    </label>
-                    <input type="text" name="poste_affecte" placeholder="Ex: Développeur Web, Chef de projet..."
-                        class="w-full px-3 py-2 border-2 border-gray-300 rounded" 
-                        required
-                        value="{{ old('poste_affecte') }}">
-                    @error('poste_affecte')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Position * -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">
-                        <span class="text-red-500">*</span> Position / Fonction
+                        <span class="text-red-500">*</span> Poste
                     </label>
                     <select name="position" class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
                         <option value="">-- Sélectionner un poste --</option>
-                        <option value="Directeur" {{ old('position') == 'Directeur' ? 'selected' : '' }}>Directeur</option>
-                        <option value="Manager" {{ old('position') == 'Manager' ? 'selected' : '' }}>Manager</option>
-                        <option value="Chef de Projet" {{ old('position') == 'Chef de Projet' ? 'selected' : '' }}>Chef de Projet</option>
-                        <option value="Technicien" {{ old('position') == 'Technicien' ? 'selected' : '' }}>Technicien</option>
-                        <option value="Développeur" {{ old('position') == 'Développeur' ? 'selected' : '' }}>Développeur</option>
-                        <option value="Analyste" {{ old('position') == 'Analyste' ? 'selected' : '' }}>Analyste</option>
-                        <option value="Consultant" {{ old('position') == 'Consultant' ? 'selected' : '' }}>Consultant</option>
-                        <option value="Administrateur" {{ old('position') == 'Administrateur' ? 'selected' : '' }}>Administrateur</option>
-                        <option value="Assistant" {{ old('position') == 'Assistant' ? 'selected' : '' }}>Assistant</option>
-                        <option value="Agent" {{ old('position') == 'Agent' ? 'selected' : '' }}>Agent</option>
-                        <option value="Stagiaire" {{ old('position') == 'Stagiaire' ? 'selected' : '' }}>Stagiaire</option>
-                        <option value="CC" {{ old('position') == 'CC' ? 'selected' : '' }}>CC</option>
-                        <option value="RH" {{ old('position') == 'RH' ? 'selected' : '' }}>RH</option>
-                        <option value="Finance" {{ old('position') == 'Finance' ? 'selected' : '' }}>Finance</option>
-                        <option value="Caissier" {{ old('position') == 'Caissier' ? 'selected' : '' }}>Caissier</option>
-                        <option value="recouvrement" {{ old('position') == 'recouvrement' ? 'selected' : '' }}>Recouvrement</option>
-                        <option value="juridique" {{ old('position') == 'juridique' ? 'selected' : '' }}>Juridique</option>
-                        <option value="CAF" {{ old('position') == 'CAF' ? 'selected' : '' }}>CAF</option>
-                        <option value="Logistique" {{ old('position') == 'Logistique' ? 'selected' : '' }}>Logistique</option>
-                        <option value="marketing" {{ old('position') == 'marketing' ? 'selected' : '' }}>Marketing</option>
-                        <option value="Autre" {{ old('position') == 'Autre' ? 'selected' : '' }}>Autre</option>
+                        <option value="Directeur">Directeur</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Chef de Projet">Chef de Projet</option>
+                        <option value="Technicien">Technicien</option>
+                        <option value="Développeur">Développeur</option>
+                        <option value="Analyste">Analyste</option>
+                        <option value="Consultant">Consultant</option>
+                        <option value="Administrateur">Administrateur</option>
+                        <option value="Assistant">Assistant</option>
+                        <option value="Agent">Agent</option>
+                        <option value="Stagiaire">Stagiaire</option>
+                        <option value="Autre">Autre</option>
                     </select>
-                    @error('position')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Date d'affectation * -->
@@ -851,46 +822,25 @@
                     <label class="block text-sm font-semibold mb-2">
                         <span class="text-red-500">*</span> Date d'affectation
                     </label>
-                    <input type="date" name="date_affectation" value="{{ date('Y-m-d') }}"
+                    <input type="date" name="affectation_date" value="{{ date('Y-m-d') }}"
                         class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
-                    @error('date_affectation')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Date de retour prévue -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">Date de retour prévue</label>
-                    <input type="date" name="date_retour_prevue" 
-                        value="{{ old('date_retour_prevue') }}"
-                        class="w-full px-3 py-2 border-2 border-gray-300 rounded">
-                    @error('date_retour_prevue')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Raison d'affectation -->
-                <div class="mb-4">
+                <div>
                     <label class="block text-sm font-semibold mb-2">Raison d'affectation</label>
                     <select name="affectation_reason" class="w-full px-3 py-2 border-2 border-gray-300 rounded mb-2">
                         <option value="">-- Sélectionner une raison --</option>
-                        <option value="Nouvelle embauche" {{ old('affectation_reason') == 'Nouvelle embauche' ? 'selected' : '' }}>Nouvelle embauche</option>
-                        <option value="Remplacement d'équipement" {{ old('affectation_reason') == "Remplacement d'équipement" ? 'selected' : '' }}>Remplacement d'équipement</option>
-                        <option value="Changement de poste" {{ old('affectation_reason') == 'Changement de poste' ? 'selected' : '' }}>Changement de poste</option>
-                        <option value="Besoins opérationnels" {{ old('affectation_reason') == 'Besoins opérationnels' ? 'selected' : '' }}>Besoins opérationnels</option>
-                        <option value="Mise à niveau" {{ old('affectation_reason') == 'Mise à niveau' ? 'selected' : '' }}>Mise à niveau</option>
-                        <option value="Dotation temporaire" {{ old('affectation_reason') == 'Dotation temporaire' ? 'selected' : '' }}>Dotation temporaire</option>
-                        <option value="Autre" {{ old('affectation_reason') == 'Autre' ? 'selected' : '' }}>Autre</option>
+                        <option value="Nouvelle embauche">Nouvelle embauche</option>
+                        <option value="Remplacement d'équipement">Remplacement d'équipement</option>
+                        <option value="Changement de poste">Changement de poste</option>
+                        <option value="Besoins opérationnels">Besoins opérationnels</option>
+                        <option value="Mise à niveau">Mise à niveau</option>
+                        <option value="Autre">Autre</option>
                     </select>
                     <textarea name="affectation_reason_detail" rows="2"
                         class="w-full px-3 py-2 border-2 border-gray-300 rounded"
-                        placeholder="Détails supplémentaires (optionnel)...">{{ old('affectation_reason_detail') }}</textarea>
-                    @error('affectation_reason')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                    @error('affectation_reason_detail')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                        placeholder="Détails supplémentaires (optionnel)..."></textarea>
                 </div>
             </div>
 
@@ -908,75 +858,24 @@
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">Localisation</label>
                     <input type="text" name="localisation" placeholder="Ex: Bureau 201, Agence Dakar..."
-                        class="w-full px-3 py-2 border-2 border-gray-300 rounded"
-                        value="{{ old('localisation') }}">
-                    @error('localisation')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                        class="w-full px-3 py-2 border-2 border-gray-300 rounded">
                 </div>
 
                 <!-- Numéro de téléphone -->
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">Numéro de téléphone</label>
                     <input type="tel" name="telephone" placeholder="Ex: +221 77 123 45 67"
-                        class="w-full px-3 py-2 border-2 border-gray-300 rounded"
-                        value="{{ old('telephone') }}">
-                    @error('telephone')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                        class="w-full px-3 py-2 border-2 border-gray-300 rounded">
                 </div>
 
                 <!-- Email -->
-                <div class="mb-4">
+                <div>
                     <label class="block text-sm font-semibold mb-2">Email</label>
                     <input type="email" name="email" placeholder="Ex: utilisateur@entreprise.com"
-                        class="w-full px-3 py-2 border-2 border-gray-300 rounded"
-                        value="{{ old('email') }}">
-                    @error('email')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Statut d'usage -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">
-                        <span class="text-red-500">*</span> Statut d'usage
-                    </label>
-                    <select name="statut_usage" class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
-                        <option value="">-- Sélectionner un statut --</option>
-                        <option value="actif" {{ old('statut_usage', 'actif') == 'actif' ? 'selected' : '' }}>Actif</option>
-                        <option value="inactif" {{ old('statut_usage') == 'inactif' ? 'selected' : '' }}>Inactif</option>
-                        <option value="en_pret" {{ old('statut_usage') == 'en_pret' ? 'selected' : '' }}>En prêt</option>
-                    </select>
-                    @error('statut_usage')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Notes d'affectation -->
-                <div>
-                    <label class="block text-sm font-semibold mb-2">Notes supplémentaires</label>
-                    <textarea name="notes_affectation" rows="3"
-                        class="w-full px-3 py-2 border-2 border-gray-300 rounded"
-                        placeholder="Informations complémentaires, remarques, conditions particulières...">{{ old('notes_affectation') }}</textarea>
-                    @error('notes_affectation')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                        class="w-full px-3 py-2 border-2 border-gray-300 rounded">
                 </div>
             </div>
 
-            <!-- Boutons de soumission -->
-            <div class="flex justify-end space-x-4 pt-4 border-t">
-                <button type="button" class="btn-back px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                    ← Retour
-                </button>
-                <button type="submit" class="btn-submit px-4 py-2 bg-cofina-blue text-white rounded hover:bg-blue-700">
-                    📋 Valider l'affectation
-                </button>
-            </div>
-        </div>
-    </div>
-</form>
             <!-- Responsable -->
            <!-- EXPÉDITEUR (Agent IT) -->
 <div class="border-2 border-blue-300 rounded-lg p-6 bg-blue-50">
