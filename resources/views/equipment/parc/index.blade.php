@@ -50,15 +50,18 @@
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
         @php
-            $countReseau = $equipments->where('type', 'Réseau')->count();
-            $countInformatique = $equipments->where('type', 'Informatique')->count();
-            $countElectronique = $equipments->where('type', 'Électronique')->count();
-            $countEnService = $equipments->whereIn('etat', ['neuf', 'bon'])->count();
-            $countARemplacer = $equipments->where('etat', 'mauvais')->count();
+            // Récupérer les statistiques réelles depuis la base de données
+            use App\Models\Equipment;
             
-            $valeurReseau = $equipments->where('type', 'Réseau')->sum('prix');
-            $valeurInformatique = $equipments->where('type', 'Informatique')->sum('prix');
-            $valeurElectronique = $equipments->where('type', 'Électronique')->sum('prix');
+            $countReseau = Equipment::whereHas('parc')->where('type', 'Réseau')->count();
+            $countInformatique = Equipment::whereHas('parc')->where('type', 'Informatique')->count();
+            $countElectronique = Equipment::whereHas('parc')->where('type', 'Électronique')->count();
+            $countEnService = Equipment::whereHas('parc')->whereIn('etat', ['neuf', 'bon','moyen'])->count();
+            $countARemplacer = Equipment::whereHas('parc')->where('etat', 'mauvais')->count();
+            
+            $valeurReseau = Equipment::whereHas('parc')->where('type', 'Réseau')->sum('prix');
+            $valeurInformatique = Equipment::whereHas('parc')->where('type', 'Informatique')->sum('prix');
+            $valeurElectronique = Equipment::whereHas('parc')->where('type', 'Électronique')->sum('prix');
             
             $stats = [
                 ['label' => 'Réseau', 'count' => $countReseau, 'valeur' => $valeurReseau, 'color' => 'blue', 'icon' => '🌐'],
@@ -203,19 +206,19 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Actions</th>
                     </tr>
                 </thead>
-<tbody class="bg-white divide-y divide-gray-200" id="equipmentsTableBody">
-    @forelse($equipments as $equipment)
-    <tr class="equipment-row hover:bg-gray-50 transition-colors"
-        data-id="{{ $equipment->id }}"
-        data-nom="{{ strtolower($equipment->nom) }}"
-        data-numero="{{ strtolower($equipment->numero_serie) }}"
-        data-modele="{{ strtolower($equipment->modele) }}"
-        data-marque="{{ strtolower($equipment->marque) }}"
-        data-type="{{ strtolower($equipment->type) }}"
-        data-etat="{{ strtolower($equipment->etat) }}"
-        data-utilisateur="{{ strtolower($equipment->parc && $equipment->parc->utilisateur ? $equipment->parc->utilisateur->name : '') }}"
-        data-localisation="{{ strtolower($equipment->localisation) }}"
-        data-agence="{{ strtolower($equipment->agencies->nom ?? '') }}">
+                <tbody class="bg-white divide-y divide-gray-200" id="equipmentsTableBody">
+                    @forelse($equipments as $equipment)
+                    <tr class="equipment-row hover:bg-gray-50 transition-colors"
+                        data-id="{{ $equipment->id }}"
+                        data-nom="{{ strtolower($equipment->nom) }}"
+                        data-numero="{{ strtolower($equipment->numero_serie) }}"
+                        data-modele="{{ strtolower($equipment->modele) }}"
+                        data-marque="{{ strtolower($equipment->marque) }}"
+                        data-type="{{ strtolower($equipment->type) }}"
+                        data-etat="{{ strtolower($equipment->etat) }}"
+                        data-utilisateur="{{ $equipment->parc ? strtolower(trim(($equipment->parc->utilisateur_nom ?? '') . ' ' . ($equipment->parc->utilisateur_prenom ?? ''))) : '' }}"
+                        data-localisation="{{ strtolower($equipment->parc->localisation ?? $equipment->localisation ?? '') }}"
+                        data-agence="{{ strtolower($equipment->agencies->nom ?? '') }}">
                         <td class="px-6 py-4">
                             <div class="flex items-start">
                                 <div class="flex-shrink-0 h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center mr-3">
@@ -278,13 +281,12 @@
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
                                     <span class="text-sm font-medium text-blue-600">
-                                        {{ substr($equipment->parc->utilisateur_nom ?? 'N', 0, 1) }}
+                                        {{ $equipment->parc->utilisateur_nom ? substr($equipment->parc->utilisateur_nom, 0, 1) : 'N' }}
                                     </span>
                                 </div>
                                 <div>
                                     <div class="font-medium text-gray-900 equipment-utilisateur">
-                                        {{ $equipment->parc->utilisateur_nom ?? 'N/A' }} {{ $equipment->parc->utilisateur_prenom ?? '' }}
-                                        
+                                        {{ trim(($equipment->parc->utilisateur_nom ?? '') . ' ' . ($equipment->parc->utilisateur_prenom ?? '')) ?: 'N/A' }}
                                     </div>
                                     <div class="text-sm text-gray-500">{{ $equipment->parc->departement ?? 'N/A' }}</div>
                                 </div>
@@ -293,7 +295,8 @@
                             <span class="text-gray-400 italic">Non affecté</span>
                             @endif
                         </td>
-                       <td class="px-6 py-4">
+                        
+                        <td class="px-6 py-4">
                             <div class="flex items-center">
                                 <svg class="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
@@ -312,8 +315,6 @@
                                 </div>
                             </div>
                         </td>
-
-
                         
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ $equipment->date_livraison->format('d/m/Y') }}</div>
@@ -482,23 +483,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalEquipments = equipmentRows.length;
     let currentFilter = '';
     
-    // Filtrer les lignes
-equipmentRows.forEach(row => {
-    const nom = row.getAttribute('data-nom');
-    const numero = row.getAttribute('data-numero');
-    const modele = row.getAttribute('data-modele');
-    const marque = row.getAttribute('data-marque');
-    const type = row.getAttribute('data-type');
-    const etat = row.getAttribute('data-etat');
-    const utilisateur = row.getAttribute('data-utilisateur'); // Maintenant contient "nom prénom"
-    const localisation = row.getAttribute('data-localisation');
-    const agence = row.getAttribute('data-agence');
-    
-    // Reste du code...
-});
     // Fonction pour normaliser le texte (supprime les accents)
     function normalizeText(text) {
-        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        if (!text) return '';
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    }
+    
+    // Fonction pour vérifier si le terme de recherche correspond à l'utilisateur
+    function matchesUser(searchTermValue, utilisateur) {
+        if (!searchTermValue || !utilisateur) return false;
+        
+        const normalizedSearch = normalizeText(searchTermValue);
+        const normalizedUser = normalizeText(utilisateur);
+        
+        // Recherche exacte
+        if (normalizedUser.includes(normalizedSearch)) {
+            return true;
+        }
+        
+        // Recherche par mots séparés (nom et prénom dans n'importe quel ordre)
+        const searchWords = normalizedSearch.split(/\s+/).filter(word => word.length > 0);
+        const userWords = normalizedUser.split(/\s+/).filter(word => word.length > 0);
+        
+        // Vérifier si tous les mots de recherche correspondent
+        return searchWords.every(searchWord => 
+            userWords.some(userWord => userWord.includes(searchWord))
+        );
     }
     
     // Fonction pour mettre en surbrillance le texte correspondant
@@ -506,8 +516,17 @@ equipmentRows.forEach(row => {
         if (!searchTerm || !element) return;
         
         const text = element.textContent;
-        const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-        element.innerHTML = text.replace(regex, '<span class="search-highlight">$1</span>');
+        const words = searchTerm.trim().split(/\s+/);
+        let highlightedText = text;
+        
+        words.forEach(word => {
+            if (word.length > 0) {
+                const regex = new RegExp(`(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                highlightedText = highlightedText.replace(regex, '<span class="search-highlight">$1</span>');
+            }
+        });
+        
+        element.innerHTML = highlightedText;
     }
     
     // Fonction pour enlever les surbrillances
@@ -521,7 +540,8 @@ equipmentRows.forEach(row => {
     
     // Fonction de filtrage
     function filterEquipments() {
-        const searchTermValue = normalizeText(searchInput.value.trim());
+        const searchTermValue = searchInput.value.trim();
+        const normalizedSearch = normalizeText(searchTermValue);
         const selectedType = typeFilter.value;
         const selectedEtat = etatFilter.value;
         let visibleCount = 0;
@@ -543,25 +563,25 @@ equipmentRows.forEach(row => {
         
         // Filtrer les lignes
         equipmentRows.forEach(row => {
-            const nom = row.getAttribute('data-nom');
-            const numero = row.getAttribute('data-numero');
-            const modele = row.getAttribute('data-modele');
-            const marque = row.getAttribute('data-marque');
+            const nom = normalizeText(row.getAttribute('data-nom'));
+            const numero = normalizeText(row.getAttribute('data-numero'));
+            const modele = normalizeText(row.getAttribute('data-modele'));
+            const marque = normalizeText(row.getAttribute('data-marque'));
             const type = row.getAttribute('data-type');
             const etat = row.getAttribute('data-etat');
             const utilisateur = row.getAttribute('data-utilisateur');
-            const localisation = row.getAttribute('data-localisation');
-            const agence = row.getAttribute('data-agence');
+            const localisation = normalizeText(row.getAttribute('data-localisation'));
+            const agence = normalizeText(row.getAttribute('data-agence'));
             
             // Vérifier la correspondance avec la recherche
-            const searchMatch = !searchTermValue || 
-                nom.includes(searchTermValue) ||
-                numero.includes(searchTermValue) ||
-                modele.includes(searchTermValue) ||
-                marque.includes(searchTermValue) ||
-                utilisateur.includes(searchTermValue) ||
-                localisation.includes(searchTermValue) ||
-                agence.includes(searchTermValue);
+            const searchMatch = !normalizedSearch || 
+                nom.includes(normalizedSearch) ||
+                numero.includes(normalizedSearch) ||
+                modele.includes(normalizedSearch) ||
+                marque.includes(normalizedSearch) ||
+                matchesUser(searchTermValue, utilisateur) ||
+                localisation.includes(normalizedSearch) ||
+                agence.includes(normalizedSearch);
             
             // Vérifier la correspondance avec le type
             const typeMatch = !selectedType || 
@@ -605,12 +625,12 @@ equipmentRows.forEach(row => {
                     const localisationElement = row.querySelector('.equipment-localisation');
                     const agenceElement = row.querySelector('.equipment-agence');
                     
-                    if (nomElement) highlightText(nomElement, searchInput.value.trim());
-                    if (numeroElement) highlightText(numeroElement, searchInput.value.trim());
-                    if (modeleElement) highlightText(modeleElement, searchInput.value.trim());
-                    if (utilisateurElement) highlightText(utilisateurElement, searchInput.value.trim());
-                    if (localisationElement) highlightText(localisationElement, searchInput.value.trim());
-                    if (agenceElement) highlightText(agenceElement, searchInput.value.trim());
+                    if (nomElement) highlightText(nomElement, searchTermValue);
+                    if (numeroElement) highlightText(numeroElement, searchTermValue);
+                    if (modeleElement) highlightText(modeleElement, searchTermValue);
+                    if (utilisateurElement) highlightText(utilisateurElement, searchTermValue);
+                    if (localisationElement) highlightText(localisationElement, searchTermValue);
+                    if (agenceElement) highlightText(agenceElement, searchTermValue);
                 }
             } else {
                 row.style.display = 'none';
@@ -641,7 +661,7 @@ equipmentRows.forEach(row => {
         if (searchTerm) {
             let infoText = '';
             if (searchTermValue) {
-                infoText += `Recherche : "${searchInput.value}"`;
+                infoText += `Recherche : "${searchTermValue}"`;
             }
             if (selectedType) {
                 if (infoText) infoText += ' • ';
