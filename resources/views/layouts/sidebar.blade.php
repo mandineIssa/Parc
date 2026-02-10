@@ -108,13 +108,6 @@
                     <span>Export</span>
                 </a>
                 
-                <li class="nav-item">
-    <a href="{{ route('equipment.imports.form') }}" 
-       class="nav-link {{ request()->routeIs('equipment.imports.*') ? 'active' : '' }}">
-        <i class="fas fa-file-import"></i>
-        <span>Import Équipements</span>
-    </a>
-</li>
             </div>
         </div>
 

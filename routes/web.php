@@ -27,6 +27,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardsController;
 use App\Http\Controllers\EquipmentImportController;
+use App\Http\Controllers\AgencyImportController;
 
 
 /*
@@ -155,6 +156,27 @@ Route::prefix('equipment/{equipment}/transitions')
             Route::get('/export', [AuditController::class, 'export'])
                 ->name('export');
         });
+
+// Routes d'importation (super_admin et agent_it seulement)
+/* Route::middleware(['auth', 'can:import,App\Models\Agency'])->group(function () {
+    Route::get('/agencies/import', [AgencyImportController::class, 'create'])
+        ->name('agency.import.create');
+    
+    Route::post('/agencies/import', [AgencyImportController::class, 'store'])
+        ->name('agency.import.store');
+    
+    Route::get('/agencies/import/template', [AgencyImportController::class, 'downloadTemplate'])
+        ->name('agency.import.template');
+}); */
+
+ Route::get('/agencies/import', [AgencyImportController::class, 'create'])
+        ->name('agency.import.create');
+    
+    Route::post('/agencies/import', [AgencyImportController::class, 'store'])
+        ->name('agency.import.store');
+    
+    Route::get('/agencies/import/template', [AgencyImportController::class, 'downloadTemplate'])
+        ->name('agency.import.template');
 
 // ============================================
 // IMPORT / EXPORT / PAGES SPÉCIALES ÉQUIPEMENT

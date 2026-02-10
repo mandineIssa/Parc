@@ -9,13 +9,23 @@
             <p class="text-gray-600 mt-2">Gestion du parc informatique et des affectations</p>
         </div>
         <div class="flex gap-3 mt-4 md:mt-0">
-            <a href="{{ route('parc.import.form') }}" 
+             <a href="{{ route('equipment.imports.form') }}"
+       class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center {{ request()->routeIs('equipment.imports.*') ? 'ring-2 ring-green-300' : '' }}">
+        
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+        </svg>
+
+        <span>Import Équipements</span>
+    </a>
+            <!-- <a href="{{ route('parc.import.form') }}" 
                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
                 </svg>
                 Importer CSV
-            </a>
+            </a> -->
             <a href="{{ route('parc.export') }}" 
                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -303,11 +313,12 @@
                                 </svg>
                                 <div>
                                     <div class="font-medium text-gray-900 equipment-agence">
-                                        @if($equipment->agence_id && $equipment->agencies)
-                                            {{ $equipment->agencies->nom }}
-                                        @else
-                                            <span class="text-orange-600 italic">À assigner</span>
-                                        @endif
+                                        @if($equipment->agence)
+                                        {{ $equipment->agence->nom }}
+                                    @else
+                                        <span class="text-orange-600 italic">À assigner</span>
+                                    @endif
+
                                     </div>
                                     <div class="text-sm text-gray-500 equipment-localisation">
                                         {{ $equipment->parc->localisation ?? $equipment->localisation ?? 'N/A' }}

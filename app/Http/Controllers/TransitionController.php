@@ -958,7 +958,7 @@ public function show(TransitionApproval $approval)
                 throw new \Exception("L'équipement n'est pas en stock. Statut actuel: " . $equipment->statut);
             }
 
-            $data = [
+           /*  $data = [
                 'transition_type' => $validated['transition_type'],
                 'form_type' => 'multi_step',
                 'agent_nom' => $user->name,
@@ -975,12 +975,48 @@ public function show(TransitionApproval $approval)
                 'user_name' => $this->extractUserName($validated['affectation_simple']),
                 'user_prenom' => $this->extractUserPrenom($validated['affectation_simple']),
                 'departement' => $validated['affectation_simple']['department'] ?? null,
+                'destination' => $validated['affectation_simple']['department'] ?? null, 
                 'poste_affecte' => $validated['affectation_simple']['position'] ?? null,
                 'date_affectation' => $validated['affectation_simple']['affectation_date'] ?? now()->format('Y-m-d'),
                 'affectation_reason' => $validated['affectation_simple']['affectation_reason'] ?? null,
-
+                'agence_nom' => $validated['installation']['agence_nom'] ?? $validated['installation']['agency_id'] ?? null,
+                 'agency_id' => $validated['installation']['agency_id'] ?? null,
+                 
                 'choix_fiches' => ['installation', 'mouvement'],
-            ];
+            ]; */
+            $data = [
+    'transition_type' => $validated['transition_type'],
+    'form_type' => 'multi_step',
+    'agent_nom' => $user->name,
+    'agent_prenom' => $user->prenom ?? $user->name,
+    'agent_fonction' => 'AGENT IT',
+    'submitted_at' => now()->format('Y-m-d H:i:s'),
+    'is_super_admin_submission' => $isSuperAdmin,
+
+    'installation_data' => $validated['installation'],
+    'affectation_data' => $validated['affectation_simple'],
+    'mouvement_data' => $validated['mouvement'],
+
+    'utilisateur_id' => $validated['affectation_simple']['user_id'] ?? null,
+    'user_name' => $this->extractUserName($validated['affectation_simple']),
+    'user_prenom' => $this->extractUserPrenom($validated['affectation_simple']),
+    
+    // ✅ CORRECTION : Séparer département et agence
+    'departement' => $validated['affectation_simple']['department'] ?? null, // IT, RH, Finance...
+    'poste_affecte' => $validated['affectation_simple']['position'] ?? null,
+    
+    // ✅ CORRECTION CRITIQUE : Récupérer le NOM de l'agence (pas l'ID)
+    'agence_nom' => $validated['installation']['agence_nom'] ?? null,  // Texte du select
+    'agency_id' => $validated['installation']['agency_id'] ?? null,    // ID pour référence
+    
+    // ✅ CORRECTION : Destination = NOM DE L'AGENCE (pas le département)
+    'destination' => $validated['installation']['agence_nom'] ?? null, // "Agence Dakar", "Siège", etc.
+    
+    'date_affectation' => $validated['affectation_simple']['affectation_date'] ?? now()->format('Y-m-d'),
+    'affectation_reason' => $validated['affectation_simple']['affectation_reason'] ?? null,
+    
+    'choix_fiches' => ['installation', 'mouvement'],
+];
            
             $data = $this->extractSignatures($data, $validated);
 

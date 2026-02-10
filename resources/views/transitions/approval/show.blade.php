@@ -233,11 +233,11 @@
                             <p class="text-xs text-gray-500 mt-1">Utilisateur final qui reçoit l'équipement</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold mb-1">Fonction : *</label>
-                            <input type="text" name="receptionnaire_fonction" 
-                                   value="{{ $formData['poste_affecte'] ?? $mouvementData['receptionnaire_fonction'] ?? '' }}"
-                                   class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-gray-100" readonly>
-                        </div>
+    <label class="block text-sm font-semibold mb-1">Fonction : *</label>
+    <input type="text" name="receptionnaire_fonction" 
+           value="{{ $formData['poste_affecte'] ?? $mouvementData['receptionnaire_fonction'] ?? '' }}"
+           class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-gray-100" readonly>
+</div>
                         
                         @if(!empty($signatures['receptionnaire']))
                         <div class="mt-4">
@@ -275,11 +275,11 @@
                                class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-1">DESTINATION *</label>
-                        <input type="text" name="destination" 
-                               value="{{ $formData['departement'] ?? $mouvementData['destination'] ?? 'SIEGE COFINA' }}"
-                               class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
-                    </div>
+    <label class="block text-sm font-semibold mb-1">DESTINATION *</label>
+    <input type="text" name="destination" 
+           value="{{ $formData['destination'] ?? $formData['departement'] ?? $mouvementData['destination'] ?? '' }}"
+           class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
+</div>
                     <div>
                         <label class="block text-sm font-semibold mb-1">MOTIF *</label>
                         <input type="text" name="motif" 
@@ -381,10 +381,12 @@
                        placeholder="Ex: SIÈGE, AGENCE NORD..." required>
             </div> -->
             <!-- NOM DE L'AGENCE -->
+<!-- NOM DE L'AGENCE -->
+<!-- NOM DE L'AGENCE -->
 <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
     <label class="block font-bold text-lg mb-2 text-cofina-red">NOM DE L'AGENCE : *</label>
-    <input type="text" name="agence_nom" id="agence_nom_hidden"
-           value="{{ $installationData['agence_nom'] ?? $formData['agence_nom'] ?? $affectationData['agence_nom'] ?? $formData['departement'] ?? $data['agence_nom'] ??'',}}"
+    <input type="text" name="agence_nom"
+           value="{{ $formData['agence_nom'] ?? $installationData['agence_nom'] ?? '' }}"
            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-bold text-lg"
            placeholder="Ex: SIÈGE, AGENCE NORD..." required>
 </div>

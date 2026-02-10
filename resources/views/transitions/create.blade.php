@@ -382,6 +382,7 @@
                         <option value="{{ $agency->id }}">{{ $agency->nom }}</option>
                     @endforeach
                 </select>
+                <input type="hidden" name="agence_nom" id="agence_nom_hidden">
             </div>
               
                 <!-- SECTION INSTALLATION -->
@@ -1009,10 +1010,11 @@
                                 class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold mb-1">DESTINATION</label>
-                            <input type="text" name="destination" placeholder="Saisir la destination"
-                                class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
-                        </div>
+    <label class="block text-sm font-semibold mb-1">DESTINATION *</label>
+    <input type="text" name="destination" 
+           value="{{ $formData['agence_nom'] ?? $formData['destination'] ?? $mouvementData['destination'] ?? '' }}"
+           class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
+</div>
                         <div>
                             <label class="block text-sm font-semibold mb-1">MOTIF</label>
                             <input type="text" name="motif" placeholder="Saisir le motif"
@@ -1215,6 +1217,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const transitionContainer = document.getElementById('transition-form-container');
     const threeStepContainer = document.getElementById('three-step-flow-container');
 
+    // ✅ AJOUT: Event delegation pour capturer le nom de l'agence (NOUVEAU CODE)
+    document.addEventListener('change', function(e) {
+        // Vérifier si c'est le select d'agence qui a changé
+        if (e.target && e.target.name === 'agency_id') {
+            const agenceNomHidden = document.getElementById('agence_nom_hidden');
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            
+            if (agenceNomHidden && selectedOption.value) {
+                agenceNomHidden.value = selectedOption.textContent.trim();
+                console.log('✅ Agence capturée:', selectedOption.textContent.trim());
+            } else if (agenceNomHidden) {
+                agenceNomHidden.value = '';
+            }
+        }
+    });
+
+    // ✅ ANCIEN CODE CONSERVÉ: Tentative de capture directe (gardé pour compatibilité)
+    const agencySelect = document.getElementById('agency_select');
+    const agenceNomHidden = document.getElementById('agence_nom_hidden');
+    
+    if (agencySelect && agenceNomHidden) {
+        agencySelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                agenceNomHidden.value = selectedOption.textContent.trim();
+            } else {
+                agenceNomHidden.value = '';
+            }
+        });
+    }
+
+    // ✅ ANCIEN CODE CONSERVÉ: Gestion des cartes de transition
     cards.forEach(card => {
         card.addEventListener('click', function() {
             const target = this.dataset.target;
@@ -1358,6 +1392,28 @@ function showStep(stepNumber) {
             break;
     }
     
+// Si étape 3 (mouvement), pré-remplir avec les données de l'affectation
+    if (stepNumber === 3 && formData.affectation_simple) {
+        setTimeout(() => {
+            const form = document.querySelector('#forms-container form');
+            if (form) {
+                // Pré-remplir le réceptionnaire avec les données de l'affectation
+                const nomField = form.querySelector('[name="receptionnaire_nom"]');
+                const prenomField = form.querySelector('[name="receptionnaire_prenom"]');
+                const fonctionField = form.querySelector('[name="receptionnaire_fonction"]');
+                
+                if (nomField) nomField.value = formData.affectation_simple.utilisateur_nom || '';
+                if (prenomField) prenomField.value = formData.affectation_simple.utilisateur_prenom || '';
+                if (fonctionField) fonctionField.value = formData.affectation_simple.position || '';
+                const destinationField = form.querySelector('[name="destination"]');
+            if (destinationField) {
+                // Priorité : agence_nom de l'installation
+                destinationField.value = formData.installation.agence_nom || '';
+            }
+            }
+        }, 100);
+    }
+
     formTemplate.classList.remove('hidden');
     formsContainer.appendChild(formTemplate);
     
@@ -1780,5 +1836,10 @@ function closeSimpleForm() {
         activeCard.classList.remove('active');
     }
 }
+document.querySelector('select[name="agency_id"]').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const agenceNom = selectedOption.textContent;
+    document.getElementById('agence_nom_hidden').value = agenceNom;
+});
 </script>
 @endsection
