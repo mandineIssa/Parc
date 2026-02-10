@@ -414,11 +414,10 @@ private function extractSpecificData(Request $request): array
  */
 public function index(Request $request)
 {
-    // Commencez sans la relation details pour tester
-    $query = Equipment::with(['agence', 'fournisseur']) // Enlevez 'details' temporairement
+    $query = Equipment::with(['agence', 'fournisseur'])
         ->orderBy('created_at', 'desc');
     
-    // Filtres
+    // Filtres...
     if ($request->filled('statut')) {
         $query->where('statut', $request->statut);
     }
@@ -439,7 +438,16 @@ public function index(Request $request)
     
     $equipments = $query->paginate(20);
     
-    return view('equipment.index', compact('equipments'));
+    // AJOUTEZ CE CODE POUR LES STATISTIQUES CORRECTES
+    $stats = [
+        'stock' => Equipment::where('statut', 'stock')->count(),
+        'parc' => Equipment::where('statut', 'parc')->count(),
+        'maintenance' => Equipment::where('statut', 'maintenance')->count(),
+        'hors_service' => Equipment::where('statut', 'hors_service')->count(),
+        'perdu' => Equipment::where('statut', 'perdu')->count(),
+    ];
+    
+    return view('equipment.index', compact('equipments', 'stats'));
 }
     
     /**

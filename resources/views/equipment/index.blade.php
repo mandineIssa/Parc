@@ -48,21 +48,33 @@
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         @php
-            $stats = [
-                ['label' => 'En Stock', 'count' => $equipments->where('statut', 'stock')->count(), 'color' => 'blue', 'icon' => '📦'],
-                ['label' => 'En Parc', 'count' => $equipments->where('statut', 'parc')->count(), 'color' => 'green', 'icon' => '🖥️'],
-                ['label' => 'Maintenance', 'count' => $equipments->where('statut', 'maintenance')->count(), 'color' => 'yellow', 'icon' => '🔧'],
-                ['label' => 'Hors Service', 'count' => $equipments->where('statut', 'hors_service')->count(), 'color' => 'red', 'icon' => '⛔'],
-                ['label' => 'Perdus', 'count' => $equipments->where('statut', 'perdu')->count(), 'color' => 'gray', 'icon' => '❓'],
+            // Récupère les statistiques depuis le contrôleur
+            // Si $stats n'est pas défini (pour compatibilité avec l'ancien code), on utilise une méthode de secours
+            if (!isset($stats)) {
+                $stats = [
+                    'stock' => App\Models\Equipment::where('statut', 'stock')->count(),
+                    'parc' => App\Models\Equipment::where('statut', 'parc')->count(),
+                    'maintenance' => App\Models\Equipment::where('statut', 'maintenance')->count(),
+                    'hors_service' => App\Models\Equipment::where('statut', 'hors_service')->count(),
+                    'perdu' => App\Models\Equipment::where('statut', 'perdu')->count(),
+                ];
+            }
+            
+            $statsConfig = [
+                ['label' => 'En Stock', 'key' => 'stock', 'color' => 'blue', 'icon' => '📦'],
+                ['label' => 'En Parc', 'key' => 'parc', 'color' => 'green', 'icon' => '🖥️'],
+                ['label' => 'Maintenance', 'key' => 'maintenance', 'color' => 'yellow', 'icon' => '🔧'],
+                ['label' => 'Hors Service', 'key' => 'hors_service', 'color' => 'red', 'icon' => '⛔'],
+                ['label' => 'Perdus', 'key' => 'perdu', 'color' => 'gray', 'icon' => '❓'],
             ];
         @endphp
         
-        @foreach($stats as $stat)
+        @foreach($statsConfig as $stat)
         <div class="bg-gradient-to-r from-{{ $stat['color'] }}-500 to-{{ $stat['color'] }}-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">{{ $stat['label'] }}</p>
-                    <p class="text-3xl font-bold mt-2">{{ $stat['count'] }}</p>
+                    <p class="text-3xl font-bold mt-2">{{ $stats[$stat['key']] ?? 0 }}</p>
                     <p class="text-sm opacity-80 mt-1">équipements</p>
                 </div>
                 <div class="bg-white/20 p-3 rounded-full text-xl">
