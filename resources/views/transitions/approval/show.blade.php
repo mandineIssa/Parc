@@ -373,24 +373,22 @@
             </div>
 
             <!-- NOM DE L'AGENCE -->
-          <!--   <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+          <!-- <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
                 <label class="block font-bold text-lg mb-2 text-cofina-red">NOM DE L'AGENCE : *</label>
                 <input type="text" name="agence_nom" 
                        value="{{ $formData['departement'] ?? $installationData['agence_nom'] ?? '' }}"
                        class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-bold text-lg"
                        placeholder="Ex: SIÈGE, AGENCE NORD..." required>
-            </div> -->
-            <!-- NOM DE L'AGENCE -->
-<!-- NOM DE L'AGENCE -->
-<!-- NOM DE L'AGENCE -->
-<div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
-    <label class="block font-bold text-lg mb-2 text-cofina-red">NOM DE L'AGENCE : *</label>
-    <input type="text" name="agence_nom"
-           value="{{ $formData['agence_nom'] ?? $installationData['agence_nom'] ?? '' }}"
-           class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-bold text-lg"
-           placeholder="Ex: SIÈGE, AGENCE NORD..." required>
-</div>
+            </div>  -->
 
+            <!-- NOM DE L'AGENCE -->
+            <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+                <label class="block font-bold text-lg mb-2 text-cofina-red">NOM DE L'AGENCE : *</label>
+                <input type="text" name="agence_nom"
+                    value="{{  $installationData['agence_nom'] ?? '' }}"
+                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-bold text-lg"
+                    placeholder="Ex: SIÈGE, AGENCE NORD..." required>
+            </div>
             <!-- SECTION INSTALLATION -->
             <div class="mb-8 border-3 border-blue-600 p-6 rounded-lg bg-blue-50">
                 <div class="bg-blue-600 text-white px-4 py-3 -mx-6 -mt-6 mb-6 rounded-t-lg">
