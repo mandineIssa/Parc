@@ -9,23 +9,15 @@
             <p class="text-gray-600 mt-2">Gestion du parc informatique et des affectations</p>
         </div>
         <div class="flex gap-3 mt-4 md:mt-0">
-             <a href="{{ route('equipment.imports.form') }}"
-       class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center {{ request()->routeIs('equipment.imports.*') ? 'ring-2 ring-green-300' : '' }}">
-        
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
-        </svg>
-
-        <span>Import Équipements</span>
-    </a>
-            <!-- <a href="{{ route('parc.import.form') }}" 
-               class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center">
+            <a href="{{ route('equipment.imports.form') }}"
+               class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center {{ request()->routeIs('equipment.imports.*') ? 'ring-2 ring-green-300' : '' }}">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
                 </svg>
-                Importer CSV
-            </a> -->
+                <span>Import Équipements</span>
+            </a>
+            
             <a href="{{ route('parc.export') }}" 
                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,6 +25,7 @@
                 </svg>
                 Exporter CSV
             </a>
+            
             <a href="{{ route('parc.create') }}" 
                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,7 +40,12 @@
     <div class="mb-6 flex flex-wrap gap-2">
         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-50 text-green-700 border border-green-100">
             <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-            {{ $equipments->total() }} Équipements en parc
+            {{ $equipments->total() }} Équipement{{ $equipments->total() > 1 ? 's' : '' }}
+            @if(request()->hasAny(['search', 'type', 'etat', 'filtre_rapide']))
+                (filtrés)
+            @else
+                en parc
+            @endif
         </span>
         @if($prixTotal > 0)
         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-50 text-blue-700 border border-blue-100">
@@ -60,18 +58,20 @@
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
         @php
-            // Récupérer les statistiques réelles depuis la base de données
             use App\Models\Equipment;
             
-            $countReseau = Equipment::whereHas('parc')->where('type', 'Réseau')->count();
-            $countInformatique = Equipment::whereHas('parc')->where('type', 'Informatique')->count();
-            $countElectronique = Equipment::whereHas('parc')->where('type', 'Électronique')->count();
-            $countEnService = Equipment::whereHas('parc')->whereIn('etat', ['neuf', 'bon','moyen'])->count();
-            $countARemplacer = Equipment::whereHas('parc')->where('etat', 'mauvais')->count();
+            $countReseau = Equipment::where('statut', 'parc')->where('type', 'Réseau')->count();
+            $countInformatique = Equipment::where('statut', 'parc')->where('type', 'Informatique')->count();
+            $countElectronique = Equipment::where('statut', 'parc')->where('type', 'Électronique')->count();
+            $countEnService = Equipment::where('statut', 'parc')->whereIn('etat', ['neuf', 'bon','moyen'])->count();
+            $countARemplacer = Equipment::where('statut', 'parc')->where('etat', 'mauvais')->count();
             
-            $valeurReseau = Equipment::whereHas('parc')->where('type', 'Réseau')->sum('prix');
-            $valeurInformatique = Equipment::whereHas('parc')->where('type', 'Informatique')->sum('prix');
-            $valeurElectronique = Equipment::whereHas('parc')->where('type', 'Électronique')->sum('prix');
+            $valeurReseau = Equipment::where('statut', 'parc')->where('type', 'Réseau')->sum('prix');
+            $valeurInformatique = Equipment::where('statut', 'parc')->where('type', 'Informatique')->sum('prix');
+            $valeurElectronique = Equipment::where('statut', 'parc')->where('type', 'Électronique')->sum('prix');
+            
+            $totalParcCount = Equipment::where('statut', 'parc')->count();
+            $totalParcValue = Equipment::where('statut', 'parc')->sum('prix');
             
             $stats = [
                 ['label' => 'Réseau', 'count' => $countReseau, 'valeur' => $valeurReseau, 'color' => 'blue', 'icon' => '🌐'],
@@ -79,7 +79,7 @@
                 ['label' => 'Électronique', 'count' => $countElectronique, 'valeur' => $valeurElectronique, 'color' => 'purple', 'icon' => '🔌'],
                 ['label' => 'En Service', 'count' => $countEnService, 'valeur' => 0, 'color' => 'green', 'icon' => '✓'],
                 ['label' => 'À Remplacer', 'count' => $countARemplacer, 'valeur' => 0, 'color' => 'red', 'icon' => '⚠️'],
-                ['label' => 'Valeur totale', 'count' => $equipments->total(), 'valeur' => $prixTotal, 'color' => 'yellow', 'icon' => '💰'],
+                ['label' => 'Valeur totale', 'count' => $totalParcCount, 'valeur' => $totalParcValue, 'color' => 'yellow', 'icon' => '💰'],
             ];
         @endphp
         
@@ -103,8 +103,8 @@
         @endforeach
     </div>
 
-    <!-- Filtres -->
-    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+    <!-- Formulaire de filtres -->
+    <form method="GET" action="{{ route('parc.index') }}" id="searchForm" class="bg-white rounded-xl shadow-md p-6 mb-8">
         <div class="flex flex-col md:flex-row gap-4">
             <div class="flex-1">
                 <div class="relative">
@@ -114,15 +114,17 @@
                         </svg>
                     </div>
                     <input type="text" 
+                           name="search"
                            id="searchInput"
                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
-                           placeholder="Rechercher par N° série, nom, modèle, utilisateur..."
-                           value="{{ request('search') }}">
+                           placeholder="Rechercher par N° série, nom, modèle, utilisateur, agence..."
+                           value="{{ request('search') }}"
+                           autocomplete="off">
                 </div>
             </div>
             
             <div class="w-full md:w-48">
-                <select id="typeFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-white">
+                <select name="type" id="typeFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-white">
                     <option value="">Tous les types</option>
                     <option value="Réseau" {{ request('type') == 'Réseau' ? 'selected' : '' }}>Réseau</option>
                     <option value="Informatique" {{ request('type') == 'Informatique' ? 'selected' : '' }}>Informatique</option>
@@ -131,7 +133,7 @@
             </div>
             
             <div class="w-full md:w-48">
-                <select id="etatFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-white">
+                <select name="etat" id="etatFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-white">
                     <option value="">Tous les états</option>
                     <option value="neuf" {{ request('etat') == 'neuf' ? 'selected' : '' }}>Neuf</option>
                     <option value="bon" {{ request('etat') == 'bon' ? 'selected' : '' }}>Bon</option>
@@ -140,55 +142,79 @@
                 </select>
             </div>
             
-            <button id="resetFilters" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition flex items-center">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center whitespace-nowrap">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Rechercher
+            </button>
+            
+            <a href="{{ route('parc.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center whitespace-nowrap">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
                 Réinitialiser
-            </button>
+            </a>
         </div>
         
         <!-- Filtres rapides -->
+        <input type="hidden" name="filtre_rapide" id="filtreRapideInput" value="{{ request('filtre_rapide') }}">
+        
         <div class="mt-4 pt-4 border-t border-gray-100">
             <div class="flex flex-wrap gap-2">
                 <span class="text-sm text-gray-500 flex items-center mr-3">Filtres rapides :</span>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition" data-filter="all">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ !request()->hasAny(['search', 'type', 'etat', 'filtre_rapide']) ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200' }}" data-filter="">
                     Tous
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition" data-filter="réseau">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'reseau' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800 hover:bg-blue-200' }}" data-filter="reseau">
                     Réseau
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition" data-filter="informatique">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'informatique' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200' }}" data-filter="informatique">
                     Informatique
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-purple-100 text-purple-800 hover:bg-purple-200 transition" data-filter="électronique">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'electronique' ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-800 hover:bg-purple-200' }}" data-filter="electronique">
                     Électronique
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-red-100 text-red-800 hover:bg-red-200 transition" data-filter="a_remplacer">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'a_remplacer' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200' }}" data-filter="a_remplacer">
                     À remplacer
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition" data-filter="non_affecte">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'non_affecte' ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' }}" data-filter="non_affecte">
                     Non affecté
                 </button>
             </div>
         </div>
-    </div>
+    </form>
 
     <!-- Informations de recherche -->
-    <div id="searchResultsInfo" class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 hidden">
+    @if(request()->hasAny(['search', 'type', 'etat', 'filtre_rapide']))
+    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
         <div class="flex justify-between items-center">
             <div>
-                <span id="resultsCount" class="text-green-800 font-medium">0 résultats</span>
-                <span id="searchTerm" class="text-green-600 text-sm ml-4"></span>
+                <span class="text-green-800 font-medium">{{ $equipments->total() }} résultat{{ $equipments->total() > 1 ? 's' : '' }}</span>
+                <span class="text-green-600 text-sm ml-4">
+                    @if(request('search'))
+                        Recherche : "{{ request('search') }}"
+                    @endif
+                    @if(request('type'))
+                        • Type : {{ request('type') }}
+                    @endif
+                    @if(request('etat'))
+                        • État : {{ ucfirst(request('etat')) }}
+                    @endif
+                    @if(request('filtre_rapide'))
+                        • Filtre : {{ ucfirst(str_replace('_', ' ', request('filtre_rapide'))) }}
+                    @endif
+                </span>
             </div>
-            <button id="clearAllFilters" class="text-green-600 hover:text-green-800 text-sm font-medium">
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            <a href="{{ route('parc.index') }}" class="text-green-600 hover:text-green-800 text-sm font-medium inline-flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
-                Tout effacer
-            </button>
+                Effacer les filtres
+            </a>
         </div>
     </div>
+    @endif
 
     <!-- Tableau des équipements -->
     <div class="bg-white rounded-xl shadow-md overflow-hidden">
@@ -196,10 +222,13 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-semibold text-gray-800">Liste des Équipements</h2>
-                    <p class="text-sm text-gray-600 mt-1" id="totalCount">{{ $equipments->total() }} équipement{{ $equipments->total() > 1 ? 's' : '' }} au total</p>
-                </div>
-                <div class="text-sm text-gray-500">
-                    <span id="filteredCount"></span>
+                    <p class="text-sm text-gray-600 mt-1">
+                        @if($equipments->total() > 0)
+                            Affichage de {{ $equipments->firstItem() }} à {{ $equipments->lastItem() }} sur {{ $equipments->total() }} équipement{{ $equipments->total() > 1 ? 's' : '' }}
+                        @else
+                            Aucun équipement trouvé
+                        @endif
+                    </p>
                 </div>
             </div>
         </div>
@@ -216,19 +245,9 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200" id="equipmentsTableBody">
+                <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($equipments as $equipment)
-                    <tr class="equipment-row hover:bg-gray-50 transition-colors"
-                        data-id="{{ $equipment->id }}"
-                        data-nom="{{ strtolower($equipment->nom) }}"
-                        data-numero="{{ strtolower($equipment->numero_serie) }}"
-                        data-modele="{{ strtolower($equipment->modele) }}"
-                        data-marque="{{ strtolower($equipment->marque) }}"
-                        data-type="{{ strtolower($equipment->type) }}"
-                        data-etat="{{ strtolower($equipment->etat) }}"
-                        data-utilisateur="{{ $equipment->parc ? strtolower(trim(($equipment->parc->utilisateur_nom ?? '') . ' ' . ($equipment->parc->utilisateur_prenom ?? ''))) : '' }}"
-                        data-localisation="{{ strtolower($equipment->parc->localisation ?? $equipment->localisation ?? '') }}"
-                        data-agence="{{ strtolower($equipment->agencies->nom ?? '') }}">
+                    <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-start">
                                 <div class="flex-shrink-0 h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center mr-3">
@@ -237,13 +256,13 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="font-medium text-gray-900 equipment-nom">{{ $equipment->nom }}</div>
+                                    <div class="font-medium text-gray-900">{{ $equipment->nom }}</div>
                                     <div class="text-sm text-gray-500 mt-1">
                                         <span class="inline-flex items-center">
                                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
                                             </svg>
-                                            N°: <span class="equipment-numero">{{ $equipment->numero_serie }}</span>
+                                            N°: {{ $equipment->numero_serie }}
                                         </span>
                                         @if($equipment->numero_codification)
                                         <span class="inline-flex items-center ml-3">
@@ -254,7 +273,7 @@
                                         </span>
                                         @endif
                                     </div>
-                                    <div class="text-xs text-gray-400 mt-1 equipment-modele">{{ $equipment->marque }} {{ $equipment->modele }}</div>
+                                    <div class="text-xs text-gray-400 mt-1">{{ $equipment->marque }} {{ $equipment->modele }}</div>
                                 </div>
                             </div>
                         </td>
@@ -295,7 +314,7 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <div class="font-medium text-gray-900 equipment-utilisateur">
+                                    <div class="font-medium text-gray-900">
                                         {{ trim(($equipment->parc->utilisateur_nom ?? '') . ' ' . ($equipment->parc->utilisateur_prenom ?? '')) ?: 'N/A' }}
                                     </div>
                                     <div class="text-sm text-gray-500">{{ $equipment->parc->departement ?? 'N/A' }}</div>
@@ -312,15 +331,14 @@
                                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
                                 </svg>
                                 <div>
-                                    <div class="font-medium text-gray-900 equipment-agence">
+                                    <div class="font-medium text-gray-900">
                                         @if($equipment->agence)
-                                        {{ $equipment->agence->nom }}
-                                    @else
-                                        <span class="text-orange-600 italic">À assigner</span>
-                                    @endif
-
+                                            {{ $equipment->agence->nom }}
+                                        @else
+                                            <span class="text-orange-600 italic">À assigner</span>
+                                        @endif
                                     </div>
-                                    <div class="text-sm text-gray-500 equipment-localisation">
+                                    <div class="text-sm text-gray-500">
                                         {{ $equipment->parc->localisation ?? $equipment->localisation ?? 'N/A' }}
                                     </div>
                                 </div>
@@ -329,7 +347,7 @@
                         
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ $equipment->date_livraison->format('d/m/Y') }}</div>
-                            <div class="text-xs text-gray-500">Livré il y a {{ $equipment->date_livraison->diffForHumans() }}</div>
+                            <div class="text-xs text-gray-500">{{ $equipment->date_livraison->diffForHumans() }}</div>
                         </td>
                         
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
@@ -377,14 +395,12 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                                     </svg>
                                 </a>
-                                @endif
-
-                                @if($equipment->latestTransitionApproval)
+                                
                                 <a href="{{ route('transitions.fiche-installation.download', $equipment->latestTransitionApproval->id) }}"
-                                   class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition"
+                                   class="text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 p-2 rounded-lg transition"
                                    title="Télécharger installation PDF">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                     </svg>
                                 </a>
                                 @endif
@@ -392,29 +408,51 @@
                         </td>
                     </tr>
                     @empty
-                    <tr id="noResultsRow" style="display: none;">
+                    <tr>
                         <td colspan="6" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center">
                                 <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                 </svg>
-                                <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun équipement en parc</h3>
-                                <p class="text-gray-500 mb-6">Commencez par affecter un équipement au parc</p>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">
+                                    @if(request()->hasAny(['search', 'type', 'etat', 'filtre_rapide']))
+                                        Aucun résultat trouvé
+                                    @else
+                                        Aucun équipement en parc
+                                    @endif
+                                </h3>
+                                <p class="text-gray-500 mb-6">
+                                    @if(request()->hasAny(['search', 'type', 'etat', 'filtre_rapide']))
+                                        Essayez de modifier vos critères de recherche
+                                    @else
+                                        Commencez par affecter un équipement au parc
+                                    @endif
+                                </p>
                                 <div class="flex gap-3">
-                                    <a href="{{ route('parc.import.form') }}" 
-                                       class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg inline-flex items-center">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
-                                        </svg>
-                                        Importer CSV
-                                    </a>
-                                    <a href="{{ route('parc.create') }}" 
-                                       class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg inline-flex items-center">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                        </svg>
-                                        Nouvelle Affectation
-                                    </a>
+                                    @if(request()->hasAny(['search', 'type', 'etat', 'filtre_rapide']))
+                                        <a href="{{ route('parc.index') }}" 
+                                           class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg inline-flex items-center">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            Réinitialiser les filtres
+                                        </a>
+                                    @else
+                                        <a href="{{ route('equipment.imports.form') }}" 
+                                           class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg inline-flex items-center">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                                            </svg>
+                                            Importer CSV
+                                        </a>
+                                        <a href="{{ route('parc.create') }}" 
+                                           class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg inline-flex items-center">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                            Nouvelle Affectation
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </td>
@@ -425,6 +463,7 @@
         </div>
 
         <!-- Pagination -->
+        @if($equipments->hasPages())
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
             <div class="flex flex-col md:flex-row items-center justify-between">
                 <div class="mb-4 md:mb-0">
@@ -443,6 +482,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     <!-- Informations -->
@@ -474,364 +514,83 @@
 </div>
 
 <script>
-// Fonction de recherche dynamique
 document.addEventListener('DOMContentLoaded', function() {
-    // Récupérer les éléments
     const searchInput = document.getElementById('searchInput');
+    const searchForm = document.getElementById('searchForm');
     const typeFilter = document.getElementById('typeFilter');
     const etatFilter = document.getElementById('etatFilter');
-    const resetButton = document.getElementById('resetFilters');
-    const clearAllFilters = document.getElementById('clearAllFilters');
+    const filtreRapideInput = document.getElementById('filtreRapideInput');
     const filterButtons = document.querySelectorAll('.filter-btn');
-    const searchResultsInfo = document.getElementById('searchResultsInfo');
-    const resultsCount = document.getElementById('resultsCount');
-    const searchTerm = document.getElementById('searchTerm');
-    const totalCount = document.getElementById('totalCount');
-    const filteredCount = document.getElementById('filteredCount');
-    const noResultsRow = document.querySelector('#noResultsRow');
     
-    const equipmentRows = document.querySelectorAll('.equipment-row');
-    const totalEquipments = equipmentRows.length;
-    let currentFilter = '';
-    
-    // Fonction pour normaliser le texte (supprime les accents)
-    function normalizeText(text) {
-        if (!text) return '';
-        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-    }
-    
-    // Fonction pour vérifier si le terme de recherche correspond à l'utilisateur
-    function matchesUser(searchTermValue, utilisateur) {
-        if (!searchTermValue || !utilisateur) return false;
-        
-        const normalizedSearch = normalizeText(searchTermValue);
-        const normalizedUser = normalizeText(utilisateur);
-        
-        // Recherche exacte
-        if (normalizedUser.includes(normalizedSearch)) {
-            return true;
-        }
-        
-        // Recherche par mots séparés (nom et prénom dans n'importe quel ordre)
-        const searchWords = normalizedSearch.split(/\s+/).filter(word => word.length > 0);
-        const userWords = normalizedUser.split(/\s+/).filter(word => word.length > 0);
-        
-        // Vérifier si tous les mots de recherche correspondent
-        return searchWords.every(searchWord => 
-            userWords.some(userWord => userWord.includes(searchWord))
-        );
-    }
-    
-    // Fonction pour mettre en surbrillance le texte correspondant
-    function highlightText(element, searchTerm) {
-        if (!searchTerm || !element) return;
-        
-        const text = element.textContent;
-        const words = searchTerm.trim().split(/\s+/);
-        let highlightedText = text;
-        
-        words.forEach(word => {
-            if (word.length > 0) {
-                const regex = new RegExp(`(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-                highlightedText = highlightedText.replace(regex, '<span class="search-highlight">$1</span>');
-            }
-        });
-        
-        element.innerHTML = highlightedText;
-    }
-    
-    // Fonction pour enlever les surbrillances
-    function removeHighlights() {
-        document.querySelectorAll('.search-highlight').forEach(el => {
-            const parent = el.parentNode;
-            parent.replaceChild(document.createTextNode(el.textContent), el);
-            parent.normalize();
-        });
-    }
-    
-    // Fonction de filtrage
-    function filterEquipments() {
-        const searchTermValue = searchInput.value.trim();
-        const normalizedSearch = normalizeText(searchTermValue);
-        const selectedType = typeFilter.value;
-        const selectedEtat = etatFilter.value;
-        let visibleCount = 0;
-        
-        // Supprimer les anciennes surbrillances
-        removeHighlights();
-        
-        // Masquer la ligne "aucun résultat" par défaut
-        if (noResultsRow) {
-            noResultsRow.style.display = 'none';
-        }
-        
-        // Masquer les informations de recherche si pas de recherche
-        if (!searchTermValue && !selectedType && !selectedEtat && !currentFilter) {
-            searchResultsInfo.classList.add('hidden');
-        } else {
-            searchResultsInfo.classList.remove('hidden');
-        }
-        
-        // Filtrer les lignes
-        equipmentRows.forEach(row => {
-            const nom = normalizeText(row.getAttribute('data-nom'));
-            const numero = normalizeText(row.getAttribute('data-numero'));
-            const modele = normalizeText(row.getAttribute('data-modele'));
-            const marque = normalizeText(row.getAttribute('data-marque'));
-            const type = row.getAttribute('data-type');
-            const etat = row.getAttribute('data-etat');
-            const utilisateur = row.getAttribute('data-utilisateur');
-            const localisation = normalizeText(row.getAttribute('data-localisation'));
-            const agence = normalizeText(row.getAttribute('data-agence'));
-            
-            // Vérifier la correspondance avec la recherche
-            const searchMatch = !normalizedSearch || 
-                nom.includes(normalizedSearch) ||
-                numero.includes(normalizedSearch) ||
-                modele.includes(normalizedSearch) ||
-                marque.includes(normalizedSearch) ||
-                matchesUser(searchTermValue, utilisateur) ||
-                localisation.includes(normalizedSearch) ||
-                agence.includes(normalizedSearch);
-            
-            // Vérifier la correspondance avec le type
-            const typeMatch = !selectedType || 
-                (selectedType === 'Réseau' && type === 'réseau') ||
-                (selectedType === 'Informatique' && type === 'informatique') ||
-                (selectedType === 'Électronique' && type === 'électronique');
-            
-            // Vérifier la correspondance avec l'état
-            const etatMatch = !selectedEtat || 
-                (selectedEtat === 'neuf' && etat === 'neuf') ||
-                (selectedEtat === 'bon' && etat === 'bon') ||
-                (selectedEtat === 'moyen' && etat === 'moyen') ||
-                (selectedEtat === 'mauvais' && etat === 'mauvais');
-            
-            // Vérifier la correspondance avec le filtre rapide
-            let filterMatch = true;
-            if (currentFilter === 'réseau') {
-                filterMatch = type === 'réseau';
-            } else if (currentFilter === 'informatique') {
-                filterMatch = type === 'informatique';
-            } else if (currentFilter === 'électronique') {
-                filterMatch = type === 'électronique';
-            } else if (currentFilter === 'a_remplacer') {
-                filterMatch = etat === 'mauvais';
-            } else if (currentFilter === 'non_affecte') {
-                filterMatch = utilisateur === '';
-            } else if (currentFilter === 'all') {
-                filterMatch = true;
-            }
-            
-            if (searchMatch && typeMatch && etatMatch && filterMatch) {
-                row.style.display = '';
-                visibleCount++;
-                
-                // Mettre en surbrillance le texte recherché
-                if (searchTermValue) {
-                    const nomElement = row.querySelector('.equipment-nom');
-                    const numeroElement = row.querySelector('.equipment-numero');
-                    const modeleElement = row.querySelector('.equipment-modele');
-                    const utilisateurElement = row.querySelector('.equipment-utilisateur');
-                    const localisationElement = row.querySelector('.equipment-localisation');
-                    const agenceElement = row.querySelector('.equipment-agence');
-                    
-                    if (nomElement) highlightText(nomElement, searchTermValue);
-                    if (numeroElement) highlightText(numeroElement, searchTermValue);
-                    if (modeleElement) highlightText(modeleElement, searchTermValue);
-                    if (utilisateurElement) highlightText(utilisateurElement, searchTermValue);
-                    if (localisationElement) highlightText(localisationElement, searchTermValue);
-                    if (agenceElement) highlightText(agenceElement, searchTermValue);
-                }
-            } else {
-                row.style.display = 'none';
-            }
-        });
-        
-        // Mettre à jour les informations de recherche
-        updateSearchInfo(searchTermValue, selectedType, selectedEtat, visibleCount);
-        
-        // Afficher le message "aucun résultat" si besoin
-        if (visibleCount === 0) {
-            if (noResultsRow) {
-                noResultsRow.style.display = '';
-            }
-        }
-    }
-    
-    // Mettre à jour les informations de recherche
-    function updateSearchInfo(searchTermValue, selectedType, selectedEtat, visibleCount) {
-        if (resultsCount) {
-            resultsCount.textContent = `${visibleCount} résultat${visibleCount > 1 ? 's' : ''}`;
-        }
-        
-        if (filteredCount) {
-            filteredCount.textContent = visibleCount === totalEquipments ? '' : `${visibleCount} sur ${totalEquipments}`;
-        }
-        
-        if (searchTerm) {
-            let infoText = '';
-            if (searchTermValue) {
-                infoText += `Recherche : "${searchTermValue}"`;
-            }
-            if (selectedType) {
-                if (infoText) infoText += ' • ';
-                infoText += `Type : ${selectedType}`;
-            }
-            if (selectedEtat) {
-                if (infoText) infoText += ' • ';
-                infoText += `État : ${getEtatName(selectedEtat)}`;
-            }
-            if (currentFilter && currentFilter !== 'all') {
-                if (infoText) infoText += ' • ';
-                infoText += `Filtre : ${getFilterName(currentFilter)}`;
-            }
-            searchTerm.textContent = infoText;
-        }
-    }
-    
-    // Obtenir le nom de l'état
-    function getEtatName(etat) {
-        switch(etat) {
-            case 'neuf': return 'Neuf';
-            case 'bon': return 'Bon';
-            case 'moyen': return 'Moyen';
-            case 'mauvais': return 'Mauvais';
-            default: return etat;
-        }
-    }
-    
-    // Obtenir le nom du filtre
-    function getFilterName(filter) {
-        switch(filter) {
-            case 'all': return 'Tous';
-            case 'réseau': return 'Réseau';
-            case 'informatique': return 'Informatique';
-            case 'électronique': return 'Électronique';
-            case 'a_remplacer': return 'À remplacer';
-            case 'non_affecte': return 'Non affecté';
-            default: return '';
-        }
-    }
-    
-    // Mettre à jour l'état des boutons de filtre
-    function updateFilterButtons() {
-        filterButtons.forEach(btn => {
-            const filter = btn.dataset.filter;
-            if (filter === currentFilter) {
-                btn.classList.add('ring-2', 'ring-offset-2', 'ring-green-500');
-            } else {
-                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-green-500');
-            }
-        });
-    }
-    
-    // Événements
-    searchInput.addEventListener('input', filterEquipments);
-    typeFilter.addEventListener('change', filterEquipments);
-    etatFilter.addEventListener('change', filterEquipments);
-    
-    resetButton.addEventListener('click', function() {
-        searchInput.value = '';
-        typeFilter.value = '';
-        etatFilter.value = '';
-        currentFilter = '';
-        updateFilterButtons();
-        filterEquipments();
-        searchInput.focus();
-    });
-    
-    clearAllFilters.addEventListener('click', function() {
-        searchInput.value = '';
-        typeFilter.value = '';
-        etatFilter.value = '';
-        currentFilter = '';
-        updateFilterButtons();
-        filterEquipments();
-        searchInput.focus();
-    });
-    
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            currentFilter = this.dataset.filter;
-            
-            if (currentFilter === 'réseau') {
-                typeFilter.value = 'Réseau';
-                etatFilter.value = '';
-            } else if (currentFilter === 'informatique') {
-                typeFilter.value = 'Informatique';
-                etatFilter.value = '';
-            } else if (currentFilter === 'électronique') {
-                typeFilter.value = 'Électronique';
-                etatFilter.value = '';
-            } else if (currentFilter === 'a_remplacer') {
-                typeFilter.value = '';
-                etatFilter.value = 'mauvais';
-            } else if (currentFilter === 'non_affecte') {
-                typeFilter.value = '';
-                etatFilter.value = '';
-            } else if (currentFilter === 'all') {
-                typeFilter.value = '';
-                etatFilter.value = '';
-            }
-            
-            updateFilterButtons();
-            filterEquipments();
-        });
-    });
-    
-    // Debouncing pour les performances
+    // Debounce pour la recherche automatique (optionnel - soumission après 800ms sans frappe)
     let debounceTimer;
     searchInput.addEventListener('input', function() {
+        // Indicateur visuel pendant la frappe
+        searchInput.classList.add('bg-yellow-50');
+        
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(filterEquipments, 300);
+        debounceTimer = setTimeout(() => {
+            searchForm.submit();
+        }, 800);
     });
     
-    // Recherche avec Entrée
+    // Soumission automatique lors du changement de filtre
+    typeFilter.addEventListener('change', function() {
+        searchForm.submit();
+    });
+    
+    etatFilter.addEventListener('change', function() {
+        searchForm.submit();
+    });
+    
+    // Gestion des filtres rapides
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filter = this.getAttribute('data-filter');
+            
+            // Mettre à jour le champ caché
+            filtreRapideInput.value = filter;
+            
+            // Si filtre vide, réinitialiser aussi les autres filtres
+            if (filter === '') {
+                typeFilter.value = '';
+                etatFilter.value = '';
+                searchInput.value = '';
+            }
+            
+            // Soumettre le formulaire
+            searchForm.submit();
+        });
+    });
+    
+    // Touche Entrée pour soumettre immédiatement
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
-            filterEquipments();
+            clearTimeout(debounceTimer); // Annuler le debounce
+            searchForm.submit();
         }
     });
     
-    // Initialiser avec les valeurs de l'URL
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('search')) {
-        searchInput.value = urlParams.get('search');
-    }
-    if (urlParams.has('type')) {
-        typeFilter.value = urlParams.get('type');
-    }
-    if (urlParams.has('etat')) {
-        etatFilter.value = urlParams.get('etat');
-    }
-    
-    // Initialiser le filtrage
-    filterEquipments();
+    // Retirer l'indicateur lors de la soumission
+    searchForm.addEventListener('submit', function() {
+        searchInput.classList.remove('bg-yellow-50');
+        searchInput.classList.add('bg-gray-100');
+        searchInput.disabled = true;
+    });
 });
 </script>
 
 <style>
-/* Styles personnalisés */
-.search-highlight {
-    background-color: #FFEB3B !important;
-    padding: 0.1em 0.2em !important;
-    border-radius: 0.2em !important;
-    font-weight: 600 !important;
-    color: #000 !important;
+/* Animation pour les transitions */
+.transition-colors {
+    transition: background-color 0.3s ease;
 }
 
-/* Animation pour les résultats de recherche */
-.equipment-row {
-    transition: all 0.3s ease !important;
-}
-
-.equipment-row[style*="display: none"] {
-    opacity: 0 !important;
-    transform: translateX(-10px) !important;
-    height: 0 !important;
-    overflow: hidden !important;
+/* Indicateur de recherche */
+.bg-yellow-50 {
+    transition: background-color 0.2s ease;
 }
 
 /* Responsive */
@@ -845,23 +604,11 @@ document.addEventListener('DOMContentLoaded', function() {
         font-size: 0.875rem;
     }
     
-    .grid-cols-1 {
-        grid-template-columns: 1fr;
+    /* Empêche le zoom sur iOS */
+    input[type="text"], 
+    select {
+        font-size: 16px;
     }
-    
-    .grid-cols-6 {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    /* Amélioration de la recherche sur mobile */
-    input[type="text"], select {
-        font-size: 16px; /* Empêche le zoom sur iOS */
-    }
-}
-
-/* Animation douce pour les changements */
-.transition-all {
-    transition: all 0.3s ease;
 }
 </style>
 @endsection

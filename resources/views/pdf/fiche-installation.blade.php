@@ -619,7 +619,7 @@ if (isset($data['agency_id']) && !empty($data['agency_id'])) {
         </tr>
     </table>
 </div>
-
+ 
 <!-- NOTE FINALE -->
 <div class="final-note">
     <strong>NB :</strong> Toute installation de machine nécessite le remplissage de cette fiche par l'installateur et le vérificateur qui doivent en garder une copie avant d'acheminer la machine vers le Destinataire.

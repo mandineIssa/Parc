@@ -16,13 +16,17 @@ class ParcController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    /**
+     * Afficher la liste du parc d'équipements avec filtres
+     */
     public function index(Request $request)
     {
-        // Récupérer les équipements avec statut "parc" (PAGINÉS)
+        // Construction de la requête de base
         $query = Equipment::where('statut', 'parc')
-            ->with(['fournisseur', 'parc.utilisateur']);
+            ->with(['fournisseur', 'parc', 'agence']);
         
-        // Appliquer les filtres
+        // Recherche globale
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function($q) use ($search) {
@@ -31,25 +35,59 @@ class ParcController extends Controller
                   ->orWhere('marque', 'LIKE', "%{$search}%")
                   ->orWhere('modele', 'LIKE', "%{$search}%")
                   ->orWhere('numero_codification', 'LIKE', "%{$search}%")
-                  ->orWhereHas('parc.utilisateur', function($userQuery) use ($search) {
-                      $userQuery->where('name', 'LIKE', "%{$search}%");
+                  // Recherche dans les données du parc
+                  ->orWhereHas('parc', function($parcQuery) use ($search) {
+                      $parcQuery->where('utilisateur_nom', 'LIKE', "%{$search}%")
+                               ->orWhere('utilisateur_prenom', 'LIKE', "%{$search}%")
+                               ->orWhere('localisation', 'LIKE', "%{$search}%")
+                               ->orWhere('departement', 'LIKE', "%{$search}%");
+                  })
+                  // Recherche dans l'agence
+                  ->orWhereHas('agence', function($agenceQuery) use ($search) {
+                      $agenceQuery->where('nom', 'LIKE', "%{$search}%");
                   });
             });
         }
         
+        // Filtre par type
         if ($request->filled('type')) {
             $query->where('type', $request->input('type'));
         }
 
+        // Filtre par état
         if ($request->filled('etat')) {
             $query->where('etat', $request->input('etat'));
         }
         
-        // IMPORTANT: Utiliser paginate() pour avoir ->total(), ->links(), etc.
-        $equipments = $query->orderBy('created_at', 'desc')->paginate(20);
+        // Filtre rapide
+        if ($request->filled('filtre_rapide')) {
+            $filtreRapide = $request->input('filtre_rapide');
+            
+            switch ($filtreRapide) {
+                case 'a_remplacer':
+                    $query->where('etat', 'mauvais');
+                    break;
+                case 'non_affecte':
+                    $query->whereDoesntHave('parc');
+                    break;
+                case 'reseau':
+                    $query->where('type', 'Réseau');
+                    break;
+                case 'informatique':
+                    $query->where('type', 'Informatique');
+                    break;
+                case 'electronique':
+                    $query->where('type', 'Électronique');
+                    break;
+            }
+        }
         
-        // Calculer le prix total des équipements filtrés
-        // On doit refaire la requête pour éviter les problèmes avec paginate()
+        // Pagination avec conservation des paramètres de recherche
+        $equipments = $query->orderBy('created_at', 'desc')
+                            ->paginate(20)
+                            ->withQueryString();
+        
+        // Calcul du prix total (sur les résultats filtrés, pas paginés)
         $prixTotalQuery = Equipment::where('statut', 'parc');
         
         // Appliquer les mêmes filtres pour le calcul du prix
@@ -61,8 +99,14 @@ class ParcController extends Controller
                   ->orWhere('marque', 'LIKE', "%{$search}%")
                   ->orWhere('modele', 'LIKE', "%{$search}%")
                   ->orWhere('numero_codification', 'LIKE', "%{$search}%")
-                  ->orWhereHas('parc.utilisateur', function($userQuery) use ($search) {
-                      $userQuery->where('name', 'LIKE', "%{$search}%");
+                  ->orWhereHas('parc', function($parcQuery) use ($search) {
+                      $parcQuery->where('utilisateur_nom', 'LIKE', "%{$search}%")
+                               ->orWhere('utilisateur_prenom', 'LIKE', "%{$search}%")
+                               ->orWhere('localisation', 'LIKE', "%{$search}%")
+                               ->orWhere('departement', 'LIKE', "%{$search}%");
+                  })
+                  ->orWhereHas('agence', function($agenceQuery) use ($search) {
+                      $agenceQuery->where('nom', 'LIKE', "%{$search}%");
                   });
             });
         }
@@ -75,11 +119,33 @@ class ParcController extends Controller
             $prixTotalQuery->where('etat', $request->input('etat'));
         }
         
-        // CORRECTION: Utiliser 'prix' au lieu de 'prix_achat'
+        if ($request->filled('filtre_rapide')) {
+            $filtreRapide = $request->input('filtre_rapide');
+            
+            switch ($filtreRapide) {
+                case 'a_remplacer':
+                    $prixTotalQuery->where('etat', 'mauvais');
+                    break;
+                case 'non_affecte':
+                    $prixTotalQuery->whereDoesntHave('parc');
+                    break;
+                case 'reseau':
+                    $prixTotalQuery->where('type', 'Réseau');
+                    break;
+                case 'informatique':
+                    $prixTotalQuery->where('type', 'Informatique');
+                    break;
+                case 'electronique':
+                    $prixTotalQuery->where('type', 'Électronique');
+                    break;
+            }
+        }
+        
         $prixTotal = $prixTotalQuery->sum('prix');
         
         return view('equipment.parc.index', compact('equipments', 'prixTotal'));
     }
+
 
     /**
      * Show the form for creating a new resource.
