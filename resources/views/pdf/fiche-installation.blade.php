@@ -18,16 +18,17 @@
 
     body {
         font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
-        font-size: 9pt;
+        font-size: 8.5pt; /* Réduit de 9pt à 8.5pt */
         color: #000;
         margin: 0;
         padding: 1mm 1mm;
+        line-height: 1.1; /* Réduit l'interligne */
     }
 
     /* ================= EN-TÊTE ================= */
     .header-box {
         border: 2px solid #000;
-        margin-bottom: 1mm;
+        margin-bottom: 0.5mm; /* Réduit la marge */
     }
 
     .header-table {
@@ -38,61 +39,46 @@
 
     .header-table td {
         border: 1px solid #000;
-        padding: 1.5mm 2mm;
+        padding: 1mm 1.5mm; /* Réduit le padding */
         vertical-align: middle;
     }
 
     .logo-cell {
-        width: 20%;
+        width: 18%; /* Réduit la largeur du logo */
     }
 
     .header-logo {
-        width: 100px;
-        height: 100px;
+        width: 80px; /* Réduit la taille du logo */
+        height: 80px;
     }
 
     .top-title {
-        font-size: 12pt;
+        font-size: 11pt; /* Réduit de 12pt à 11pt */
         font-weight: bold;
         text-align: center;
-        letter-spacing: 0.3px;
-    }
-
-    .bottom-title {
-        font-size: 9pt;
-        font-weight: bold;
-        text-transform: uppercase;
-        text-align: center;
+        letter-spacing: 0.2px;
         padding: 0.5mm 0;
     }
 
+    .bottom-title {
+        font-size: 8.5pt; /* Réduit de 9pt à 8.5pt */
+        font-weight: bold;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 0.3mm 0;
+    }
+
     .date-cell {
-        width: 30%;
-        font-size: 8pt;
+        width: 28%; /* Réduit légèrement */
+        font-size: 7.5pt;
         text-align: left;
     }
 
-    /* ================= TABLEAU PRINCIPAL - SANS MIN-HEIGHT ================= */
-    .main-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 1mm;
-    }
-
-    .main-table td {
-        border: 1px solid #000;
-        padding: 1mm;
-        vertical-align: top;
-        width: 100%;
-        height: auto;
-        /* ✅ PAS DE MIN-HEIGHT */
-    }
-
-    /* ✅ AJOUTÉ - Classe section-container */
+    /* ================= SECTION CONTAINER COMPACT ================= */
     .section-container {
         border: 1px solid #000;
-        margin-bottom: 1mm;
-        padding: 1mm;
+        margin-bottom: 0.8mm; /* Réduit la marge */
+        padding: 0.8mm; /* Réduit le padding */
         page-break-inside: avoid;
     }
 
@@ -101,23 +87,23 @@
         color: #fff;
         font-weight: bold;
         text-align: center;
-        padding: 1mm;
-        margin: -1mm -1mm 1mm -1mm;
-        font-size: 9pt;
+        padding: 0.8mm; /* Réduit le padding */
+        margin: -0.8mm -0.8mm 0.8mm -0.8mm; /* Ajusté au nouveau padding */
+        font-size: 8.5pt;
     }
 
-    /* ================= INFORMATIONS ================= */
+    /* ================= INFORMATIONS COMPACTES ================= */
     .info-table {
         width: 100%;
         border: 1px solid #000;
         border-collapse: collapse;
-        margin-bottom: 1mm;
-        font-size: 8.5pt;
+        margin-bottom: 0.5mm; /* Réduit la marge */
+        font-size: 8pt; /* Réduit de 8.5pt à 8pt */
     }
 
     .info-table td {
         border: 1px dotted #000;
-        padding: 0.4mm 1mm;
+        padding: 0.3mm 0.8mm; /* Réduit le padding */
         vertical-align: middle;
     }
 
@@ -125,52 +111,41 @@
         width: 25%;
         text-align: right;
         font-weight: bold;
-        padding-left: 2mm;
+        padding-left: 1.5mm;
     }
 
-    /* ================= CHECKBOXES ================= */
-    .checkbox-section {
-        margin-bottom: 1mm;
-    }
-
-    .section-title {
-        font-weight: bold;
-        font-size: 8.5pt;
-        margin: 0.5mm 0 0.3mm 0;
-    }
-    
+    /* ================= CHECKBOXES COMPACTES ================= */
     .subsection-title {
         font-weight: bold;
-        font-size: 8.5pt;
-        margin: 1mm 0 0.3mm 0;
-        /* ✅ PAS DE SOULIGNEMENT */
+        font-size: 8pt; /* Réduit de 8.5pt à 8pt */
+        margin: 0.3mm 0 0.2mm 0;
     }
 
     .checkbox-list {
-        margin-bottom: 1mm;
+        margin-bottom: 0.5mm; /* Réduit la marge */
     }
     
     .tight-spacing {
-        margin-bottom: 0.5mm;
+        margin-bottom: 0.3mm; /* Réduit de 0.5mm à 0.3mm */
     }
 
     .checkbox-item {
-        margin-bottom: 0.5mm;
+        margin-bottom: 0.3mm; /* Réduit de 0.5mm à 0.3mm */
         display: block;
-        font-size: 8pt;
-        line-height: 1.2;
+        font-size: 7.5pt; /* Réduit de 8pt à 7.5pt */
+        line-height: 1.1;
     }
 
     .checkbox-symbol {
         display: inline-block;
-        width: 3mm;
-        height: 3mm;
+        width: 2.5mm; /* Réduit de 3mm à 2.5mm */
+        height: 2.5mm;
         border: 1px solid #000;
-        margin-right: 1mm;
+        margin-right: 0.8mm; /* Réduit de 1mm à 0.8mm */
         vertical-align: middle;
         text-align: center;
-        line-height: 2.5mm;
-        font-size: 7pt;
+        line-height: 2mm; /* Ajusté à la nouvelle taille */
+        font-size: 6.5pt; /* Réduit de 7pt à 6.5pt */
         font-family: "DejaVu Sans";
     }
 
@@ -182,95 +157,114 @@
         content: "";
     }
 
-    /* ================= GRILLE LOGICIELS ================= */
+    /* ================= GRILLE LOGICIELS COMPACTE ================= */
     .software-grid-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 0.5mm;
+        margin-top: 0.3mm; /* Réduit de 0.5mm à 0.3mm */
     }
     
     .software-grid-table td {
         width: 33.33%;
-        padding: 0.2mm 1mm;
+        padding: 0.1mm 0.8mm; /* Réduit le padding */
         vertical-align: top;
         border: none;
     }
     
     .software-cell {
-        padding: 0.2mm 0;
-        font-size: 8pt;
-        line-height: 1.2;
-        min-height: 4mm;
+        padding: 0.1mm 0; /* Réduit de 0.2mm à 0.1mm */
+        font-size: 7.5pt; /* Réduit de 8pt à 7.5pt */
+        line-height: 1.1;
+        min-height: 3.5mm; /* Réduit de 4mm à 3.5mm */
     }
 
-    /* ================= SIGNATURES ================= */
+    /* ================= SIGNATURES COMPACTES ================= */
     .signature-box {
-        margin-top: 0.5mm;
-        padding-top: 0.3mm;
+        margin-top: 0.3mm; /* Réduit de 0.5mm à 0.3mm */
+        padding-top: 0.2mm; /* Réduit de 0.3mm à 0.2mm */
         border-top: 1px solid #000;
     }
 
     .signature-label {
         font-weight: bold;
-        margin-bottom: 0.3mm;
-        font-size: 8.5pt;
+        margin-bottom: 0.2mm; /* Réduit de 0.3mm à 0.2mm */
+        font-size: 8pt; /* Réduit de 8.5pt à 8pt */
     }
     
     .signature-field {
-        margin-bottom: 0.2mm;
-        font-size: 8.5pt;
-        line-height: 1.1;
+        margin-bottom: 0.1mm; /* Réduit de 0.2mm à 0.1mm */
+        font-size: 8pt; /* Réduit de 8.5pt à 8pt */
+        line-height: 1;
     }
     
     .signature-underline {
         border-bottom: none;
-        padding-bottom: 0.2mm;
-        min-width: 40mm;
+        padding-bottom: 0.1mm; /* Réduit de 0.2mm à 0.1mm */
+        min-width: 35mm; /* Réduit de 40mm à 35mm */
         display: inline-block;
     }
     
     .signature-img {
-        max-width: 60mm;
-        max-height: 15mm;
-        margin-top: 0.3mm;
+        max-width: 50mm; /* Réduit de 60mm à 50mm */
+        max-height: 12mm; /* Réduit de 15mm à 12mm */
+        margin-top: 0.2mm; /* Réduit de 0.3mm à 0.2mm */
         border: 1px solid #ccc;
+    }
+
+    /* ================= SIGNATURES EN 2 COLONNES ================= */
+    .signature-columns {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1mm; /* Réduit de 2mm à 1mm */
+    }
+    
+    .signature-columns td {
+        padding: 0 0.5mm; /* Réduit le padding */
+        vertical-align: top;
     }
 
     /* ================= NOTE FINALE ================= */
     .final-note {
-        margin-top: 0.5mm;
-        font-size: 7pt;
+        margin-top: 0.3mm; /* Réduit de 0.5mm à 0.3mm */
+        font-size: 6.5pt; /* Réduit de 7pt à 6.5pt */
         font-style: italic;
-        padding: 1mm;
-        line-height: 1.2;
-        margin-bottom: 0;
-        padding-bottom: 0;
+        padding: 0.8mm; /* Réduit de 1mm à 0.8mm */
+        line-height: 1.1;
+        border: 1px dashed #999;
+        background-color: #f9f9f9;
+        text-align: center;
     }
 
-    /* ================= UTILITAIRES ================= */
+    /* ================= CLASSES DE COMPACTAGE ================= */
     .compact {
-        line-height: 1.1;
+        line-height: 1;
     }
     
     .extra-compact .checkbox-item {
-        margin-bottom: 0.2mm;
-        font-size: 7.5pt;
+        margin-bottom: 0.1mm; /* Réduit de 0.2mm à 0.1mm */
+        font-size: 7.2pt; /* Réduit de 7.5pt à 7.2pt */
     }
     
     .extra-compact .software-cell {
         padding: 0.1mm 0;
-        font-size: 7.5pt;
-        min-height: 3.5mm;
+        font-size: 7.2pt; /* Réduit de 7.5pt à 7.2pt */
+        min-height: 3mm; /* Réduit de 3.5mm à 3mm */
     }
 
-    /* SUPPRIME LES TRAITS AUTOUR DE LA LIGNE SCANNER */
-    .software-grid-table .no-separator td {
-        border-top: none !important;
-        border-bottom: none !important;
+    /* ================= PAGE BREAK CONTROL ================= */
+    .page-break-control {
+        page-break-inside: avoid;
+        page-break-after: avoid;
+        page-break-before: avoid;
+    }
+
+    /* ================= ESPACE MISE EN PLACE RACCOURCIS ================= */
+    .raccourcis-section {
+        display: none; /* MASQUÉ POUR GAGNER DE LA PLACE */
     }
 </style>
 </head>
-<body>
+<body class="page-break-control">
 
 @php
     function isChecked($checklist, $key) {
@@ -357,6 +351,7 @@ if (isset($data['agency_id']) && !empty($data['agency_id'])) {
     }
 }
 ?>
+
 <!-- EN-TÊTE -->
 <div class="header-box">
     <table class="header-table">
@@ -403,7 +398,7 @@ if (isset($data['agency_id']) && !empty($data['agency_id'])) {
     <div class="checkbox-list tight-spacing extra-compact">
         <div class="checkbox-item compact">
             <span class="checkbox-symbol {{ isChecked($checklist, 'sauvegarde_donnees') ? 'checked' : 'empty' }}"></span>
-            Sauvegarde des données par l'utilisateur avec l'assistance de l'It
+            Sauvegarde des données par l'utilisateur avec l'assistance de l'IT
         </div>
         <div class="checkbox-item compact">
             <span class="checkbox-symbol {{ isChecked($checklist, 'sauvegarde_outlook') ? 'checked' : 'empty' }}"></span>
@@ -422,7 +417,7 @@ if (isset($data['agency_id']) && !empty($data['agency_id'])) {
     <div class="subsection-title">Installation de logiciels</div>
     <div class="checkbox-list tight-spacing extra-compact">
         <table class="software-grid-table">
-            <tr class="no-separator">
+            <tr>
                 <td>
                     <div class="software-cell compact">
                         <span class="checkbox-symbol {{ isChecked($checklist, 'logiciels_adobe') ? 'checked' : 'empty' }}"></span> Adobe
@@ -437,7 +432,7 @@ if (isset($data['agency_id']) && !empty($data['agency_id'])) {
                         <span class="checkbox-symbol {{ isChecked($checklist, 'logiciels_zoom') ? 'checked' : 'empty' }}"></span> Zoom / Teams
                     </div>
                     <div class="software-cell compact">
-                        <span class="checkbox-symbol {{ isChecked($checklist, 'logiciels_scanner_naps2') ? 'checked' : 'empty' }}"></span> Scanner (NAPS2, ScanGear Tools)
+                        <span class="checkbox-symbol {{ isChecked($checklist, 'logiciels_scanner_naps2') ? 'checked' : 'empty' }}"></span> Scanner (NAPS2)
                     </div>
                 </td>
                 <td>
@@ -448,7 +443,7 @@ if (isset($data['agency_id']) && !empty($data['agency_id'])) {
                         <span class="checkbox-symbol {{ isChecked($checklist, 'logiciels_jre') ? 'checked' : 'empty' }}"></span> JRE 7.40
                     </div>
                     <div class="software-cell compact">
-                        <span class="checkbox-symbol {{ isChecked($checklist, 'logiciels_firefox') ? 'checked' : 'empty' }}"></span> Mozilla Firefox
+                        <span class="checkbox-symbol {{ isChecked($checklist, 'logiciels_firefox') ? 'checked' : 'empty' }}"></span> Firefox
                     </div>
                     <div class="software-cell compact">
                         <span class="checkbox-symbol {{ isChecked($checklist, 'logiciels_vpn') ? 'checked' : 'empty' }}"></span> VPN Client
@@ -578,10 +573,10 @@ if (isset($data['agency_id']) && !empty($data['agency_id'])) {
     </div>
     
     <!-- Signatures en 2 colonnes -->
-    <table style="width: 100%; border-collapse: collapse; margin-top: 2mm;">
+    <table class="signature-columns">
         <tr>
             <!-- Signature Utilisateur -->
-            <td style="width: 50%; padding: 0 1mm 0 0; vertical-align: top;">
+            <td style="width: 50%;">
                 <div class="signature-box">
                     <div class="signature-label">Signature de l'utilisateur</div>
                     @if(!empty($utilisateurNom) || !empty($utilisateurFonction))
@@ -602,7 +597,7 @@ if (isset($data['agency_id']) && !empty($data['agency_id'])) {
             </td>
             
             <!-- Signature Vérificateur -->
-            <td style="width: 50%; padding: 0 0 0 1mm; vertical-align: top;">
+            <td style="width: 50%;">
                 <div class="signature-box">
                     <div class="signature-label">Signature du vérificateur</div>
                     @if(!empty($verificateurNom))
@@ -629,5 +624,6 @@ if (isset($data['agency_id']) && !empty($data['agency_id'])) {
 <div class="final-note">
     <strong>NB :</strong> Toute installation de machine nécessite le remplissage de cette fiche par l'installateur et le vérificateur qui doivent en garder une copie avant d'acheminer la machine vers le Destinataire.
 </div>
+
 </body>
 </html>
