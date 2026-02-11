@@ -45,8 +45,8 @@ public function showTransition(Equipment $equipment)
     try {
         // 1. VALIDATION DES DONNÉES DE BASE (pour la table equipment)
         $validated = $request->validate([
-            'type' => 'required|in:Réseau,Informatique,Électronique,Logiciel',
-            'numero_serie' => 'required|unique:equipment,numero_serie',
+            /* 'type' => 'required|in:Réseau,Informatique,Électronique,Logiciel',
+            'numero_serie' => 'required|unique:equipment,numero_serie', */
             'marque' => 'required_if:type,!=,Logiciel|string|max:255',
             'modele' => 'required_if:type,!=,Logiciel|string|max:255',
             'agency_id' => 'nullable|exists:agencies,id',
