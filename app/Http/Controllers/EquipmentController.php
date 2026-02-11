@@ -45,8 +45,8 @@ public function showTransition(Equipment $equipment)
     try {
         // 1. VALIDATION DES DONNÉES DE BASE (pour la table equipment)
         $validated = $request->validate([
-            /* 'type' => 'required|in:Réseau,Informatique,Électronique,Logiciel',
-            'numero_serie' => 'required|unique:equipment,numero_serie', */
+            'type' => 'required|in:Réseau,Informatique,Électronique,Logiciel',
+            'numero_serie' => 'required|unique:equipment,numero_serie',
             'marque' => 'required_if:type,!=,Logiciel|string|max:255',
             'modele' => 'required_if:type,!=,Logiciel|string|max:255',
             'agency_id' => 'nullable|exists:agencies,id',
@@ -135,7 +135,7 @@ public function update(Request $request, $id)
         // 1. VALIDATION DES DONNÉES DE BASE
         $validated = $request->validate([
             'type' => 'sometimes|required|in:Réseau,Informatique,Électronique,Logiciel',
-            'numero_serie' => 'required|unique:equipment,numero_serie,' . $id,
+            /* 'numero_serie' => 'required|unique:equipment,numero_serie,' . $id, */
             'marque' => 'required_if:type,!=,Logiciel|string|max:255',
             'modele' => 'required_if:type,!=,Logiciel|string|max:255',
             'agency_id' => 'nullable|exists:agencies,id',
@@ -158,7 +158,7 @@ public function update(Request $request, $id)
         // Filtrer seulement les champs qui ont changé
         $equipmentData = array_filter($validated, function($key) {
             return in_array($key, [
-                'type', 'numero_serie', 'marque', 'modele', 'agency_id', 
+                'type'/* , 'numero_serie' */, 'marque', 'modele', 'agency_id', 
                 'localisation', 'fournisseur_id', 'date_livraison', 'prix', 
                 'garantie', 'reference_facture', 'etat', 'adresse_mac', 
                 'notes', 'date_mise_service', 'date_amortissement'
