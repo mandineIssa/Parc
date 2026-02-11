@@ -250,7 +250,7 @@ public function store(Request $request)
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+   /*  public function update(Request $request, string $id)
     {
         $parc = Parc::findOrFail($id);
         
@@ -280,7 +280,29 @@ public function store(Request $request)
         
         return redirect()->route('parc.index')
             ->with('success', 'Affectation mise à jour avec succès.');
-    }
+    } */
+
+public function update(Request $request, string $id)
+{
+    $parc = Parc::findOrFail($id);
+    
+    $validated = $request->validate([
+        'utilisateur_nom' => 'required|string|max:100',
+        'utilisateur_prenom' => 'required|string|max:100',
+        'departement' => 'required|string|max:100',
+        'poste_affecte' => 'required|string|max:100',
+        'date_affectation' => 'required|date',
+        'date_retour_prevue' => 'nullable|date|after_or_equal:date_affectation',
+        'statut_usage' => 'required|in:actif,inactif,en_pret',
+        'notes_affectation' => 'nullable|string|max:500'
+    ]);
+    
+    // Mettre à jour l'affectation (le numero_serie ne change PAS)
+    $parc->update($validated);
+    
+    return redirect()->route('parc.index')
+        ->with('success', 'Affectation mise à jour avec succès.');
+}
 
     /**
      * Remove the specified resource from storage.
