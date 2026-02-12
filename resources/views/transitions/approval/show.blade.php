@@ -105,7 +105,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div class="bg-gray-50 p-4 rounded-lg">
                 <p class="text-sm text-gray-600 font-semibold mb-2">Équipement</p>
-                <p class="text-lg font-bold text-cofina-red">{{ $approval->equipment->nom ?? 'N/A' }}</p>
+                <p class="text-lg font-bold text-cofina-red">{{ $approval->equipment->modele ?? 'N/A' }}</p>
                 <p class="text-sm text-gray-600">N° Série: {{ $approval->equipment->numero_serie }}</p>
             </div>
 
