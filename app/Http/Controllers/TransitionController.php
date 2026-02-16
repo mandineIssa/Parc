@@ -3985,7 +3985,7 @@ public function submitParcHorsService(Request $request)
         Log::info('Équipement trouvé:', [
             'id' => $equipment->id, 
             'statut' => $equipment->statut,
-            'parc_relation' => $equipment->parc ? 'existe' : 'null'
+            'parc_relation' => $equipment->parc ? 'exists' : 'null'
         ]);
 
         // Vérifier que l'équipement est en parc
@@ -3997,12 +3997,12 @@ public function submitParcHorsService(Request $request)
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
             || $user->email === 'superadmin@cofina.sn';
 
-        // Récupérer les informations du parc - CORRECTION ICI
+        // Récupérer les informations du parc
         $parcInfo = null;
         $utilisateurInfo = null;
         
-        if ($equipment->parc) {  // CHANGÉ : suppression de isNotEmpty()
-            $parcInfo = $equipment->parc;  // C'est déjà un objet, pas besoin de first()
+        if ($equipment->parc && $equipment->parc->isNotEmpty()) {
+            $parcInfo = $equipment->parc->first();
             
             if ($parcInfo->utilisateur_id) {
                 $utilisateurInfo = User::find($parcInfo->utilisateur_id);
@@ -4167,7 +4167,7 @@ private function processParcHorsService(Equipment $equipment, array $data, Trans
             $parcInfo->update([
                 'date_sortie' => now(),
                 'raison_sortie' => 'mise_hors_service',
-                'statut_usage' => 'hors_service',
+                'statut_usage' => 'inactif', // CHANGÉ: 'hors_service' -> 'inactif' pour correspondre à l'ENUM
             ]);
             
             Log::info('Parc mis à jour pour hors service:', ['parc_id' => $parcInfo->id]);
