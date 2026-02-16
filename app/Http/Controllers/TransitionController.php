@@ -3985,7 +3985,7 @@ public function submitParcHorsService(Request $request)
         Log::info('Équipement trouvé:', [
             'id' => $equipment->id, 
             'statut' => $equipment->statut,
-            'parc_relation' => $equipment->parc ? 'exists' : 'null'
+            'parc_relation' => $equipment->parc ? 'existe' : 'null'
         ]);
 
         // Vérifier que l'équipement est en parc
@@ -3997,12 +3997,12 @@ public function submitParcHorsService(Request $request)
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
             || $user->email === 'superadmin@cofina.sn';
 
-        // Récupérer les informations du parc
+        // Récupérer les informations du parc - CORRECTION ICI
         $parcInfo = null;
         $utilisateurInfo = null;
         
-        if ($equipment->parc && $equipment->parc->isNotEmpty()) {
-            $parcInfo = $equipment->parc->first();
+        if ($equipment->parc) {  // CHANGÉ : suppression de isNotEmpty()
+            $parcInfo = $equipment->parc;  // C'est déjà un objet, pas besoin de first()
             
             if ($parcInfo->utilisateur_id) {
                 $utilisateurInfo = User::find($parcInfo->utilisateur_id);
