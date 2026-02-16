@@ -41,6 +41,7 @@ class TransitionApproval extends Model
         'final_mouvement_file', // ← MANQUE DANS LA MIGRATION
         'final_installation_file', // ← MANQUE DANS LA MIGRATION
         'validation_date', // ← MANQUE DANS LA MIGRATION
+        'signature_verificateur', // ← MANQUE DANS LA MIGRATION
     ];
 
     protected $casts = [

@@ -364,12 +364,7 @@
                 <!-- NOM DE L'AGENCE -->
 
                                 
-                <!-- <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
-                    <label class="block font-bold text-lg mb-2 text-cofina-red">NOM DE L'AGENCE :</label>
-                    <input type="text" name="agence_nom" placeholder="Ex: SIÈGE, AGENCE NORD..."
-                        class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-bold text-lg" required>
-                </div>  -->
-                            AGENCE 
+                
             <div class="mb-8 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
                 <label class="block font-bold text-lg mb-2 text-cofina-red">
                     Agence <span class="text-red-600">*</span>
@@ -713,6 +708,7 @@
         </form>
 
 <!-- ÉTAPE 2: Affectation Simple -->
+<!-- ÉTAPE 2: Affectation Simple -->
 <form id="affectation-step-form" class="step-form hidden" data-step="2">
     <input type="hidden" name="form_type" value="affectation_simple">
     <input type="hidden" name="transition_type" value="stock_to_parc">
@@ -726,7 +722,17 @@
             <!-- Informations de l'équipement -->
             <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
                 <h4 class="font-bold text-blue-800 mb-2">Équipement à affecter</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- ✅ NOM DE L'ÉQUIPEMENT - À SAISIR -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">
+                            <span class="text-red-500">*</span> Nom de l'équipement:
+                        </label>
+                        <input type="text" name="equipment_name" 
+                            placeholder="Ex: PC-DIRECTION-01"
+                            class="w-full px-3 py-2 border-2 border-gray-300 rounded focus:border-cofina-blue" 
+                            required>
+                    </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 mb-1">Modèle:</label>
                         <input type="text" value="{{ $equipment->modele ?? 'Non spécifié' }}"
@@ -739,6 +745,8 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ... reste du formulaire inchangé ... -->
 
             <!-- Section d'affectation -->
             <div class="bg-green-50 p-4 rounded-lg border-2 border-green-200">
@@ -936,7 +944,7 @@
 
                 <!-- Section EXPÉDITEUR et RÉCEPTIONNAIRE -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <!-- EXPÉDITEUR (Agent IT) -->
+                    
                    <!-- EXPÉDITEUR (Agent IT) -->
 <div class="border-2 border-blue-300 rounded-lg p-6 bg-blue-50">
     <h3 class="text-lg font-bold text-blue-800 mb-4 text-center border-b-2 border-blue-300 pb-2">
@@ -964,7 +972,7 @@
 </div>
 
                     <!-- RÉCEPTIONNAIRE (Utilisateur final - Champs à saisir) -->
-                 <!-- RÉCEPTIONNAIRE (Utilisateur final - Champs à saisir) -->
+                 
 <div class="border-2 border-green-300 rounded-lg p-6 bg-green-50">
     <h3 class="text-lg font-bold text-green-800 mb-4 text-center border-b-2 border-green-300 pb-2">
         RÉCEPTIONNAIRE
