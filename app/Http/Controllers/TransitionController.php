@@ -3997,12 +3997,14 @@ public function submitParcHorsService(Request $request)
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
             || $user->email === 'superadmin@cofina.sn';
 
-        // Récupérer les informations du parc
+        // Récupérer les informations du parc - CORRECTION UNIQUE
         $parcInfo = null;
         $utilisateurInfo = null;
         
-        if ($equipment->parc && $equipment->parc->isNotEmpty()) {
-            $parcInfo = $equipment->parc->first();
+        // CORRECTION: Suppression de isNotEmpty() qui cause l'erreur
+        // Parc est une relation HasOne, donc c'est un objet unique ou null
+        if ($equipment->parc) {  // Changé: plus de isNotEmpty()
+            $parcInfo = $equipment->parc;  // C'est déjà un objet, pas besoin de first()
             
             if ($parcInfo->utilisateur_id) {
                 $utilisateurInfo = User::find($parcInfo->utilisateur_id);
