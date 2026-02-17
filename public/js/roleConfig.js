@@ -20,7 +20,7 @@ const RoleConfig = {
         },
         agent_it: {
             name: 'Agent IT',
-            description: 'Gestion des équipements et maintenance',
+            description: 'Gestion des équipements, affectations et maintenance',  // ← MIS À JOUR
             color: 'warning',
             icon: 'fa-laptop-code'
         },
@@ -35,8 +35,8 @@ const RoleConfig = {
     // ==================== MODES D'ACCÈS ====================
     ACCESS_MODES: {
         super_admin: 'full',       // CRUD complet sur tout
-        agent_it: 'mixed',         // CRUD sur équipements, lecture sur le reste
-        user: 'readonly'          // Lecture seulement
+        agent_it: 'mixed',         // CRUD sur équipements + affectations, lecture sur le reste
+        user: 'readonly'           // Lecture seulement
     },
 
     // ==================== PERMISSIONS PAR RÔLE ====================
@@ -55,9 +55,14 @@ const RoleConfig = {
             
             // === ÉQUIPEMENTS ===
             canManageEquipment: true,
-            canManageEquipmentCRUD: true, // CRUD complet
+            canManageEquipmentCRUD: true,
             canDeleteEquipment: true,
             canAssignEquipment: true,
+            
+            // === AFFECTATIONS ===              // ← SECTION AJOUTÉE
+            canManageAssignments: true,
+            canManageAssignmentCRUD: true,
+            canDeleteAssignment: true,
             
             // === APPROBATIONS ===
             canApproveRequests: true,
@@ -83,10 +88,10 @@ const RoleConfig = {
 
         agent_it: {
             // === CRUD GÉNÉRAL ===
-            canCreate: true,      // Seulement sur équipements
+            canCreate: true,
             canRead: true,
-            canUpdate: true,      // Seulement sur équipements
-            canDelete: true,      // Seulement sur équipements
+            canUpdate: true,
+            canDelete: true,
             
             // === ADMINISTRATION ===
             canManageUsers: false,
@@ -95,14 +100,19 @@ const RoleConfig = {
             
             // === ÉQUIPEMENTS ===
             canManageEquipment: true,
-            canManageEquipmentCRUD: true, // CRUD sur équipements seulement
+            canManageEquipmentCRUD: true,
             canDeleteEquipment: true,
             canAssignEquipment: true,
+            
+            // === AFFECTATIONS ===              // ← SECTION AJOUTÉE
+            canManageAssignments: true,          // ← Peut gérer les affectations
+            canManageAssignmentCRUD: true,       // ← CRUD complet sur affectations
+            canDeleteAssignment: true,           // ← Peut supprimer des affectations
             
             // === APPROBATIONS ===
             canApproveRequests: false,
             canRejectRequests: false,
-            canViewAllRequests: true,     // Lecture seulement
+            canViewAllRequests: true,
             
             // === RAPPORTS ===
             canViewReports: true,
@@ -113,8 +123,8 @@ const RoleConfig = {
             canManageDepartments: false,
             
             // === IMPORT/EXPORT ===
-            canImport: true,      // Seulement équipements
-            canExport: true,      // Seulement équipements
+            canImport: true,
+            canExport: true,
             
             // === ACTIONS SPÉCIALES ===
             canBypassApproval: false,
@@ -123,10 +133,10 @@ const RoleConfig = {
 
         user: {
             // === CRUD GÉNÉRAL ===
-            canCreate: false,     // PAS DE CRÉATION
-            canRead: true,        // LECTURE SEULEMENT
-            canUpdate: false,     // PAS DE MODIFICATION
-            canDelete: false,     // PAS DE SUPPRESSION
+            canCreate: false,
+            canRead: true,
+            canUpdate: false,
+            canDelete: false,
             
             // === ADMINISTRATION ===
             canManageUsers: false,
@@ -135,9 +145,14 @@ const RoleConfig = {
             
             // === ÉQUIPEMENTS ===
             canManageEquipment: false,
-            canManageEquipmentCRUD: false, // Pas de CRUD
+            canManageEquipmentCRUD: false,
             canDeleteEquipment: false,
             canAssignEquipment: false,
+            
+            // === AFFECTATIONS ===              // ← SECTION AJOUTÉE
+            canManageAssignments: false,         // ← Pas de gestion
+            canManageAssignmentCRUD: false,      // ← Pas de CRUD
+            canDeleteAssignment: false,          // ← Pas de suppression
             
             // === APPROBATIONS ===
             canApproveRequests: false,
@@ -169,7 +184,7 @@ const RoleConfig = {
             '/it', '/it/*',
             '/dashboard',
             '/profile',
-            '/logout',  // ← AJOUTER
+            '/logout',
             '/reports', '/reports/*',
             '/settings', '/settings/*',
             '/equipment', '/equipment/*',
@@ -179,6 +194,7 @@ const RoleConfig = {
             '/categories', '/categories/*',
             '/suppliers', '/suppliers/*',
             '/maintenance', '/maintenance/*',
+            '/assignments', '/assignments/*',  // ← AJOUT
             '/parc', '/parc/*'
         ],
         
@@ -186,19 +202,21 @@ const RoleConfig = {
             '/it', '/it/*',
             '/dashboard',
             '/profile',
-            '/logout',  // ← AJOUTER
+            '/logout',
             '/equipment', '/equipment/*',
             '/approvals', '/approvals/*',
             '/maintenance', '/maintenance/*',
+            '/assignments', '/assignments/*',  // ← AJOUT : agent IT accède aux routes d'affectation
             '/parc', '/parc/*'
         ],
         
         user: [
             '/dashboard',
             '/profile',
-            '/logout',  // ← AJOUTER
+            '/logout',
             '/equipment/my-equipment',
             '/requests/my-requests'
+            // ← Pas de /assignments pour les utilisateurs normaux
         ]
     },
 
@@ -207,6 +225,7 @@ const RoleConfig = {
         super_admin: {
             user: ['create', 'read', 'update', 'delete'],
             equipment: ['create', 'read', 'update', 'delete', 'import', 'export'],
+            assignment: ['create', 'read', 'update', 'delete'],  // ← AJOUT
             agency: ['create', 'read', 'update', 'delete'],
             category: ['create', 'read', 'update', 'delete'],
             supplier: ['create', 'read', 'update', 'delete'],
@@ -217,27 +236,27 @@ const RoleConfig = {
         
         agent_it: {
             equipment: ['create', 'read', 'update', 'delete', 'import', 'export'],
+            assignment: ['create', 'read', 'update', 'delete'],  // ← AJOUT : CRUD complet affectations
             maintenance: ['create', 'read', 'update', 'delete'],
             report: ['read', 'export'],
-            user: ['read']  // Peut voir les utilisateurs mais pas modifier
+            user: ['read']
         },
         
         user: {
-            equipment: ['read'],      // Lecture seulement de SES équipements
-            profile: ['read', 'update'],  // Peut lire et modifier SON profil
-            request: ['create', 'read']    // Peut créer et lire SES demandes
+            equipment: ['read'],
+            profile: ['read', 'update'],
+            request: ['create', 'read']
+            // ← Pas d'accès aux affectations pour les utilisateurs normaux
         }
     },
 
     // ==================== MESSAGES ====================
     MESSAGES: {
-        // Messages d'erreur généraux
         ACCESS_DENIED: 'Accès non autorisé. Vous n\'avez pas les permissions nécessaires.',
         LOGIN_REQUIRED: 'Veuillez vous connecter pour accéder à cette page.',
         ROLE_REQUIRED: 'Rôle requis: ',
         PERMISSION_REQUIRED: 'Permission requise: ',
         
-        // Messages spécifiques aux actions
         NO_CREATE_PERMISSION: 'Vous n\'avez pas la permission de créer cet élément.',
         NO_READ_PERMISSION: 'Vous n\'avez pas la permission de visualiser cet élément.',
         NO_UPDATE_PERMISSION: 'Vous n\'avez pas la permission de modifier cet élément.',
@@ -245,7 +264,6 @@ const RoleConfig = {
         NO_IMPORT_PERMISSION: 'Vous n\'avez pas la permission d\'importer des données.',
         NO_EXPORT_PERMISSION: 'Vous n\'avez pas la permission d\'exporter des données.',
         
-        // Messages spécifiques aux rôles
         READONLY_MODE: 'Vous êtes en mode lecture seule. Contactez un administrateur pour effectuer des modifications.',
         LIMITED_ACCESS: 'Votre accès est limité. Certaines fonctionnalités ne sont pas disponibles.',
         FULL_ACCESS: 'Vous avez un accès complet à toutes les fonctionnalités.'
@@ -253,9 +271,8 @@ const RoleConfig = {
     
     // ==================== CONFIGURATION DE L'INTERFACE ====================
     UI_CONFIG: {
-        // Éléments à masquer par rôle
         HIDDEN_ELEMENTS: {
-            super_admin: [], // Rien à masquer
+            super_admin: [],
             agent_it: [
                 '.admin-only',
                 '.user-management',
@@ -263,6 +280,7 @@ const RoleConfig = {
                 '[data-entity="user"][data-action="create"]',
                 '[data-entity="user"][data-action="delete"]',
                 '[data-entity="settings"]'
+                // ← NOTE : [data-entity="assignment"] n'est PAS masqué pour agent_it
             ],
             user: [
                 '.admin-only',
@@ -273,15 +291,18 @@ const RoleConfig = {
                 '.delete-button',
                 '.import-button',
                 '.export-button',
+                '.assignment-actions',              // ← AJOUT : masquer les actions affectation pour user
                 '[data-action="create"]',
                 '[data-action="edit"]',
                 '[data-action="delete"]',
                 '[data-action="import"]',
-                '[data-action="export"]'
+                '[data-action="export"]',
+                '[data-entity="assignment"][data-action="create"]',   // ← AJOUT
+                '[data-entity="assignment"][data-action="edit"]',     // ← AJOUT
+                '[data-entity="assignment"][data-action="delete"]'    // ← AJOUT
             ]
         },
         
-        // Classes CSS à ajouter selon le rôle
         ROLE_CLASSES: {
             super_admin: 'role-super-admin access-full',
             agent_it: 'role-agent-it access-mixed',
@@ -294,7 +315,6 @@ const RoleConfig = {
 RoleConfig.validate = function() {
     const errors = [];
     
-    // Vérifier que tous les rôles ont des permissions
     Object.keys(this.ROLES).forEach(roleKey => {
         const role = this.ROLES[roleKey];
         if (!this.PERMISSIONS[role]) {
@@ -313,7 +333,6 @@ RoleConfig.validate = function() {
     return true;
 };
 
-// Initialiser la validation
 RoleConfig.validate();
 
 window.RoleConfig = RoleConfig;

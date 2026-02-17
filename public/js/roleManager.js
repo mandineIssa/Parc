@@ -12,7 +12,7 @@ class RoleManager {
         // Modes d'accès par rôle
         this.ACCESS_MODES = {
             'super_admin': 'full',      // CRUD complet
-            'agent_it': 'mixed',        // CRUD sur équipements, lecture sur le reste
+            'agent_it': 'mixed',        // CRUD sur équipements + affectations, lecture sur le reste
             'user': 'readonly'          // Lecture seulement
         };
         
@@ -72,8 +72,10 @@ class RoleManager {
                     // Spécifiques
                     canManageUsers: true,
                     canManageEquipment: true,
-                    canManageEquipmentCRUD: true, // CRUD complet sur équipements
+                    canManageEquipmentCRUD: true,
                     canAssignEquipment: true,
+                    canManageAssignments: true,       // ← AJOUT
+                    canManageAssignmentCRUD: true,    // ← AJOUT
                     canApproveRequests: true,
                     canRejectRequests: true,
                     canViewAllRequests: true,
@@ -89,23 +91,25 @@ class RoleManager {
             case 'mixed': // Agent IT
                 this.userPermissions = {
                     // CRUD limité
-                    canCreate: true,    // Peut créer des équipements
+                    canCreate: true,
                     canRead: true,
-                    canUpdate: true,    // Peut modifier des équipements
-                    canDelete: true,    // Peut supprimer des équipements
+                    canUpdate: true,
+                    canDelete: true,
                     
-                    // Spécifiques - lecture seulement sauf équipements
+                    // Spécifiques
                     canManageUsers: false,
                     canManageEquipment: true,
-                    canManageEquipmentCRUD: true, // CRUD sur équipements
+                    canManageEquipmentCRUD: true,
                     canAssignEquipment: true,
-                    canApproveRequests: false,    // Lecture seulement
-                    canRejectRequests: false,     // Lecture seulement
-                    canViewAllRequests: true,     // Lecture
-                    canViewReports: true,         // Lecture
-                    canExportReports: true,       // Lecture
-                    canEditSettings: false,       // Lecture seulement
-                    canManageDepartments: false,  // Lecture seulement
+                    canManageAssignments: true,       // ← AJOUT : peut gérer les affectations
+                    canManageAssignmentCRUD: true,    // ← AJOUT : CRUD sur les affectations
+                    canApproveRequests: false,
+                    canRejectRequests: false,
+                    canViewAllRequests: true,
+                    canViewReports: true,
+                    canExportReports: true,
+                    canEditSettings: false,
+                    canManageDepartments: false,
                     canBypassApproval: false,
                     canOverrideRestrictions: false
                 };
@@ -114,17 +118,17 @@ class RoleManager {
             case 'readonly': // Utilisateur normal
             default:
                 this.userPermissions = {
-                    // LECTURE SEULEMENT - PAS DE CRUD
                     canCreate: false,
                     canRead: true,
                     canUpdate: false,
                     canDelete: false,
                     
-                    // Spécifiques - lecture seulement
                     canManageUsers: false,
                     canManageEquipment: false,
-                    canManageEquipmentCRUD: false, // Pas de CRUD sur équipements
+                    canManageEquipmentCRUD: false,
                     canAssignEquipment: false,
+                    canManageAssignments: false,      // ← AJOUT
+                    canManageAssignmentCRUD: false,   // ← AJOUT
                     canApproveRequests: false,
                     canRejectRequests: false,
                     canViewAllRequests: false,
@@ -161,22 +165,20 @@ class RoleManager {
 
     // ==================== VÉRIFICATIONS CRUD SPÉCIFIQUES ====================
     
-    // Vérifie si l'utilisateur peut créer (C)
     canCreate(entity = null) {
         if (!this.hasPermission('canCreate')) return false;
         
-        // Vérifications supplémentaires selon l'entité
         if (entity === 'user' && !this.hasPermission('canManageUsers')) return false;
         if (entity === 'equipment' && !this.hasPermission('canManageEquipmentCRUD')) return false;
+        // ↓ AJOUT : l'agent IT peut créer des affectations
+        if (entity === 'assignment' && !this.hasPermission('canManageAssignmentCRUD')) return false;
         
         return true;
     }
     
-    // Vérifie si l'utilisateur peut lire (R)
     canRead(entity = null) {
         if (!this.hasPermission('canRead')) return false;
         
-        // Les utilisateurs normaux peuvent lire leurs propres données
         if (this.hasRole('user')) {
             return entity !== 'admin' && entity !== 'settings';
         }
@@ -184,19 +186,18 @@ class RoleManager {
         return true;
     }
     
-    // Vérifie si l'utilisateur peut modifier (U)
     canUpdate(entity = null, item = null) {
         if (!this.hasPermission('canUpdate')) return false;
         
-        // Les agents IT peuvent modifier les équipements
         if (this.hasRole('agent_it')) {
-            return entity === 'equipment' && this.hasPermission('canManageEquipmentCRUD');
+            // ↓ MODIFIÉ : agent IT peut modifier équipements ET affectations
+            if (entity === 'equipment') return this.hasPermission('canManageEquipmentCRUD');
+            if (entity === 'assignment') return this.hasPermission('canManageAssignmentCRUD');
+            return false;
         }
         
-        // Super Admin peut tout modifier
         if (this.hasRole('super_admin')) return true;
         
-        // Les utilisateurs ne peuvent modifier que leur propre profil
         if (this.hasRole('user')) {
             return entity === 'profile' && item && item.id === this.userData?.id;
         }
@@ -204,30 +205,27 @@ class RoleManager {
         return false;
     }
     
-    // Vérifie si l'utilisateur peut supprimer (D)
     canDelete(entity = null) {
         if (!this.hasPermission('canDelete')) return false;
         
-        // Les agents IT peuvent supprimer des équipements
         if (this.hasRole('agent_it')) {
-            return entity === 'equipment' && this.hasPermission('canManageEquipmentCRUD');
+            // ↓ MODIFIÉ : agent IT peut supprimer équipements ET affectations
+            if (entity === 'equipment') return this.hasPermission('canManageEquipmentCRUD');
+            if (entity === 'assignment') return this.hasPermission('canManageAssignmentCRUD');
+            return false;
         }
         
-        // Super Admin peut tout supprimer
         if (this.hasRole('super_admin')) return true;
         
-        // Les utilisateurs ne peuvent rien supprimer
         return false;
     }
     
-    // Vérifie si l'utilisateur peut importer
     canImport(entity = null) {
         if (this.hasRole('super_admin')) return true;
         if (this.hasRole('agent_it') && entity === 'equipment') return true;
         return false;
     }
     
-    // Vérifie si l'utilisateur peut exporter
     canExport(entity = null) {
         if (this.hasRole('super_admin')) return true;
         if (this.hasRole('agent_it') && entity === 'equipment') return true;
@@ -236,7 +234,6 @@ class RoleManager {
     
     // ==================== VÉRIFICATIONS D'INTERFACE ====================
     
-    // Vérifie si un bouton doit être affiché
     shouldShowButton(action, entity = null) {
         switch(action) {
             case 'create':
@@ -270,11 +267,9 @@ class RoleManager {
         }
     }
     
-    // Helper pour vérifier si un élément est lié à la déconnexion
     isLogoutElement(element) {
         if (!element) return false;
         
-        // Vérifier l'élément lui-même
         const href = element.getAttribute?.('href') || element.href || '';
         const action = element.getAttribute?.('action') || element.action || '';
         const dataAction = element.getAttribute?.('data-action') || '';
@@ -288,7 +283,6 @@ class RoleManager {
             return true;
         }
         
-        // Vérifier les parents proches
         const closestLogoutForm = element.closest?.('form[action*="/logout"]');
         const closestLogoutLink = element.closest?.('a[href*="/logout"]');
         const closestLogoutBtn = element.closest?.('.logout-btn, .logout-link, .logout-form');
@@ -304,7 +298,6 @@ class RoleManager {
         
         const currentPath = window.location.pathname;
         
-        // Routes interdites pour les utilisateurs normaux
         if (this.hasRole('user')) {
             const forbiddenPaths = [
                 '/admin', '/admin/',
@@ -315,7 +308,14 @@ class RoleManager {
                 '/reports/create', '/reports/edit',
                 '/agencies/create', '/agencies/edit',
                 '/categories/create', '/categories/edit',
-                '/suppliers/create', '/suppliers/edit'
+                '/suppliers/create', '/suppliers/edit',
+                // ↓ AJOUT : utilisateur ne peut pas accéder aux routes d'affectation
+                '/assignments/create', '/assignments/edit',
+                '/assignments/delete', '/assignments/store',
+                '/assignments/update', '/assignments/destroy',
+                '/parc/create', '/parc/store',
+                '/parc/edit/', '/parc/update/',
+                '/parc/delete/', '/parc/destroy/'
             ];
             
             if (forbiddenPaths.some(path => currentPath.startsWith(path))) {
@@ -357,7 +357,6 @@ class RoleManager {
     }
 
     hideUnauthorizedElements() {
-        // Cacher les éléments selon le rôle
         const elementsToHide = {
             'super_admin': [],
             'agent_it': [
@@ -365,6 +364,7 @@ class RoleManager {
                 '[data-role="super_admin"]',
                 '.user-management',
                 '.system-settings'
+                // ↓ NOTE : .assignment-actions N'EST PAS masqué pour agent_it
             ],
             'user': [
                 '.admin-only',
@@ -378,21 +378,20 @@ class RoleManager {
                 '.import-button',
                 '.export-button',
                 '.settings-section',
-                '.reports-section'
+                '.reports-section',
+                '.assignment-actions'  // ← AJOUT : cacher les actions d'affectation pour les users
             ]
         };
         
         const selectors = elementsToHide[this.userRole] || [];
         selectors.forEach(selector => {
             document.querySelectorAll(selector).forEach(element => {
-                // Ne pas cacher si c'est un élément de déconnexion
                 if (!this.isLogoutElement(element)) {
                     element.style.display = 'none';
                 }
             });
         });
         
-        // Cacher avec data-role
         document.querySelectorAll('[data-role]').forEach(element => {
             if (!this.isLogoutElement(element)) {
                 const requiredRoles = element.getAttribute('data-role').split('|');
@@ -402,7 +401,6 @@ class RoleManager {
             }
         });
         
-        // Cacher avec data-permission
         document.querySelectorAll('[data-permission]').forEach(element => {
             if (!this.isLogoutElement(element)) {
                 const requiredPermission = element.getAttribute('data-permission');
@@ -412,10 +410,8 @@ class RoleManager {
             }
         });
         
-        // Cacher les boutons d'action selon le rôle
         this.hideActionButtonsByRole();
         
-        // EXCEPTION : Forcer l'affichage des éléments de déconnexion
         document.querySelectorAll('form[action*="/logout"], a[href*="/logout"], [data-action="logout"], .logout-btn, .logout-link, .logout-form').forEach(element => {
             element.style.display = '';
             element.style.visibility = 'visible';
@@ -424,7 +420,6 @@ class RoleManager {
     }
 
     hideActionButtonsByRole() {
-        // Pour les utilisateurs : cacher TOUS les boutons CRUD
         if (this.hasRole('user')) {
             document.querySelectorAll('.btn-create, .btn-edit, .btn-delete, .btn-import, .btn-export').forEach(btn => {
                 if (!this.isLogoutElement(btn)) {
@@ -432,7 +427,6 @@ class RoleManager {
                 }
             });
             
-            // Cacher les liens de création
             document.querySelectorAll('a[href*="/create"], a[href*="/edit/"], a[href*="/delete/"]').forEach(link => {
                 if (!this.isLogoutElement(link) && !link.href.includes('/profile')) {
                     link.style.display = 'none';
@@ -440,19 +434,17 @@ class RoleManager {
             });
         }
         
-        // Pour les agents IT : limiter les actions
         if (this.hasRole('agent_it')) {
-            // Cacher les actions non autorisées
             document.querySelectorAll('.user-action, .settings-action, .admin-action').forEach(btn => {
                 if (!this.isLogoutElement(btn)) {
                     btn.style.display = 'none';
                 }
             });
+            // ↓ NOTE : .assignment-action N'EST PAS masqué — l'agent IT peut agir sur les affectations
         }
     }
 
     disableUnauthorizedElements() {
-        // Désactiver les champs de formulaire pour les utilisateurs
         if (this.hasRole('user')) {
             document.querySelectorAll('input, select, textarea').forEach(field => {
                 if (!field.classList.contains('readonly-allowed') && !this.isLogoutElement(field)) {
@@ -461,7 +453,6 @@ class RoleManager {
                 }
             });
             
-            // Désactiver les boutons de soumission SAUF la déconnexion
             document.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(btn => {
                 if (this.isLogoutElement(btn)) {
                     btn.disabled = false;
@@ -476,7 +467,6 @@ class RoleManager {
             });
         }
         
-        // Désactiver selon data-readonly-if
         document.querySelectorAll('[data-readonly-if]').forEach(element => {
             if (!this.isLogoutElement(element)) {
                 const condition = element.getAttribute('data-readonly-if');
@@ -487,7 +477,6 @@ class RoleManager {
             }
         });
         
-        // Désactiver selon data-requires
         document.querySelectorAll('button[data-requires], a[data-requires]').forEach(element => {
             if (this.isLogoutElement(element)) {
                 element.disabled = false;
@@ -520,9 +509,7 @@ class RoleManager {
     }
 
     protectFormsAndButtons() {
-        // Empêcher les soumissions de formulaire non autorisées
         document.querySelectorAll('form').forEach(form => {
-            // EXCEPTION : Ne jamais protéger les formulaires de déconnexion
             if (this.isLogoutElement(form)) {
                 return;
             }
@@ -537,9 +524,7 @@ class RoleManager {
             }
         });
         
-        // Protéger les liens d'action SAUF déconnexion
         document.querySelectorAll('a[href*="/edit/"], a[href*="/delete/"], a[href*="/create"]').forEach(link => {
-            // EXCEPTION : Ne jamais protéger les liens de déconnexion
             if (this.isLogoutElement(link)) {
                 return;
             }
@@ -557,33 +542,32 @@ class RoleManager {
     isFormAuthorized(form) {
         const formAction = form.getAttribute('action') || '';
         
-        // Toujours autoriser les formulaires de déconnexion
         if (formAction.includes('/logout')) {
             return true;
         }
         
-        // Les utilisateurs ne peuvent soumettre que les formulaires de profil
         if (this.hasRole('user')) {
             return formAction.includes('/profile') || form.classList.contains('profile-form');
         }
         
-        // Les agents IT peuvent soumettre les formulaires d'équipements
         if (this.hasRole('agent_it')) {
-            return formAction.includes('/equipment') || formAction.includes('/maintenance');
+            return formAction.includes('/equipment') 
+                || formAction.includes('/maintenance')
+                || formAction.includes('/assignments')
+                || formAction.includes('/assignment')
+                || formAction.includes('/parc');  // ← AJOUT : route parc = affectation
         }
         
-        return true; // Super Admin peut tout
+        return true;
     }
 
     isLinkAuthorized(link) {
         const href = link.getAttribute('href') || '';
         
-        // Toujours autoriser les liens de déconnexion
         if (href.includes('/logout')) {
             return true;
         }
         
-        // Vérifier les actions CRUD
         if (href.includes('/create')) {
             return this.canCreate(this.getEntityFromUrl(href));
         }
@@ -606,18 +590,19 @@ class RoleManager {
         if (url.includes('/categories/')) return 'category';
         if (url.includes('/suppliers/')) return 'supplier';
         if (url.includes('/maintenance/')) return 'maintenance';
+        if (url.includes('/assignments/')) return 'assignment';
+        if (url.includes('/assignment/')) return 'assignment';
+        if (url.includes('/parc/')) return 'assignment'; // ← AJOUT : route parc = entité assignment
         return null;
     }
 
     applyRoleStyles() {
-        // Ajouter des classes CSS selon le rôle et le mode d'accès
         document.body.classList.remove('role-super_admin', 'role-agent_it', 'role-user');
         document.body.classList.remove('access-full', 'access-mixed', 'access-readonly');
         
         document.body.classList.add(`role-${this.userRole}`);
         document.body.classList.add(`access-${this.ACCESS_MODES[this.userRole]}`);
         
-        // Ajouter un indicateur visuel pour le mode lecture seule
         if (this.hasRole('user')) {
             document.body.classList.add('readonly-mode');
         }
@@ -626,29 +611,23 @@ class RoleManager {
     }
 
     addRoleBadge() {
-        /* const roleNames = {
+        const userNameElement = document.querySelector('.user-name');
+        if (!userNameElement) return;
+
+        const roleNames = {
             'super_admin': 'Super Admin',
+            'admin': 'Administrateur',
             'agent_it': 'Agent IT',
-            'user': 'Utilisateur (Lecture seule)'
-        }; */
-            const userNameElement = document.querySelector('.user-name');
-    if (!userNameElement) return;
+            'user': 'Utilisateur'
+        };
 
-    // ✅ DÉFINIR roleNames LOCALEMENT
-    const roleNames = {
-        'super_admin': 'Super Admin',
-        'admin': 'Administrateur',
-        'agent_it': 'Agent IT',
-        'user': 'Utilisateur'
-    };
-
-    const roleName = roleNames[this.userRole] || this.userRole;
-    const roleColors = {
-        'super_admin': 'bg-red-500',
-        'admin': 'bg-blue-500',
-        'agent_it': 'bg-green-500',
-        'user': 'bg-gray-500'
-    };
+        const roleName = roleNames[this.userRole] || this.userRole;
+        const roleColors = {
+            'super_admin': 'bg-red-500',
+            'admin': 'bg-blue-500',
+            'agent_it': 'bg-green-500',
+            'user': 'bg-gray-500'
+        };
         
         const badgeContainer = document.getElementById('role-badge-container');
         if (badgeContainer) {
@@ -698,9 +677,8 @@ class RoleManager {
 
     setupProtectedClickHandlers() {
         document.addEventListener('click', (e) => {
-            // EXCEPTION : Toujours autoriser les clics sur la déconnexion
             if (this.isLogoutElement(e.target)) {
-                return; // Laisser passer
+                return;
             }
             
             const protectedElement = e.target.closest('[data-protected-click]');
@@ -732,14 +710,13 @@ class RoleManager {
                 }
             }
             
-            // Empêcher les clics sur les éléments désactivés (sauf déconnexion)
             const disabledElement = e.target.closest('.disabled-action, .disabled-link');
             if (disabledElement && !this.isLogoutElement(disabledElement)) {
                 e.preventDefault();
                 e.stopPropagation();
                 this.showAccessDeniedAlert();
             }
-        }, { capture: true }); // Utiliser capture pour intercepter avant
+        }, { capture: true });
     }
 
     showAccessDeniedAlert(message = null) {
@@ -778,7 +755,6 @@ class RoleManager {
         };
     }
     
-    // Vérifie si l'utilisateur peut effectuer une action sur un élément spécifique
     canPerformAction(action, entity = null, item = null) {
         switch(action.toLowerCase()) {
             case 'create': return this.canCreate(entity);

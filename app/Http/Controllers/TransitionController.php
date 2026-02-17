@@ -1552,9 +1552,7 @@ public function showTransitionForm(Equipment $equipment)
             return redirect()->back()->with('error', 'Erreur lors de la génération de la fiche de mouvement: ' . $e->getMessage());
         }
     }
-    /**
-     * Télécharger la fiche d'installation uniquement
-     */
+   
 /**
  * Télécharger la fiche d'installation uniquement
  */
@@ -1738,9 +1736,7 @@ public function downloadFicheInstallation($id)
         return redirect()->back()->with('error', 'Erreur lors de la génération de la fiche d\'installation: ' . $e->getMessage());
     }
 }
-    /**
-     * Afficher la page avec les fichiers attachés
-     */
+    
 /**
  * Afficher la page avec les fichiers attachés
  */
@@ -2554,9 +2550,7 @@ private function processSimpleAffectation(Equipment $equipment, array $data, Tra
         ]);
     }
 }
-/**
- * Soumettre une demande de mise hors service
- */
+
 /**
  * Soumettre une demande de mise hors service
  */
@@ -2711,9 +2705,7 @@ public function submitHorsService(Request $request)
     }
 }
 
-/**
- * Traiter la mise hors service
- */
+
 /**
  * Traiter la mise hors service
  */
@@ -2900,9 +2892,7 @@ private function notifyAgentHorsServiceRejected($approval)
         // Envoyer une notification ou email
     }
 }
-/**
- * Afficher la page d'approbation hors service
- */
+
 /**
  * Afficher la page d'approbation pour une mise hors service
  */
@@ -2949,10 +2939,7 @@ public function showHorsServiceApproval(TransitionApproval $approval)
         'checklistData' => $checklistData,
     ]);
 }
-// TransitionController.php
-/**
- * Lister les approbations de mise hors service
- */
+
 /**
  * Lister les approbations de mise hors service
  */
@@ -3147,12 +3134,7 @@ public function submitMaintenance(Request $request)
     }
 }
 
-/**
- * Traiter l'envoi en maintenance
- */
-/**
- * Traiter l'envoi en maintenance (version robuste)
- */
+
 /**
  * Traiter l'envoi en maintenance - Version adaptée à votre schéma
  */
@@ -3950,9 +3932,7 @@ public function showPerduApproval(TransitionApproval $approval)
     return view('admin.perdu-approval', $viewData);
 }
 
-/**
- * Soumettre une demande de mise hors service depuis le parc
- */
+
 /**
  * Soumettre une demande de mise hors service depuis le parc
  */
