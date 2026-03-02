@@ -47,6 +47,13 @@ class EquipmentImportController extends Controller
 
         try {
             DB::beginTransaction();
+            // 🔥 ÉCRASER TOUTES LES DONNÉES
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Parc::truncate();
+        Stock::truncate();
+        EquipmentDetail::truncate();
+        Equipment::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
             $file = $request->file('excel_file');
             $spreadsheet = IOFactory::load($file->getPathname());
