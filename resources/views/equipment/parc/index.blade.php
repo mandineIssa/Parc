@@ -347,7 +347,7 @@
                         
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ $equipment->date_mise_service->format('d/m/Y') }}</div>
-                            <div class="text-xs text-gray-500">{{ $equipment->date_livraison->diffForHumans() }}</div>
+                            <div class="text-xs text-gray-500">{{ $equipment->date_mise_service->diffForHumans() }}</div>
                         </td>
                         
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
