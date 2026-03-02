@@ -413,24 +413,62 @@ class EquipmentImportController extends Controller
     /**
      * Récupère une date avec conversion au format Y-m-d
      */
+ /**
+     * Récupère une date avec conversion au format Y-m-d
+     * Formats acceptés :
+     *   - Numérique Excel  : 44927
+     *   - dd/mm/yyyy       : 12/01/2000
+     *   - yyyy/mm/dd       : 2000/01/12
+     *   - yyyy-mm-dd       : 2000-01-12
+     *   - dd-mm-yyyy       : 12-01-2000
+     *   - d/m/Y            : 5/1/2000  (sans zéro)
+     */
     private function getDateValue($sheet, $cell)
     {
         $value = $sheet->getCell($cell)->getValue();
-        
+
         if (empty($value)) {
             return null;
         }
 
-        try {
-            // Si c'est un nombre Excel (serial date)
-            if (is_numeric($value)) {
+        // ── 1. Numérique Excel (serial date) ──────────────────────
+        if (is_numeric($value)) {
+            try {
                 $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value);
                 return $date->format('Y-m-d');
+            } catch (Exception $e) {
+                return null;
             }
-            
-            // Si c'est déjà une chaîne de date
-            return date('Y-m-d', strtotime($value));
-            
+        }
+
+        $value = trim($value);
+
+        // ── 2. Formats dd/mm/yyyy et d/m/yyyy (slash) ─────────────
+        // strtotime() interprète 12/01/2000 comme mm/dd/yyyy (américain)
+        // donc on doit détecter et inverser manuellement
+        if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $value, $m)) {
+            // Format dd/mm/yyyy → Y-m-d
+            return sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
+        }
+
+        // ── 3. Format yyyy/mm/dd (slash) ──────────────────────────
+        if (preg_match('/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/', $value, $m)) {
+            return sprintf('%04d-%02d-%02d', $m[1], $m[2], $m[3]);
+        }
+
+        // ── 4. Format dd-mm-yyyy (tiret) ──────────────────────────
+        if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{4})$/', $value, $m)) {
+            return sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
+        }
+
+        // ── 5. Format yyyy-mm-dd (déjà correct) ───────────────────
+        if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})$/', $value, $m)) {
+            return sprintf('%04d-%02d-%02d', $m[1], $m[2], $m[3]);
+        }
+
+        // ── 6. Dernier recours : Carbon ───────────────────────────
+        try {
+            return \Carbon\Carbon::parse($value)->format('Y-m-d');
         } catch (Exception $e) {
             return null;
         }
