@@ -4,7 +4,6 @@
 
 @section('content')
 <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
-    <div class="max-w-6xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-900 mb-8">Modifier l'Équipement #{{ $equipment->numero_serie }}</h1>
         
         <div class="bg-white rounded-lg shadow-lg p-8">
@@ -377,7 +376,6 @@
             </div>
         </div>
         @endif
-    </div>
 </div>
 
 <script>
