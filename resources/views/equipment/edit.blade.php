@@ -3,7 +3,7 @@
 @section('title', 'Modifier un Équipement')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <div class="max-w-6xl mx-auto">
         <h1 class="text-3xl font-bold text-gray-900 mb-8">Modifier l'Équipement #{{ $equipment->numero_serie }}</h1>
         
@@ -372,13 +372,6 @@
                             </svg>
                             Pour modifier ces données, créez un nouvel équipement
                         </div>
-<!--                         <a href="{{ route('equipment.create') }}" 
-                           class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition duration-200">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Créer un nouvel équipement
-                        </a> -->
                     </div>
                 </div>
             </div>
