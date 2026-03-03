@@ -54,12 +54,12 @@ class EquipmentImportController extends Controller
             // ── TRUNCATE AVANT LA TRANSACTION ─────────────────────
             // En MySQL, TRUNCATE provoque un commit implicite.
             // Il doit donc être exécuté AVANT beginTransaction().
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+    /*         DB::statement('SET FOREIGN_KEY_CHECKS=0');
             DB::table('parc')->truncate();
             DB::table('stock')->truncate();
             DB::table('equipment_details')->truncate();
             DB::table('equipment')->truncate();
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            DB::statement('SET FOREIGN_KEY_CHECKS=1'); */
             // ──────────────────────────────────────────────────────
 
             DB::beginTransaction();
