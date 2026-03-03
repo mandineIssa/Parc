@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8 max-w-2xl">
+<div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-6">
         <a href="{{ route('agencies.show', $agency) }}" class="text-blue-600 hover:text-blue-900 inline-flex items-center">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
