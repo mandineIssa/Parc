@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="bg-gray-50 min-h-screen py-6">
-    <div class="container mx-auto px-4">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
         <!-- En-tête avec actions -->
         <div class="mb-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -186,7 +186,7 @@
                 </div>
                 @endif
 
-                <!-- Données spécifiques (lecture seule) -->
+                
                 <!-- Données spécifiques (lecture seule) -->
 @if($equipment->detail && !empty($specificData))
 <div class="mt-8 bg-white rounded-lg shadow-lg overflow-hidden">
