@@ -4,7 +4,7 @@
 @section('header', 'Inventaire des Équipements')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <!-- En-tête -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
@@ -725,11 +725,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .container {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    
     table {
         font-size: 0.875rem;
     }
