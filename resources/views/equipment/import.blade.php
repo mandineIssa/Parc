@@ -3,8 +3,8 @@
 @section('title', 'Importer des Équipements')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
+<div class="w-full px-4 sm:px-6 lg:px-8 py-8">
+    
         {{-- En-tête --}}
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">📥 Importer des Équipements</h1>
@@ -239,7 +239,7 @@
                 <p class="ml-4">R: Utilisez des guillemets doubles autour du texte : "Intel Core i5, 2.4GHz"</p>
             </div>
         </div>
-    </div>
+    
 </div>
 
 <script>
