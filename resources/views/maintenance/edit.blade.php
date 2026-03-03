@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8 max-w-2xl">
+<div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <h1 class="text-2xl font-bold text-gray-800 mb-6">Modifier la Maintenance #{{ $maintenance->id }}</h1>
     
     <form action="{{ route('maintenance.update', $maintenance->id) }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
