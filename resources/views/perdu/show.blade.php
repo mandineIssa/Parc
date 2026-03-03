@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8 max-w-4xl">
+<div class="w-full px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Détails de la Déclaration de Perte</h1>
         <div>
