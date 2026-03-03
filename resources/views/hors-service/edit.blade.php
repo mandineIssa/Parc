@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8 max-w-2xl">
+<div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <h1 class="text-2xl font-bold text-gray-800 mb-6">Modifier la Déclaration Hors Service</h1>
     
     <form action="{{ route('hors-service.update', $horsService->id) }}" method="POST" enctype="multipart/form-data" 
