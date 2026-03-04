@@ -2,8 +2,8 @@
 @section('title', 'Ajouter un Équipement')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-6xl mx-auto">
+<div class="w-full px-4 sm:px-6 lg:px-8 py-8">
+    <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-8">Ajouter un Équipement</h1>
 
         <!-- ÉTAPE 1: Sélection Type, Catégorie, Sous-Catégorie -->
@@ -93,7 +93,7 @@
 
                         <!-- Fournisseur -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Fournisseur</label>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Fournisseur *</label>
                             <select name="fournisseur_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500">
                                 <option value="">-- Sélectionner --</option>
                                 @foreach($suppliers as $supplier)
@@ -122,13 +122,13 @@
                           
                          <!-- refernece facture  -->
                         <div id="field-modele" class="">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">REF Facture</label>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">N°Facture</label>
                             <input type="text" name="reference_facture" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500" required>
                         </div>
 
                         <!-- Localisation -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">LocalIT</label>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Emplacement</label>
                             <input type="text" name="localisation" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500">
                         </div>
 
@@ -5633,7 +5633,7 @@ function validateForm(event) {
 }
 
 // AJOUTEZ UN BOUTON DE DÉBOGAGE (optionnel)
-document.addEventListener('DOMContentLoaded', function() {
+/*document.addEventListener('DOMContentLoaded', function() {
     // Ajouter un bouton de débogage
     const submitButtons = document.getElementById('submit-buttons');
     if (submitButtons) {
@@ -5645,7 +5645,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         submitButtons.insertBefore(debugButton, submitButtons.firstChild);
     }
-});
+});*/
 
 // AJOUTEZ CE SCRIPT DANS VOTRE FORMULAIRE BLADE
 document.addEventListener('DOMContentLoaded', function() {
@@ -5700,11 +5700,11 @@ const type = document.getElementById('hidden-type').value;
 const categorie = document.getElementById('hidden-category').value;
 const sousCategorie = document.getElementById('hidden-sub-category').value;
 
-if (!type || !categorie || !sousCategorie) {
+/* if (!type || !categorie || !sousCategorie) {
     console.error('❌ ERREUR: Champs de classification non remplis!');
     alert('Veuillez d\'abord sélectionner le type, la catégorie et la sous-catégorie');
 } else {
     console.log('✅ Champs de classification OK');
-}
+} */
 </script>
 @endsection
