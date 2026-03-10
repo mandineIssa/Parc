@@ -623,20 +623,20 @@ public function show(TransitionApproval $approval)
                     'agence_nom' => 'required|string|max:255',
                     'observations' => 'nullable|string',
 
-                    'checklist.verif_logiciels_installes' => 'required|accepted',
-                    'checklist.verif_messagerie' => 'required|accepted',
-                    'checklist.verif_sauvegarde' => 'required|accepted',
-                    'checklist.verif_integration_ad' => 'required|accepted',
-                    'checklist.verif_systeme_licence' => 'required|accepted',
-                    'checklist.verif_restauration' => 'required|accepted',
-                    'checklist.verif_fiche_mouvement' => 'required|accepted',
-                    'checklist.verif_validation_installation' => 'required|accepted',
+                    'checklist.verif_logiciels_installes' => 'nullable|boolean',
+                    'checklist.verif_messagerie' => 'nullable|boolean',
+                    'checklist.verif_sauvegarde' => 'nullable|boolean',
+                    'checklist.verif_integration_ad' => 'nullable|boolean',
+                    'checklist.verif_systeme_licence' => 'nullable|boolean',
+                    'checklist.verif_restauration' => 'nullable|boolean',
+                    'checklist.verif_fiche_mouvement' => 'nullable|boolean',
+                    'checklist.verif_validation_installation' => 'nullable|boolean',
                     'signature_verificateur' => 'nullable|string',
                 ]);
             } else {
                 $validated = $request->validate([
                     'checklist' => 'required|array',
-                    'checklist.*' => 'boolean',
+                    'checklist.*' => 'nullable|boolean',
                     'date_validation' => 'required|date',
                     'observations' => 'nullable|string',
 
@@ -655,16 +655,27 @@ public function show(TransitionApproval $approval)
                 'poste_staff' => $data['poste_affecte'] ?? null,
                 'date_mise_service' => $data['date_affectation'] ?? now(),
                 'notes' => $data['notes'] ?? $equipment->notes,
+                'agency_id' => $data['agency_id'] ?? null,
             ]);
 
             $parc = Parc::create([
-                'numero_serie' => $equipment->numero_serie,
-                'utilisateur_id' => $data['utilisateur_id'] ?? null,
-                'departement' => $data['departement'] ?? null,
-                'poste_affecte' => $data['poste_affecte'] ?? null,
-                'date_affectation' => $data['date_affectation'] ?? now(),
-                'statut_usage' => 'actif',
-                'notes_affectation' => $data['notes'] ?? null,
+                'numero_serie'           => $equipment->numero_serie,
+                'utilisateur_id'         => $data['utilisateur_id'] ?? null,
+                'utilisateur_nom'        => $data['utilisateur_nom'] ?? $data['user_name'] ?? null,
+                'utilisateur_prenom'     => $data['utilisateur_prenom'] ?? $data['user_prenom'] ?? null,
+                'departement'            => $data['departement'] ?? null,
+                'poste_affecte'          => $data['poste_affecte'] ?? $data['position'] ?? null,
+                'position'               => $data['position'] ?? null,
+                'date_affectation'       => $data['date_affectation'] ?? $data['affectation_date'] ?? now(),
+                'affectation_reason'     => $data['affectation_reason'] ?? null,
+                'affectation_reason_detail' => $data['affectation_reason_detail'] ?? null,
+                'localisation'           => $data['localisation'] ?? null,
+                'telephone'              => $data['telephone'] ?? null,
+                'email'                  => $data['email'] ?? null,
+                'affectation_reason'     => $data['affectation_reason'] ?? null,
+                'affectation_reason_detail' => $data['affectation_reason_detail'] ?? null,
+                'statut_usage'           => 'actif',
+                'notes_affectation'      => $data['notes'] ?? $data['affectation_reason'] ?? null,
                 'transition_approval_id' => $approval->id,
             ]);
 
@@ -1116,17 +1127,27 @@ private function extractUserPrenom($affectationData)
             'departement' => $data['destination'] ?? null,
             'poste_staff' => $data['receptionnaire_fonction'] ?? null,
             'date_mise_service' => now(),
+            'agency_id' => $data['agency_id'] ?? null,
+             'notes' => $data['affectation_reason'] ?? $equipment->notes,
         ]);
 
         Parc::create([
             'numero_serie' => $equipment->numero_serie,
             'utilisateur_id' => null,
+            'utilisateur_nom' => $data['user_name'] ?? null,        
+            'utilisateur_prenom' => $data['user_prenom'] ?? null,   
             'departement' => $data['destination'] ?? null,
             'poste_affecte' => $data['receptionnaire_fonction'] ?? null,
             'date_affectation' => now(),
             'statut_usage' => 'actif',
             'notes_affectation' => 'Transition directe via formulaire',
             'transition_approval_id' => $approval->id,
+            'localisation' => $data['destination'] ?? null,
+            'telephone' => $data['telephone'] ?? null,
+            'email' => $data['email'] ?? null,
+            'affectation_reason'     => $data['affectation_reason'] ?? null,
+            'affectation_reason_detail' => $data['affectation_reason_detail'] ?? null,
+
         ]);
 
         if ($equipment->stock) {
@@ -1148,17 +1169,24 @@ private function extractUserPrenom($affectationData)
             'poste_staff' => $data['poste_affecte'] ?? null,
             'date_mise_service' => $data['date_affectation'] ?? now(),
             'notes' => $data['affectation_reason'] ?? $equipment->notes,
+             'agency_id' => $data['agency_id'] ?? null,
         ]);
-
         Parc::create([
             'numero_serie' => $equipment->numero_serie,
             'utilisateur_id' => $data['utilisateur_id'] ?? null,
+            'utilisateur_nom' => $data['user_name'] ?? null,        
+            'utilisateur_prenom' => $data['user_prenom'] ?? null, 
             'departement' => $data['departement'] ?? null,
             'poste_affecte' => $data['poste_affecte'] ?? null,
             'date_affectation' => $data['date_affectation'] ?? now(),
             'statut_usage' => 'actif',
             'notes_affectation' => $data['affectation_reason'] ?? 'Transition multi-étapes',
             'transition_approval_id' => $approval->id,
+            'localisation' => $data['destination'] ?? null,
+            'telephone' => $data['telephone'] ?? null,
+            'email' => $data['email'] ?? null,
+            'affectation_reason'     => $data['affectation_reason'] ?? null,
+            'affectation_reason_detail' => $data['affectation_reason_detail'] ?? null,
 
             'responsable_name' => $data['affectation_data']['responsable_name'] ?? null,
             'responsable_function' => $data['affectation_data']['responsable_function'] ?? null,
