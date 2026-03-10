@@ -251,14 +251,32 @@ public function update(Request $request, $id)
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)  // or public function destroy(Equipment $equipment)
-    {
+public function destroy($id)
+{
+    DB::transaction(function () use ($id) {
         $equipment = Equipment::findOrFail($id);
+
+        // Trouver les transition_approvals liés à cet équipement
+        $approvalIds = DB::table('transition_approvals')
+            ->where('equipment_id', $id)  // vérifiez le vrai nom de colonne
+            ->pluck('id');
+
+        // Mettre à null dans parc
+        DB::table('parc')
+            ->whereIn('transition_approval_id', $approvalIds)
+            ->update(['transition_approval_id' => null]);
+
+        // Supprimer les transition_approvals
+        DB::table('transition_approvals')
+            ->whereIn('id', $approvalIds)
+            ->delete();
+
         $equipment->delete();
-        
-        return redirect()->route('equipment.index')
-            ->with('success', 'Equipment deleted successfully');
-    }
+    });
+
+    return redirect()->route('equipment.index')
+        ->with('success', 'Équipement supprimé avec succès');
+}
     /**
      * Extraire les données spécifiques selon le type d'équipement
      */
