@@ -675,6 +675,7 @@ public function show(TransitionApproval $approval)
                 'affectation_reason'     => $data['affectation_reason'] ?? null,
                 'affectation_reason_detail' => $data['affectation_reason_detail'] ?? null,
                 'statut_usage'           => 'actif',
+                'date_retour_prevue' => $data['date_retour_prevue'] ?? null,
                 'notes_affectation'      => $data['notes'] ?? $data['affectation_reason'] ?? null,
                 'transition_approval_id' => $approval->id,
             ]);
@@ -1007,6 +1008,12 @@ public function show(TransitionApproval $approval)
     'installation_data' => $validated['installation'],
     'affectation_data' => $validated['affectation_simple'],
     'mouvement_data' => $validated['mouvement'],
+        // ✅ AJOUTER CES 3 LIGNES :
+    'affectation_reason_detail' => $validated['affectation_simple']['affectation_reason_detail'] ?? null,
+    'localisation' => $validated['affectation_simple']['localisation'] ?? null,
+    'telephone' => $validated['affectation_simple']['telephone'] ?? null,
+    'email' => $validated['affectation_simple']['email'] ?? null,
+    'date_retour_prevue' => $validated['affectation_simple']['date_retour_prevue'] ?? null,
 
     'utilisateur_id' => $validated['affectation_simple']['user_id'] ?? null,
     'user_name' => $this->extractUserName($validated['affectation_simple']),
@@ -1145,6 +1152,7 @@ private function extractUserPrenom($affectationData)
             'localisation' => $data['destination'] ?? null,
             'telephone' => $data['telephone'] ?? null,
             'email' => $data['email'] ?? null,
+            'date_retour_prevue' => $data['date_retour_prevue'] ?? null,
             'affectation_reason'     => $data['affectation_reason'] ?? null,
             'affectation_reason_detail' => $data['affectation_reason_detail'] ?? null,
 
@@ -1180,6 +1188,7 @@ private function extractUserPrenom($affectationData)
             'poste_affecte' => $data['poste_affecte'] ?? null,
             'date_affectation' => $data['date_affectation'] ?? now(),
             'statut_usage' => 'actif',
+            'date_retour_prevue' => $data['date_retour_prevue'] ?? null,
             'notes_affectation' => $data['affectation_reason'] ?? 'Transition multi-étapes',
             'transition_approval_id' => $approval->id,
             'localisation' => $data['destination'] ?? null,
