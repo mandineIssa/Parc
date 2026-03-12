@@ -188,6 +188,36 @@
                     </svg>
                 </div>
             </div>
+            {{-- Parc → Stock Décélé --}}
+            <div class="transition-card active:bg-orange-50" data-target="parc-to-stock-decele">
+                <div class="flex items-center p-3">
+                    <div class="p-2 border border-gray-200 bg-white rounded-lg mr-3">
+                        <div class="flex items-center space-x-1">
+                            {{-- Icône Parc (utilisateur vert) --}}
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {{-- Flèche --}}
+                            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                            {{-- Icône Stock Décélé (boîte orange) --}}
+                            <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h5 class="font-bold text-base">Retour Stock Décélé</h5>
+                        <p class="text-xs text-gray-500">Restitution et mise en stock décélé</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+            </div>
             @endif
 
             @if($equipment->statut == 'maintenance')
@@ -337,6 +367,8 @@
             </p>
         </div>
     </div>
+
+    <div id="three-step-decele-container" class="mt-6 hidden"></div>
 
     <!-- Conteneur pour les formulaires de transition simple -->
     <div id="transition-form-container" class="mt-6 hidden">
@@ -1134,6 +1166,7 @@
         @include('transitions.partials.stock-to-hors-service')
         @include('transitions.partials.maintenance-to-stock')
         @include('transitions.partials.maintenance-to-hors-service')
+        @include('transitions.partials.parc-to-stock-decele')
     </div>
 
     <!-- Bouton retour -->
@@ -1208,646 +1241,1580 @@
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
 <script>
+
 // Variables globales
+
 const isSuperAdmin = @json(auth()->check() && strtolower(auth()->user()->role) === 'super_admin');
+
 let signaturePads = {};
+
 let activeCard = null;
+
 let currentStep = 1;
+
 let formData = {
+
     installation: {},
+
     affectation_simple: {},
+
     mouvement: {}
+
 };
 
+
+
 document.addEventListener('DOMContentLoaded', function() {
+
     const cards = document.querySelectorAll('.transition-card');
+
     const transitionContainer = document.getElementById('transition-form-container');
+
     const threeStepContainer = document.getElementById('three-step-flow-container');
+
+
 
     // ✅ AJOUT: Event delegation pour capturer le nom de l'agence (NOUVEAU CODE)
+
     document.addEventListener('change', function(e) {
+
         // Vérifier si c'est le select d'agence qui a changé
+
         if (e.target && e.target.name === 'agency_id') {
+
             const agenceNomHidden = document.getElementById('agence_nom_hidden');
+
             const selectedOption = e.target.options[e.target.selectedIndex];
+
             
+
             if (agenceNomHidden && selectedOption.value) {
+
                 agenceNomHidden.value = selectedOption.textContent.trim();
+
                 console.log('✅ Agence capturée:', selectedOption.textContent.trim());
+
             } else if (agenceNomHidden) {
+
                 agenceNomHidden.value = '';
+
             }
+
         }
+
     });
+
+
 
     // ✅ ANCIEN CODE CONSERVÉ: Tentative de capture directe (gardé pour compatibilité)
+
     const agencySelect = document.getElementById('agency_select');
+
     const agenceNomHidden = document.getElementById('agence_nom_hidden');
+
     
+
     if (agencySelect && agenceNomHidden) {
+
         agencySelect.addEventListener('change', function() {
+
             const selectedOption = this.options[this.selectedIndex];
+
             if (selectedOption.value) {
+
                 agenceNomHidden.value = selectedOption.textContent.trim();
+
             } else {
+
                 agenceNomHidden.value = '';
+
             }
+
         });
+
     }
 
+
+
     // ✅ ANCIEN CODE CONSERVÉ: Gestion des cartes de transition
+
     cards.forEach(card => {
+
         card.addEventListener('click', function() {
+
             const target = this.dataset.target;
+
             
+
             // Retirer la classe active de toutes les cartes
+
             cards.forEach(c => c.classList.remove('active'));
+
             
+
             // Ajouter la classe active à la carte cliquée
+
             this.classList.add('active');
+
             activeCard = this;
+
             
+
             // Vider les conteneurs
+
             transitionContainer.innerHTML = '';
+
             transitionContainer.classList.add('hidden');
+
             threeStepContainer.innerHTML = '';
+
             threeStepContainer.classList.add('hidden');
+
             
+
             // Gestion selon le type de transition
-            if (target === 'stock-to-parc') {
-                // Pour Stock → Parc, démarrer le flux 3 étapes
+
+                     if (target === 'stock-to-parc') {
                 startThreeStepFlow();
+ 
+            } else if (target === 'parc-to-stock-decele') {
+                // Vider aussi le conteneur décélé au cas où
+                const deceleContainer = document.getElementById('three-step-decele-container');
+                if (deceleContainer) {
+                    deceleContainer.innerHTML = '';
+                    deceleContainer.classList.add('hidden');
+                }
+                startDeceleFlow();
+ 
             } else {
-                // Pour les autres transitions, afficher le formulaire simple
                 showSimpleTransitionForm(target);
             }
+
         });
+
     });
+
 });
 
+
+
 function startThreeStepFlow() {
+
     const threeStepContainer = document.getElementById('three-step-flow-container');
+
     const formsContainer = document.getElementById('forms-container');
+
     
+
     // Afficher le conteneur
+
     threeStepContainer.classList.remove('hidden');
+
     threeStepContainer.innerHTML = `
+
         <!-- Barre de progression -->
+
+        <div class="mb-8">
+
+            <div class="flex justify-between items-center mb-4">
+
+                <div class="w-1/4">
+
+                    <div class="flex flex-col items-center">
+
+                        <div class="step-number active">
+
+                            1
+
+                        </div>
+
+                        <span class="mt-2 text-sm font-semibold">Fiche d'Installation</span>
+
+                    </div>
+
+                </div>
+
+                <div class="w-1/4">
+
+                    <div class="flex flex-col items-center">
+
+                        <div class="step-number pending">
+
+                            2
+
+                        </div>
+
+                        <span class="mt-2 text-sm text-gray-600">Affectation Simple</span>
+
+                    </div>
+
+                </div>
+
+                <div class="w-1/4">
+
+                    <div class="flex flex-col items-center">
+
+                        <div class="step-number pending">
+
+                            3
+
+                        </div>
+
+                        <span class="mt-2 text-sm text-gray-600">Fiche de Mouvement</span>
+
+                    </div>
+
+                </div>
+
+                <div class="w-1/4">
+
+                    <div class="flex flex-col items-center">
+
+                        <div class="step-number pending">
+
+                            4
+
+                        </div>
+
+                        <span class="mt-2 text-sm text-gray-600">Validation</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+
+                <div class="h-full bg-cofina-red w-1/4 transition-all duration-500" id="progress-bar"></div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Conteneur des formulaires -->
+
+        <div id="forms-container"></div>
+
+
+
+        <!-- Navigation entre les étapes -->
+
+        <div class="mt-8 pt-6 border-t border-gray-200 flex justify-between" id="navigation-buttons">
+
+            <button type="button" onclick="previousStep()" class="btn-cofina-outline px-6 py-3">
+
+                <svg class="w-5 h-5 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+
+                </svg>
+
+                Étape précédente
+
+            </button>
+
+            
+
+            <div class="flex gap-4">
+
+                <button type="button" onclick="saveDraft()" class="btn-cofina-outline px-6 py-3">
+
+                    💾 Sauvegarder brouillon
+
+                </button>
+
+                <button type="button" onclick="nextStep()" class="btn-cofina px-6 py-3">
+
+                    Étape suivante
+
+                    <svg class="w-5 h-5 ml-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+
+                    </svg>
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Bouton de soumission final -->
+
+        <div class="mt-8 pt-6 border-t border-gray-200 text-center hidden" id="final-submit">
+
+            <button type="button" onclick="submitAllForms()" class="btn-cofina-success px-8 py-4 text-lg font-bold">
+
+                ✅ SOUMETTRE POUR APPROBATION
+
+            </button>
+
+            <p class="text-sm text-gray-600 mt-2">
+
+                Toutes les informations seront soumises pour approbation
+
+            </p>
+
+        </div>
+
+    `;
+
+    
+
+    // Initialiser l'étape 1
+
+    currentStep = 1;
+
+    showStep(currentStep);
+
+    
+
+    // Scroll vers le conteneur
+
+    threeStepContainer.scrollIntoView({ behavior: 'smooth' });
+
+}
+
+
+
+function showStep(stepNumber) {
+
+    const formsContainer = document.getElementById('forms-container');
+
+    const navigationButtons = document.getElementById('navigation-buttons');
+
+    const finalSubmit = document.getElementById('final-submit');
+
+    
+
+    // Vider le conteneur
+
+    formsContainer.innerHTML = '';
+
+    
+
+    // Afficher le formulaire correspondant
+
+    let formTemplate;
+
+    switch(stepNumber) {
+
+        case 1:
+
+            formTemplate = document.getElementById('installation-step-form').cloneNode(true);
+
+            break;
+
+        case 2:
+
+            formTemplate = document.getElementById('affectation-step-form').cloneNode(true);
+
+            break;
+
+        case 3:
+
+            formTemplate = document.getElementById('mouvement-step-form').cloneNode(true);
+
+            break;
+
+    }
+
+    
+
+// Si étape 3 (mouvement), pré-remplir avec les données de l'affectation
+
+    if (stepNumber === 3 && formData.affectation_simple) {
+
+        setTimeout(() => {
+
+            const form = document.querySelector('#forms-container form');
+
+            if (form) {
+
+                // Pré-remplir le réceptionnaire avec les données de l'affectation
+
+                const nomField = form.querySelector('[name="receptionnaire_nom"]');
+
+                const prenomField = form.querySelector('[name="receptionnaire_prenom"]');
+
+                const fonctionField = form.querySelector('[name="receptionnaire_fonction"]');
+
+                
+
+                if (nomField) nomField.value = formData.affectation_simple.utilisateur_nom || '';
+
+                if (prenomField) prenomField.value = formData.affectation_simple.utilisateur_prenom || '';
+
+                if (fonctionField) fonctionField.value = formData.affectation_simple.position || '';
+
+                const destinationField = form.querySelector('[name="destination"]');
+
+            if (destinationField) {
+
+                // Priorité : agence_nom de l'installation
+
+                destinationField.value = formData.installation.agence_nom || '';
+
+            }
+
+            }
+
+        }, 100);
+
+    }
+
+
+
+    formTemplate.classList.remove('hidden');
+
+    formsContainer.appendChild(formTemplate);
+
+    
+
+    // Initialiser les signatures si nécessaire
+
+    if (stepNumber === 1) {
+
+        initializeSignaturePads('installation');
+
+    } else if (stepNumber === 3) {
+
+        initializeSignaturePads('mouvement');
+
+    }
+
+    
+
+    // Remplir avec les données sauvegardées
+
+    fillFormWithSavedData(stepNumber);
+
+    
+
+    // Mettre à jour la progression
+
+    updateProgressBar(stepNumber);
+
+    updateStepNumbers(stepNumber);
+
+    
+
+    // Gérer la visibilité des boutons
+
+    if (stepNumber === 3) {
+
+        navigationButtons.classList.add('hidden');
+
+        finalSubmit.classList.remove('hidden');
+
+    } else {
+
+        navigationButtons.classList.remove('hidden');
+
+        finalSubmit.classList.add('hidden');
+
+    }
+
+}
+
+
+
+function nextStep() {
+
+    // Sauvegarder les données de l'étape actuelle
+
+    if (!saveCurrentStepData()) {
+
+        alert('Veuillez remplir tous les champs obligatoires');
+
+        return;
+
+    }
+
+    
+
+    // Passer à l'étape suivante
+
+    if (currentStep < 3) {
+
+        currentStep++;
+
+        showStep(currentStep);
+
+        
+
+        // Scroll vers le haut du formulaire
+
+        document.getElementById('forms-container').scrollIntoView({ behavior: 'smooth' });
+
+    }
+
+}
+
+
+
+function previousStep() {
+
+    if (currentStep > 1) {
+
+        // Sauvegarder les données de l'étape actuelle
+
+        saveCurrentStepData();
+
+        
+
+        currentStep--;
+
+        showStep(currentStep);
+
+        
+
+        // Scroll vers le haut du formulaire
+
+        document.getElementById('forms-container').scrollIntoView({ behavior: 'smooth' });
+
+    }
+
+}
+
+
+
+function saveCurrentStepData() {
+
+    const form = document.querySelector('#forms-container form');
+
+    if (!form) return false;
+
+    
+
+    const formType = form.querySelector('input[name="form_type"]').value;
+
+    const data = {};
+
+    
+
+    // Collecter les données du formulaire
+
+    const formElements = form.elements;
+
+    
+
+    for (let element of formElements) {
+
+        if (element.name && element.type !== 'button' && element.type !== 'submit') {
+
+            const name = element.name;
+
+            
+
+            if (element.type === 'checkbox') {
+
+                const value = element.checked ? '1' : '0';
+
+                
+
+                if (name.includes('[') && name.includes(']')) {
+
+                    const match = name.match(/^(\w+)\[(.+)\]$/);
+
+                    if (match) {
+
+                        const arrayName = match[1];
+
+                        const key = match[2];
+
+                        
+
+                        if (!data[arrayName]) {
+
+                            data[arrayName] = {};
+
+                        }
+
+                        data[arrayName][key] = value;
+
+                    }
+
+                } else {
+
+                    data[name] = value;
+
+                }
+
+            } else {
+
+                data[name] = element.value;
+
+            }
+
+        }
+
+    }
+
+    
+
+    // Vérifier les champs requis
+
+    const requiredFields = form.querySelectorAll('[required]');
+
+    let isValid = true;
+
+    
+
+    requiredFields.forEach(field => {
+
+        if (!field.value.trim() && field.type !== 'checkbox') {
+
+            isValid = false;
+
+            field.style.borderColor = 'red';
+
+        } else {
+
+            field.style.borderColor = '';
+
+        }
+
+        
+
+        if (field.type === 'checkbox' && field.required && !field.checked) {
+
+            isValid = false;
+
+            field.style.outline = '2px solid red';
+
+        } else if (field.type === 'checkbox') {
+
+            field.style.outline = '';
+
+        }
+
+    });
+
+    
+
+    if (!isValid) {
+
+        return false;
+
+    }
+
+    
+
+    // Sauvegarder dans formData
+
+    formData[formType] = data;
+
+    
+
+    console.log('Données sauvegardées pour', formType, ':', data);
+
+    
+
+    return true;
+
+}
+
+
+
+function submitAllForms() {
+
+    // Sauvegarder l'étape actuelle
+
+    if (!saveCurrentStepData()) {
+
+        alert('Veuillez remplir tous les champs obligatoires de l\'étape actuelle');
+
+        return;
+
+    }
+
+    
+
+    // Vérifier que toutes les étapes ont été remplies
+
+    if (!formData.installation || Object.keys(formData.installation).length === 0) {
+
+        alert('Veuillez remplir la fiche d\'installation');
+
+        showStep(1);
+
+        return;
+
+    }
+
+    
+
+    if (!formData.affectation_simple || Object.keys(formData.affectation_simple).length === 0) {
+
+        alert('Veuillez remplir l\'affectation simple');
+
+        showStep(2);
+
+        return;
+
+    }
+
+    
+
+    if (!formData.mouvement || Object.keys(formData.mouvement).length === 0) {
+
+        alert('Veuillez remplir la fiche de mouvement');
+
+        showStep(3);
+
+        return;
+
+    }
+
+    
+
+    // Vérifier les signatures
+
+    if (!formData.mouvement.signature_expediteur) {
+
+        alert('Veuillez sauvegarder la signature de l\'expéditeur dans la fiche de mouvement');
+
+        showStep(3);
+
+        return;
+
+    }
+
+    
+
+    if (!formData.installation.signature_installateur) {
+
+        alert('Veuillez sauvegarder la signature de l\'installateur dans la fiche d\'installation');
+
+        showStep(1);
+
+        return;
+
+    }
+
+    
+
+    // Si Super Admin, vérifier les signatures supplémentaires
+
+    if (isSuperAdmin) {
+
+        if (!formData.installation.signature_verificateur) {
+
+            alert('Veuillez sauvegarder la signature du vérificateur (Super Admin)');
+
+            showStep(1);
+
+            return;
+
+        }
+
+        
+
+        if (!formData.installation.signature_utilisateur) {
+
+            alert('Veuillez sauvegarder la signature de l\'utilisateur');
+
+            showStep(1);
+
+            return;
+
+        }
+
+        
+
+        if (!formData.mouvement.signature_receptionnaire) {
+
+            alert('Veuillez sauvegarder la signature du réceptionnaire');
+
+            showStep(3);
+
+            return;
+
+        }
+
+    }
+
+    
+
+    // Préparer les données pour l'envoi
+
+    const allData = {
+
+        ...formData,
+
+        equipment_id: {{ $equipment->id }},
+
+        transition_type: 'stock_to_parc',
+
+        _token: document.querySelector('meta[name="csrf-token"]')?.content || ''
+
+    };
+
+    
+
+    // Afficher un indicateur de chargement
+
+    const submitBtn = document.querySelector('#final-submit .btn-cofina-success');
+
+    const originalText = submitBtn.innerHTML;
+
+    submitBtn.innerHTML = '⏳ Envoi en cours...';
+
+    submitBtn.disabled = true;
+
+    
+
+    // Envoyer les données au serveur
+
+    fetch('{{ route("transitions.submitAll", $equipment) }}', {
+
+        method: 'POST',
+
+        headers: {
+
+            'Content-Type': 'application/json',
+
+            'Accept': 'application/json',
+
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+
+        },
+
+        body: JSON.stringify(allData)
+
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        if (data.success) {
+
+            if (data.redirect_url) {
+
+                window.location.href = data.redirect_url;
+
+            } else {
+
+                window.location.reload();
+
+            }
+
+        } else {
+
+            alert(data.message || 'Erreur lors de la soumission');
+
+            if (data.errors) {
+
+                console.error('Validation errors:', data.errors);
+
+            }
+
+            submitBtn.innerHTML = originalText;
+
+            submitBtn.disabled = false;
+
+        }
+
+    })
+
+    .catch(error => {
+
+        console.error('Error:', error);
+
+        alert('Erreur de connexion au serveur');
+
+        submitBtn.innerHTML = originalText;
+
+        submitBtn.disabled = false;
+
+    });
+
+}
+
+
+
+function fillFormWithSavedData(stepNumber) {
+
+    let formType;
+
+    switch(stepNumber) {
+
+        case 1: formType = 'installation'; break;
+
+        case 2: formType = 'affectation_simple'; break;
+
+        case 3: formType = 'mouvement'; break;
+
+    }
+
+    
+
+    const savedData = formData[formType];
+
+    if (!savedData) return;
+
+    
+
+    const form = document.querySelector('#forms-container form');
+
+    if (!form) return;
+
+    
+
+    Object.keys(savedData).forEach(key => {
+
+        const field = form.querySelector(`[name="${key}"]`);
+
+        if (field) {
+
+            if (field.type === 'checkbox') {
+
+                field.checked = savedData[key] === '1';
+
+            } else {
+
+                field.value = savedData[key];
+
+            }
+
+        }
+
+    });
+
+}
+
+
+
+function updateProgressBar(step) {
+
+    const progressBar = document.getElementById('progress-bar');
+
+    if (progressBar) {
+
+        const width = (step / 3) * 75;
+
+        progressBar.style.width = `${width}%`;
+
+    }
+
+}
+
+
+
+function updateStepNumbers(currentStep) {
+
+    const stepNumbers = document.querySelectorAll('.step-number');
+
+    const stepLabels = document.querySelectorAll('.step-number + span');
+
+    
+
+    stepNumbers.forEach((number, index) => {
+
+        const stepIndex = index + 1;
+
+        
+
+        if (stepIndex < currentStep) {
+
+            number.className = 'step-number completed';
+
+        } else if (stepIndex === currentStep) {
+
+            number.className = 'step-number active';
+
+        } else {
+
+            number.className = 'step-number pending';
+
+        }
+
+    });
+
+    
+
+    stepLabels.forEach((label, index) => {
+
+        const stepIndex = index + 1;
+
+        if (stepIndex <= currentStep) {
+
+            label.classList.remove('text-gray-600');
+
+            label.classList.add('font-semibold');
+
+        } else {
+
+            label.classList.add('text-gray-600');
+
+            label.classList.remove('font-semibold');
+
+        }
+
+    });
+
+}
+
+
+
+function initializeSignaturePads(formType) {
+
+    signaturePads = {};
+
+    
+
+    let canvasIds = [];
+
+    
+
+    if (formType === 'installation') {
+
+        canvasIds = ['signatureCanvasInstallateur'];
+
+        if (isSuperAdmin) {
+
+            canvasIds.push('signatureCanvasUtilisateur', 'signatureCanvasVerificateur');
+
+        }
+
+    } else if (formType === 'mouvement') {
+
+        canvasIds = ['signatureCanvasExpediteur'];
+
+        if (isSuperAdmin) {
+
+            canvasIds.push('signatureCanvasReceptionnaire');
+
+        }
+
+    }
+
+    
+
+    canvasIds.forEach((canvasId) => {
+
+        const canvas = document.getElementById(canvasId);
+
+        if (canvas) {
+
+            const signaturePad = new SignaturePad(canvas, {
+
+                backgroundColor: 'rgb(255, 255, 255)',
+
+                penColor: 'rgb(0, 0, 0)',
+
+                minWidth: 1,
+
+                maxWidth: 3,
+
+            });
+
+            
+
+            signaturePads[canvasId] = signaturePad;
+
+            resizeCanvas(canvas);
+
+            
+
+            window.addEventListener('resize', () => resizeCanvas(canvas));
+
+        }
+
+    });
+
+}
+
+
+
+function resizeCanvas(canvas) {
+
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+
+    canvas.width = canvas.offsetWidth * ratio;
+
+    canvas.height = canvas.offsetHeight * ratio;
+
+    canvas.getContext("2d").scale(ratio, ratio);
+
+    
+
+    const canvasId = canvas.id;
+
+    if (signaturePads[canvasId]) {
+
+        signaturePads[canvasId].clear();
+
+    }
+
+}
+
+
+
+function clearSignature(type) {
+
+    const canvasId = getCanvasId(type);
+
+    if (signaturePads[canvasId]) {
+
+        signaturePads[canvasId].clear();
+
+        const signatureInput = document.getElementById(`signature${capitalizeFirst(type)}`);
+
+        if (signatureInput) {
+
+            signatureInput.value = '';
+
+        }
+
+    }
+
+}
+
+
+
+function saveSignature(type) {
+
+    const canvasId = getCanvasId(type);
+
+    if (signaturePads[canvasId] && !signaturePads[canvasId].isEmpty()) {
+
+        const signatureData = signaturePads[canvasId].toDataURL('image/png');
+
+        const signatureInput = document.getElementById(`signature${capitalizeFirst(type)}`);
+
+        if (signatureInput) {
+
+            signatureInput.value = signatureData;
+
+            alert('Signature sauvegardée avec succès!');
+
+        }
+
+    } else {
+
+        alert('Veuillez d\'abord signer dans la zone prévue.');
+
+    }
+
+}
+
+
+
+function getCanvasId(type) {
+
+    const canvasMap = {
+
+        'expediteur': 'signatureCanvasExpediteur',
+
+        'receptionnaire': 'signatureCanvasReceptionnaire',
+
+        'installateur': 'signatureCanvasInstallateur',
+
+        'utilisateur': 'signatureCanvasUtilisateur',
+
+        'verificateur': 'signatureCanvasVerificateur'
+
+    };
+
+    return canvasMap[type] || '';
+
+}
+
+
+
+function capitalizeFirst(string) {
+
+    return string.charAt(0).toUpperCase() + string.slice(1);
+
+}
+
+
+
+function saveDraft() {
+
+    if (saveCurrentStepData()) {
+
+        alert('Brouillon sauvegardé avec succès!');
+
+    }
+
+}
+
+
+
+// Fonctions pour les autres transitions
+
+function showSimpleTransitionForm(target) {
+
+    const transitionContainer = document.getElementById('transition-form-container');
+
+    
+
+    const form = document.getElementById(target + '-form');
+
+    if (form) {
+
+        const clonedForm = form.cloneNode(true);
+
+        clonedForm.classList.remove('hidden');
+
+        clonedForm.style.display = 'block';
+
+        clonedForm.classList.add('animate-fadeIn');
+
+        
+
+        transitionContainer.innerHTML = '';
+
+        transitionContainer.appendChild(clonedForm);
+
+        transitionContainer.classList.remove('hidden');
+
+        
+
+        transitionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    }
+
+}
+
+
+
+function closeSimpleForm() {
+
+    const transitionContainer = document.getElementById('transition-form-container');
+
+    const threeStepContainer = document.getElementById('three-step-flow-container');
+
+    
+
+    transitionContainer.innerHTML = '';
+
+    transitionContainer.classList.add('hidden');
+
+    threeStepContainer.innerHTML = '';
+
+    threeStepContainer.classList.add('hidden');
+
+    
+
+    if (activeCard) {
+
+        activeCard.classList.remove('active');
+
+    }
+
+}
+
+document.querySelector('select[name="agency_id"]').addEventListener('change', function() {
+
+    const selectedOption = this.options[this.selectedIndex];
+
+    const agenceNom = selectedOption.textContent;
+
+    document.getElementById('agence_nom_hidden').value = agenceNom;
+
+});
+
+
+// ══════════════════════════════════════════════════════════════════
+//  FLUX PARC → STOCK DÉCÉLÉ
+// ══════════════════════════════════════════════════════════════════
+ 
+let signaturePadsDecele = {};
+let currentStepDecele   = 1;
+let formDataDecele = { retour: {}, deceleration: {}, mouvement_decele: {} };
+ 
+function startDeceleFlow() {
+    const container = document.getElementById('three-step-decele-container');
+    if (!container) {
+        console.error('❌ #three-step-decele-container introuvable. Avez-vous ajouté la Correction 1 ?');
+        return;
+    }
+ 
+    container.classList.remove('hidden');
+    container.innerHTML = `
         <div class="mb-8">
             <div class="flex justify-between items-center mb-4">
-                <div class="w-1/4">
-                    <div class="flex flex-col items-center">
-                        <div class="step-number active">
-                            1
-                        </div>
-                        <span class="mt-2 text-sm font-semibold">Fiche d'Installation</span>
-                    </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <div class="step-number-decele active" id="decele-step-1">1</div>
+                    <span class="mt-2 text-sm font-semibold">Fiche de Retour</span>
                 </div>
-                <div class="w-1/4">
-                    <div class="flex flex-col items-center">
-                        <div class="step-number pending">
-                            2
-                        </div>
-                        <span class="mt-2 text-sm text-gray-600">Affectation Simple</span>
-                    </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <div class="step-number-decele pending" id="decele-step-2">2</div>
+                    <span class="mt-2 text-sm text-gray-600">Fiche Décélération</span>
                 </div>
-                <div class="w-1/4">
-                    <div class="flex flex-col items-center">
-                        <div class="step-number pending">
-                            3
-                        </div>
-                        <span class="mt-2 text-sm text-gray-600">Fiche de Mouvement</span>
-                    </div>
-                </div>
-                <div class="w-1/4">
-                    <div class="flex flex-col items-center">
-                        <div class="step-number pending">
-                            4
-                        </div>
-                        <span class="mt-2 text-sm text-gray-600">Validation</span>
-                    </div>
+                <div class="w-1/3 flex flex-col items-center">
+                    <div class="step-number-decele pending" id="decele-step-3">3</div>
+                    <span class="mt-2 text-sm text-gray-600">Fiche de Mouvement</span>
                 </div>
             </div>
             <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div class="h-full bg-cofina-red w-1/4 transition-all duration-500" id="progress-bar"></div>
+                <div class="h-full bg-orange-500 transition-all duration-500"
+                     id="progress-bar-decele" style="width:33%"></div>
             </div>
         </div>
-
-        <!-- Conteneur des formulaires -->
-        <div id="forms-container"></div>
-
-        <!-- Navigation entre les étapes -->
-        <div class="mt-8 pt-6 border-t border-gray-200 flex justify-between" id="navigation-buttons">
-            <button type="button" onclick="previousStep()" class="btn-cofina-outline px-6 py-3">
-                <svg class="w-5 h-5 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-                Étape précédente
+        <div id="forms-container-decele"></div>
+        <div class="mt-8 pt-6 border-t border-gray-200 flex justify-between" id="nav-decele">
+            <button type="button" onclick="previousStepDecele()" class="btn-cofina-outline px-6 py-3">
+                ← Étape précédente
             </button>
-            
             <div class="flex gap-4">
-                <button type="button" onclick="saveDraft()" class="btn-cofina-outline px-6 py-3">
-                    💾 Sauvegarder brouillon
+                <button type="button" onclick="saveDraftDecele()" class="btn-cofina-outline px-6 py-3">
+                    💾 Brouillon
                 </button>
-                <button type="button" onclick="nextStep()" class="btn-cofina px-6 py-3">
-                    Étape suivante
-                    <svg class="w-5 h-5 ml-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
+                <button type="button" onclick="nextStepDecele()" class="btn-cofina px-6 py-3">
+                    Étape suivante →
                 </button>
             </div>
         </div>
-
-        <!-- Bouton de soumission final -->
-        <div class="mt-8 pt-6 border-t border-gray-200 text-center hidden" id="final-submit">
-            <button type="button" onclick="submitAllForms()" class="btn-cofina-success px-8 py-4 text-lg font-bold">
+        <div class="mt-8 pt-6 border-t border-gray-200 text-center hidden" id="final-submit-decele">
+            <button type="button" onclick="submitAllDecele()"
+                class="btn-cofina-success px-8 py-4 text-lg font-bold">
                 ✅ SOUMETTRE POUR APPROBATION
             </button>
             <p class="text-sm text-gray-600 mt-2">
-                Toutes les informations seront soumises pour approbation
+                L'équipement sera transféré en stock décélé après validation
             </p>
-        </div>
-    `;
-    
-    // Initialiser l'étape 1
-    currentStep = 1;
-    showStep(currentStep);
-    
-    // Scroll vers le conteneur
-    threeStepContainer.scrollIntoView({ behavior: 'smooth' });
+        </div>`;
+ 
+    currentStepDecele = 1;
+    formDataDecele = { retour: {}, deceleration: {}, mouvement_decele: {} };
+    showStepDecele(1);
+    container.scrollIntoView({ behavior: 'smooth' });
 }
-
-function showStep(stepNumber) {
-    const formsContainer = document.getElementById('forms-container');
-    const navigationButtons = document.getElementById('navigation-buttons');
-    const finalSubmit = document.getElementById('final-submit');
-    
-    // Vider le conteneur
-    formsContainer.innerHTML = '';
-    
-    // Afficher le formulaire correspondant
-    let formTemplate;
-    switch(stepNumber) {
-        case 1:
-            formTemplate = document.getElementById('installation-step-form').cloneNode(true);
-            break;
-        case 2:
-            formTemplate = document.getElementById('affectation-step-form').cloneNode(true);
-            break;
-        case 3:
-            formTemplate = document.getElementById('mouvement-step-form').cloneNode(true);
-            break;
+ 
+function showStepDecele(step) {
+    const fc  = document.getElementById('forms-container-decele');
+    const nav = document.getElementById('nav-decele');
+    const fin = document.getElementById('final-submit-decele');
+    fc.innerHTML = '';
+ 
+    const ids = {
+        1: 'retour-step-form-decele',
+        2: 'deceleration-step-form',
+        3: 'mouvement-decele-step-form'
+    };
+ 
+    const tmpl = document.getElementById(ids[step]);
+    if (!tmpl) {
+        fc.innerHTML = `<div class="p-4 bg-red-50 border-2 border-red-400 rounded text-red-700 font-bold">
+            ❌ Template "${ids[step]}" introuvable.<br>
+            Vérifiez que <code>@include('transitions.partials.parc-to-stock-decele')</code>
+            est présent dans le bloc &lt;div class="hidden"&gt;.
+        </div>`;
+        return;
     }
-    
-// Si étape 3 (mouvement), pré-remplir avec les données de l'affectation
-    if (stepNumber === 3 && formData.affectation_simple) {
+ 
+    const clone = tmpl.cloneNode(true);
+    clone.classList.remove('hidden');
+    clone.removeAttribute('id');
+    fc.appendChild(clone);
+ 
+    // Pré-remplissage étape 3
+    if (step === 3) {
         setTimeout(() => {
-            const form = document.querySelector('#forms-container form');
-            if (form) {
-                // Pré-remplir le réceptionnaire avec les données de l'affectation
-                const nomField = form.querySelector('[name="receptionnaire_nom"]');
-                const prenomField = form.querySelector('[name="receptionnaire_prenom"]');
-                const fonctionField = form.querySelector('[name="receptionnaire_fonction"]');
-                
-                if (nomField) nomField.value = formData.affectation_simple.utilisateur_nom || '';
-                if (prenomField) prenomField.value = formData.affectation_simple.utilisateur_prenom || '';
-                if (fonctionField) fonctionField.value = formData.affectation_simple.position || '';
-                const destinationField = form.querySelector('[name="destination"]');
-            if (destinationField) {
-                // Priorité : agence_nom de l'installation
-                destinationField.value = formData.installation.agence_nom || '';
-            }
-            }
+            const form = fc.querySelector('form'); if (!form) return;
+            const r = formDataDecele.retour       || {};
+            const d = formDataDecele.deceleration || {};
+            const sv = (n, v) => { const el = form.querySelector(`[name="${n}"]`); if (el) el.value = v; };
+            sv('expediteur_decele_nom',      r.detenteur_nom        || '');
+            sv('expediteur_decele_prenom',   r.detenteur_prenom     || '');
+            sv('expediteur_decele_fonction', r.detenteur_poste      || '');
+            sv('lieu_depart_decele',         r.localisation_actuelle|| '');
+            sv('destination_decele',         d.localisation_physique|| 'STOCK DÉCÉLÉ');
         }, 100);
     }
-
-    formTemplate.classList.remove('hidden');
-    formsContainer.appendChild(formTemplate);
-    
-    // Initialiser les signatures si nécessaire
-    if (stepNumber === 1) {
-        initializeSignaturePads('installation');
-    } else if (stepNumber === 3) {
-        initializeSignaturePads('mouvement');
+ 
+    if (step === 1) initSignaturesDecele('retour');
+    if (step === 3) initSignaturesDecele('mouvement_decele');
+ 
+    // Restaurer données sauvegardées
+    const typeMap = { 1:'retour', 2:'deceleration', 3:'mouvement_decele' };
+    const saved = formDataDecele[typeMap[step]];
+    if (saved) {
+        const form = fc.querySelector('form');
+        if (form) Object.keys(saved).forEach(k => {
+            const el = form.querySelector(`[name="${k}"]`); if (!el) return;
+            el.type === 'checkbox' ? el.checked = saved[k] === '1' : el.value = saved[k];
+        });
     }
-    
-    // Remplir avec les données sauvegardées
-    fillFormWithSavedData(stepNumber);
-    
-    // Mettre à jour la progression
-    updateProgressBar(stepNumber);
-    updateStepNumbers(stepNumber);
-    
-    // Gérer la visibilité des boutons
-    if (stepNumber === 3) {
-        navigationButtons.classList.add('hidden');
-        finalSubmit.classList.remove('hidden');
-    } else {
-        navigationButtons.classList.remove('hidden');
-        finalSubmit.classList.add('hidden');
+ 
+    updateProgressDecele(step);
+    updateStepNumbersDecele(step);
+ 
+    if (step === 3) { nav.classList.add('hidden');    fin.classList.remove('hidden'); }
+    else            { nav.classList.remove('hidden'); fin.classList.add('hidden'); }
+}
+ 
+function nextStepDecele() {
+    if (!saveCurrentStepDeceleData()) { alert('Veuillez remplir tous les champs obligatoires.'); return; }
+    if (currentStepDecele < 3) {
+        currentStepDecele++;
+        showStepDecele(currentStepDecele);
+        document.getElementById('forms-container-decele').scrollIntoView({ behavior: 'smooth' });
     }
 }
-
-function nextStep() {
-    // Sauvegarder les données de l'étape actuelle
-    if (!saveCurrentStepData()) {
-        alert('Veuillez remplir tous les champs obligatoires');
-        return;
-    }
-    
-    // Passer à l'étape suivante
-    if (currentStep < 3) {
-        currentStep++;
-        showStep(currentStep);
-        
-        // Scroll vers le haut du formulaire
-        document.getElementById('forms-container').scrollIntoView({ behavior: 'smooth' });
+ 
+function previousStepDecele() {
+    if (currentStepDecele > 1) {
+        saveCurrentStepDeceleData();
+        currentStepDecele--;
+        showStepDecele(currentStepDecele);
+        document.getElementById('forms-container-decele').scrollIntoView({ behavior: 'smooth' });
     }
 }
-
-function previousStep() {
-    if (currentStep > 1) {
-        // Sauvegarder les données de l'étape actuelle
-        saveCurrentStepData();
-        
-        currentStep--;
-        showStep(currentStep);
-        
-        // Scroll vers le haut du formulaire
-        document.getElementById('forms-container').scrollIntoView({ behavior: 'smooth' });
-    }
-}
-
-function saveCurrentStepData() {
-    const form = document.querySelector('#forms-container form');
+ 
+function saveCurrentStepDeceleData() {
+    const form = document.querySelector('#forms-container-decele form');
     if (!form) return false;
-    
-    const formType = form.querySelector('input[name="form_type"]').value;
+    const formType = form.querySelector('input[name="form_type"]')?.value;
+    if (!formType) return false;
+ 
     const data = {};
-    
-    // Collecter les données du formulaire
-    const formElements = form.elements;
-    
-    for (let element of formElements) {
-        if (element.name && element.type !== 'button' && element.type !== 'submit') {
-            const name = element.name;
-            
-            if (element.type === 'checkbox') {
-                const value = element.checked ? '1' : '0';
-                
-                if (name.includes('[') && name.includes(']')) {
-                    const match = name.match(/^(\w+)\[(.+)\]$/);
-                    if (match) {
-                        const arrayName = match[1];
-                        const key = match[2];
-                        
-                        if (!data[arrayName]) {
-                            data[arrayName] = {};
-                        }
-                        data[arrayName][key] = value;
-                    }
-                } else {
-                    data[name] = value;
-                }
-            } else {
-                data[name] = element.value;
-            }
-        }
-    }
-    
-    // Vérifier les champs requis
-    const requiredFields = form.querySelectorAll('[required]');
-    let isValid = true;
-    
-    requiredFields.forEach(field => {
-        if (!field.value.trim() && field.type !== 'checkbox') {
-            isValid = false;
-            field.style.borderColor = 'red';
+    for (const el of form.elements) {
+        if (!el.name || el.type === 'button' || el.type === 'submit') continue;
+        if (el.type === 'checkbox') {
+            const m = el.name.match(/^(\w+)\[(.+)\]$/);
+            if (m) { if (!data[m[1]]) data[m[1]] = {}; data[m[1]][m[2]] = el.checked ? '1' : '0'; }
+            else data[el.name] = el.checked ? '1' : '0';
         } else {
-            field.style.borderColor = '';
+            data[el.name] = el.value;
         }
-        
-        if (field.type === 'checkbox' && field.required && !field.checked) {
-            isValid = false;
-            field.style.outline = '2px solid red';
-        } else if (field.type === 'checkbox') {
-            field.style.outline = '';
-        }
-    });
-    
-    if (!isValid) {
-        return false;
     }
-    
-    // Sauvegarder dans formData
-    formData[formType] = data;
-    
-    console.log('Données sauvegardées pour', formType, ':', data);
-    
+ 
+    let isValid = true;
+    form.querySelectorAll('[required]').forEach(f => {
+        if (f.type !== 'checkbox' && !f.value.trim()) { isValid = false; f.style.borderColor = 'red'; }
+        else f.style.borderColor = '';
+    });
+    if (!isValid) return false;
+ 
+    formDataDecele[formType] = data;
     return true;
 }
-
-function submitAllForms() {
-    // Sauvegarder l'étape actuelle
-    if (!saveCurrentStepData()) {
-        alert('Veuillez remplir tous les champs obligatoires de l\'étape actuelle');
-        return;
+ 
+function updateProgressDecele(step) {
+    const b = document.getElementById('progress-bar-decele');
+    if (b) b.style.width = `${(step / 3) * 100}%`;
+}
+ 
+function updateStepNumbersDecele(cur) {
+    [1, 2, 3].forEach(i => {
+        const el = document.getElementById(`decele-step-${i}`); if (!el) return;
+        el.className = 'step-number-decele ' + (i < cur ? 'completed' : i === cur ? 'active' : 'pending');
+    });
+}
+ 
+function initSignaturesDecele(formType) {
+    signaturePadsDecele = {};
+    const ids = formType === 'retour'
+        ? ['signatureCanvasAgentRetour']
+        : ['signatureCanvasExpediteurDecele', ...(isSuperAdmin ? ['signatureCanvasReceptionnaireDecele'] : [])];
+ 
+    ids.forEach(id => {
+        const c = document.querySelector(`#forms-container-decele #${id}`); if (!c) return;
+        const r = Math.max(window.devicePixelRatio || 1, 1);
+        c.width = c.offsetWidth * r; c.height = c.offsetHeight * r;
+        c.getContext('2d').scale(r, r);
+        signaturePadsDecele[id] = new SignaturePad(c, {
+            backgroundColor: 'rgb(255,255,255)', penColor: 'rgb(0,0,0)', minWidth: 1, maxWidth: 3
+        });
+    });
+}
+ 
+const _dm = {
+    agent_retour:          { c: 'signatureCanvasAgentRetour',          i: 'signatureAgentRetour' },
+    expediteur_decele:     { c: 'signatureCanvasExpediteurDecele',     i: 'signatureExpediteurDecele' },
+    receptionnaire_decele: { c: 'signatureCanvasReceptionnaireDecele', i: 'signatureReceptionnaireDecele' }
+};
+ 
+function clearSignatureDecele(type) {
+    const m = _dm[type]; if (!m) return;
+    const p = signaturePadsDecele[m.c]; if (p) p.clear();
+    const inp = document.querySelector(`#forms-container-decele #${m.i}`);
+    if (inp) inp.value = '';
+}
+ 
+function saveSignatureDecele(type) {
+    const m = _dm[type]; if (!m) return;
+    const p = signaturePadsDecele[m.c];
+    if (p && !p.isEmpty()) {
+        const inp = document.querySelector(`#forms-container-decele #${m.i}`);
+        if (inp) { inp.value = p.toDataURL('image/png'); alert('Signature sauvegardée !'); }
+    } else {
+        alert('Veuillez signer dans la zone prévue.');
     }
-    
-    // Vérifier que toutes les étapes ont été remplies
-    if (!formData.installation || Object.keys(formData.installation).length === 0) {
-        alert('Veuillez remplir la fiche d\'installation');
-        showStep(1);
-        return;
+}
+ 
+function toggleDecelerationFields(value) {
+    ['bon', 'reparable', 'irreparable'].forEach(v => {
+        const el = document.querySelector(`#forms-container-decele #msg-${v}`);
+        if (el) el.classList.toggle('hidden', v !== value);
+    });
+}
+ 
+function saveDraftDecele() {
+    if (saveCurrentStepDeceleData()) alert('Brouillon sauvegardé !');
+}
+ 
+function submitAllDecele() {
+    if (!saveCurrentStepDeceleData()) { alert('Champs obligatoires manquants.'); return; }
+    if (!formDataDecele.retour?.detenteur_nom)              { alert('Remplissez la fiche de retour (étape 1).');        showStepDecele(1); return; }
+    if (!formDataDecele.deceleration?.etat_retour)          { alert('Remplissez la fiche de décélération (étape 2).'); showStepDecele(2); return; }
+    if (!formDataDecele.mouvement_decele?.destination_decele){ alert('Remplissez la fiche de mouvement (étape 3).');    showStepDecele(3); return; }
+    if (!formDataDecele.mouvement_decele?.signature_expediteur_decele) {
+        alert('Veuillez sauvegarder la signature expéditeur (étape 3).');
+        showStepDecele(3); return;
     }
-    
-    if (!formData.affectation_simple || Object.keys(formData.affectation_simple).length === 0) {
-        alert('Veuillez remplir l\'affectation simple');
-        showStep(2);
-        return;
-    }
-    
-    if (!formData.mouvement || Object.keys(formData.mouvement).length === 0) {
-        alert('Veuillez remplir la fiche de mouvement');
-        showStep(3);
-        return;
-    }
-    
-    // Vérifier les signatures
-    if (!formData.mouvement.signature_expediteur) {
-        alert('Veuillez sauvegarder la signature de l\'expéditeur dans la fiche de mouvement');
-        showStep(3);
-        return;
-    }
-    
-    if (!formData.installation.signature_installateur) {
-        alert('Veuillez sauvegarder la signature de l\'installateur dans la fiche d\'installation');
-        showStep(1);
-        return;
-    }
-    
-    // Si Super Admin, vérifier les signatures supplémentaires
-    if (isSuperAdmin) {
-        if (!formData.installation.signature_verificateur) {
-            alert('Veuillez sauvegarder la signature du vérificateur (Super Admin)');
-            showStep(1);
-            return;
-        }
-        
-        if (!formData.installation.signature_utilisateur) {
-            alert('Veuillez sauvegarder la signature de l\'utilisateur');
-            showStep(1);
-            return;
-        }
-        
-        if (!formData.mouvement.signature_receptionnaire) {
-            alert('Veuillez sauvegarder la signature du réceptionnaire');
-            showStep(3);
-            return;
-        }
-    }
-    
-    // Préparer les données pour l'envoi
+ 
     const allData = {
-        ...formData,
-        equipment_id: {{ $equipment->id }},
-        transition_type: 'stock_to_parc',
+        ...formDataDecele,
+        equipment_id:    {{ $equipment->id }},
+        transition_type: 'parc_to_stock_decele',
         _token: document.querySelector('meta[name="csrf-token"]')?.content || ''
     };
-    
-    // Afficher un indicateur de chargement
-    const submitBtn = document.querySelector('#final-submit .btn-cofina-success');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '⏳ Envoi en cours...';
-    submitBtn.disabled = true;
-    
-    // Envoyer les données au serveur
-    fetch('{{ route("transitions.submitAll", $equipment) }}', {
+ 
+    const btn = document.querySelector('#final-submit-decele button');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '⏳ Envoi en cours...'; btn.disabled = true;
+ 
+    fetch('{{ route("transitions.submitDecele", $equipment) }}', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': allData._token },
         body: JSON.stringify(allData)
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
-        if (data.success) {
-            if (data.redirect_url) {
-                window.location.href = data.redirect_url;
-            } else {
-                window.location.reload();
-            }
-        } else {
-            alert(data.message || 'Erreur lors de la soumission');
-            if (data.errors) {
-                console.error('Validation errors:', data.errors);
-            }
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
+        if (data.success) { window.location.href = data.redirect_url || window.location.href; }
+        else { alert(data.message || 'Erreur.'); btn.innerHTML = orig; btn.disabled = false; }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Erreur de connexion au serveur');
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-    });
+    .catch(() => { alert('Erreur connexion.'); btn.innerHTML = orig; btn.disabled = false; });
 }
-
-function fillFormWithSavedData(stepNumber) {
-    let formType;
-    switch(stepNumber) {
-        case 1: formType = 'installation'; break;
-        case 2: formType = 'affectation_simple'; break;
-        case 3: formType = 'mouvement'; break;
+ 
+// ══ Styles pour les indicateurs d'étapes décélé ══
+const _styleDecele = document.createElement('style');
+_styleDecele.textContent = `
+    .step-number-decele {
+        width:2.5rem; height:2.5rem; border-radius:9999px;
+        display:flex; align-items:center; justify-content:center;
+        font-weight:700; border:4px solid white; box-shadow:0 2px 4px rgba(0,0,0,.2);
     }
-    
-    const savedData = formData[formType];
-    if (!savedData) return;
-    
-    const form = document.querySelector('#forms-container form');
-    if (!form) return;
-    
-    Object.keys(savedData).forEach(key => {
-        const field = form.querySelector(`[name="${key}"]`);
-        if (field) {
-            if (field.type === 'checkbox') {
-                field.checked = savedData[key] === '1';
-            } else {
-                field.value = savedData[key];
-            }
-        }
-    });
-}
+    .step-number-decele.active    { background:#f97316; color:white; }
+    .step-number-decele.completed { background:#22c55e; color:white; }
+    .step-number-decele.pending   { background:#d1d5db; color:#374151; }
+`;
+document.head.appendChild(_styleDecele);
 
-function updateProgressBar(step) {
-    const progressBar = document.getElementById('progress-bar');
-    if (progressBar) {
-        const width = (step / 3) * 75;
-        progressBar.style.width = `${width}%`;
-    }
-}
-
-function updateStepNumbers(currentStep) {
-    const stepNumbers = document.querySelectorAll('.step-number');
-    const stepLabels = document.querySelectorAll('.step-number + span');
-    
-    stepNumbers.forEach((number, index) => {
-        const stepIndex = index + 1;
-        
-        if (stepIndex < currentStep) {
-            number.className = 'step-number completed';
-        } else if (stepIndex === currentStep) {
-            number.className = 'step-number active';
-        } else {
-            number.className = 'step-number pending';
-        }
-    });
-    
-    stepLabels.forEach((label, index) => {
-        const stepIndex = index + 1;
-        if (stepIndex <= currentStep) {
-            label.classList.remove('text-gray-600');
-            label.classList.add('font-semibold');
-        } else {
-            label.classList.add('text-gray-600');
-            label.classList.remove('font-semibold');
-        }
-    });
-}
-
-function initializeSignaturePads(formType) {
-    signaturePads = {};
-    
-    let canvasIds = [];
-    
-    if (formType === 'installation') {
-        canvasIds = ['signatureCanvasInstallateur'];
-        if (isSuperAdmin) {
-            canvasIds.push('signatureCanvasUtilisateur', 'signatureCanvasVerificateur');
-        }
-    } else if (formType === 'mouvement') {
-        canvasIds = ['signatureCanvasExpediteur'];
-        if (isSuperAdmin) {
-            canvasIds.push('signatureCanvasReceptionnaire');
-        }
-    }
-    
-    canvasIds.forEach((canvasId) => {
-        const canvas = document.getElementById(canvasId);
-        if (canvas) {
-            const signaturePad = new SignaturePad(canvas, {
-                backgroundColor: 'rgb(255, 255, 255)',
-                penColor: 'rgb(0, 0, 0)',
-                minWidth: 1,
-                maxWidth: 3,
-            });
-            
-            signaturePads[canvasId] = signaturePad;
-            resizeCanvas(canvas);
-            
-            window.addEventListener('resize', () => resizeCanvas(canvas));
-        }
-    });
-}
-
-function resizeCanvas(canvas) {
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    canvas.width = canvas.offsetWidth * ratio;
-    canvas.height = canvas.offsetHeight * ratio;
-    canvas.getContext("2d").scale(ratio, ratio);
-    
-    const canvasId = canvas.id;
-    if (signaturePads[canvasId]) {
-        signaturePads[canvasId].clear();
-    }
-}
-
-function clearSignature(type) {
-    const canvasId = getCanvasId(type);
-    if (signaturePads[canvasId]) {
-        signaturePads[canvasId].clear();
-        const signatureInput = document.getElementById(`signature${capitalizeFirst(type)}`);
-        if (signatureInput) {
-            signatureInput.value = '';
-        }
-    }
-}
-
-function saveSignature(type) {
-    const canvasId = getCanvasId(type);
-    if (signaturePads[canvasId] && !signaturePads[canvasId].isEmpty()) {
-        const signatureData = signaturePads[canvasId].toDataURL('image/png');
-        const signatureInput = document.getElementById(`signature${capitalizeFirst(type)}`);
-        if (signatureInput) {
-            signatureInput.value = signatureData;
-            alert('Signature sauvegardée avec succès!');
-        }
-    } else {
-        alert('Veuillez d\'abord signer dans la zone prévue.');
-    }
-}
-
-function getCanvasId(type) {
-    const canvasMap = {
-        'expediteur': 'signatureCanvasExpediteur',
-        'receptionnaire': 'signatureCanvasReceptionnaire',
-        'installateur': 'signatureCanvasInstallateur',
-        'utilisateur': 'signatureCanvasUtilisateur',
-        'verificateur': 'signatureCanvasVerificateur'
-    };
-    return canvasMap[type] || '';
-}
-
-function capitalizeFirst(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-function saveDraft() {
-    if (saveCurrentStepData()) {
-        alert('Brouillon sauvegardé avec succès!');
-    }
-}
-
-// Fonctions pour les autres transitions
-function showSimpleTransitionForm(target) {
-    const transitionContainer = document.getElementById('transition-form-container');
-    
-    const form = document.getElementById(target + '-form');
-    if (form) {
-        const clonedForm = form.cloneNode(true);
-        clonedForm.classList.remove('hidden');
-        clonedForm.style.display = 'block';
-        clonedForm.classList.add('animate-fadeIn');
-        
-        transitionContainer.innerHTML = '';
-        transitionContainer.appendChild(clonedForm);
-        transitionContainer.classList.remove('hidden');
-        
-        transitionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-function closeSimpleForm() {
-    const transitionContainer = document.getElementById('transition-form-container');
-    const threeStepContainer = document.getElementById('three-step-flow-container');
-    
-    transitionContainer.innerHTML = '';
-    transitionContainer.classList.add('hidden');
-    threeStepContainer.innerHTML = '';
-    threeStepContainer.classList.add('hidden');
-    
-    if (activeCard) {
-        activeCard.classList.remove('active');
-    }
-}
-document.querySelector('select[name="agency_id"]').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const agenceNom = selectedOption.textContent;
-    document.getElementById('agence_nom_hidden').value = agenceNom;
-});
 </script>
 @endsection
