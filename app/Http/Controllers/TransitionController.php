@@ -5381,5 +5381,120 @@ public function listMaintenanceHorsServiceApprovals(Request $request)
     return view('admin.maintenance-hors-service-list', compact('approvals'));
 }
 
+    /**
+     * Flux Parc → Stock Décélé (3 étapes)
+     */
+    public function submitDecele(Request $request, Equipment $equipment)
+    {
+        // Validation
+        $validated = $request->validate([
+            'retour'                             => 'required|array',
+            'retour.detenteur_nom'               => 'required|string|max:255',
+            'retour.detenteur_prenom'            => 'required|string|max:255',
+            'retour.raison_retour'               => 'required|string',
 
+            'deceleration'                       => 'required|array',
+            'deceleration.etat_retour'           => 'required|in:bon,reparable,irreparable',
+            'deceleration.diagnostic'            => 'required|string',
+            'deceleration.localisation_physique' => 'required|string|max:255',
+
+            'mouvement_decele'                   => 'required|array',
+            'mouvement_decele.destination_decele'          => 'required|string',
+            'mouvement_decele.signature_expediteur_decele' => 'required|string',
+        ]);
+
+        // Vérifier statut
+        if ($equipment->statut !== 'parc') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Équipement non éligible. Statut actuel : ' . $equipment->statut,
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $retour      = $request->input('retour');
+            $decel       = $request->input('deceleration');
+            $mouvement   = $request->input('mouvement_decele');
+
+            // Etat stock selon diagnostic
+            $etatStock = match ($decel['etat_retour']) {
+                'bon'         => 'disponible',
+                'reparable'   => 'reserve',
+                'irreparable' => 'reserve',
+                default       => 'disponible',
+            };
+
+            // Créer entrée Stock décélé
+            $stock = Stock::create([
+                'numero_serie'          => $equipment->numero_serie,
+                'type_stock'            => 'deceler',
+                'localisation_physique' => $decel['localisation_physique'],
+                'etat'                  => $etatStock,
+                'quantite'              => 1,
+                'date_entree'           => $retour['date_retour'] ?? now()->toDateString(),
+                'observations'          => $decel['observations_retour'] ?? null,
+            ]);
+
+            // Créer fiche Déceler
+            Deceler::create([
+                'stock_id'             => $stock->id,
+                'origine'              => 'parc',
+                'numero_serie_origine' => $equipment->numero_serie,
+                'date_retour'          => $retour['date_retour'] ?? now()->toDateString(),
+                'raison_retour'        => $retour['raison_retour'],
+                'diagnostic'           => $decel['diagnostic'],
+                'etat_retour'          => $decel['etat_retour'],
+                'valeur_residuelle'    => !empty($decel['valeur_residuelle']) ? (float)$decel['valeur_residuelle'] : null,
+                'observations_retour'  => $decel['observations_retour'] ?? null,
+            ]);
+
+            // Mettre à jour l'équipement
+            $equipment->update(['statut' => 'stock']);
+
+            // Historique (si le modèle existe)
+            if (class_exists(\App\Models\TransitionHistory::class)) {
+                \App\Models\TransitionHistory::create([
+                    'equipment_id'    => $equipment->id,
+                    'from_status'     => 'parc',
+                    'to_status'       => 'stock',
+                    'transition_type' => 'parc_to_stock_decele',
+                    'user_id'         => auth()->id(),
+                    'notes'           => json_encode([
+                        'retour'     => $retour,
+                        'decel'      => $decel,
+                        'mouvement'  => $mouvement,
+                    ]),
+                ]);
+            }
+
+            DB::commit();
+
+            Log::info('Transition parc→stock_décélé OK', [
+                'equipment_id' => $equipment->id,
+                'stock_id'     => $stock->id,
+                'user_id'      => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success'      => true,
+                'message'      => 'Équipement transféré en stock décélé avec succès.',
+                'redirect_url' => route('equipment.show', $equipment),
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erreur transition parc→stock_décélé', [
+                'equipment_id' => $equipment->id,
+                'error'        => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur serveur : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
