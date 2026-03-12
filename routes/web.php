@@ -28,6 +28,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardsController;
 use App\Http\Controllers\EquipmentImportController;
 use App\Http\Controllers\AgencyImportController;
+use App\Http\Controllers\ChangeTicketController;
+use App\Http\Controllers\EodSuiviController;
 
 
 /*
@@ -754,6 +756,12 @@ Route::post('/transitions/submit-parc-hors-service', [TransitionController::clas
     ->name('transitions.submit-parc-hors-service')
     ->middleware('auth');
 
+//parc stockdecele
+Route::post(
+    '/equipment/{equipment}/transitions/submit-decele',
+    [TransitionController::class, 'submitDecele']   // ou TransitionDeceleController::class
+)->name('transitions.submitDecele');
+
 // Routes pour l'approbation
 Route::post('/approvals/{approval}/approve-hors-service', [TransitionController::class, 'approveHorsService'])
     ->name('transitions.approve-hors-service')
@@ -866,6 +874,10 @@ Route::prefix('dashboard')->group(function () {
 
 // Garder vos routes dashboard existantes (si elles existent)
 Route::get('/dashboard', [DashboardsController::class, 'index'])->name('dashboard');
+
+
+
+
 
 
 
