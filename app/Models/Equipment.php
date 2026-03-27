@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use App\Models\Reaffectation;
 
 class Equipment extends Model
 {
@@ -200,5 +201,8 @@ public function audits(): MorphMany
     return $this->morphMany(Audit::class, 'model')->latest();
 }
 
+public function reaffectations() {
+    return $this->hasMany(Reaffectation::class);
+}
 
 }
