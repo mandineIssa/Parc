@@ -352,6 +352,7 @@
                         
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
                             <div class="flex justify-center space-x-2">
+                                {{-- Voir détails --}}
                                 <a href="{{ route('equipment.show', $equipment) }}" 
                                    class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition"
                                    title="Voir détails">
@@ -361,6 +362,7 @@
                                     </svg>
                                 </a>
                                 
+                                {{-- Modifier équipement --}}
                                 <a href="{{ route('equipment.edit', $equipment) }}" 
                                    class="text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 p-2 rounded-lg transition"
                                    title="Modifier">
@@ -369,17 +371,28 @@
                                     </svg>
                                 </a>
                             
+                                {{-- Modifier affectation (si affecté) --}}
                                 @if($equipment->parc)
                                 <a href="{{ route('parc.edit', $equipment->parc) }}" 
-                                class="text-purple-600 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 p-2 rounded-lg transition"
-                                data-entity="assignment"
-                                title="Modifier affectation">
+                                   class="text-purple-600 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 p-2 rounded-lg transition"
+                                   data-entity="assignment"
+                                   title="Modifier affectation">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                     </svg>
                                 </a>
                                 @endif
+
+                                {{-- ✅ Réaffecter --}}
+                                <a href="{{ route('parc.reaffecter', $equipment) }}" 
+                                   class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition"
+                                   title="Réaffecter">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </a>
                                 
+                                {{-- Changer de statut --}}
                                 <a href="{{ route('equipment.transitions.', $equipment) }}" 
                                    class="text-orange-600 hover:text-orange-900 bg-orange-50 hover:bg-orange-100 p-2 rounded-lg transition"
                                    title="Changer de statut">
@@ -388,6 +401,7 @@
                                     </svg>
                                 </a>
                                 
+                                {{-- Téléchargements PDF (si transition existante) --}}
                                 @if($equipment->latestTransitionApproval)
                                 <a href="{{ route('transitions.fiche-mouvement.download', $equipment->latestTransitionApproval->id) }}"
                                    class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 p-2 rounded-lg transition"
