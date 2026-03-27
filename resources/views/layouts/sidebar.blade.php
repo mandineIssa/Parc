@@ -146,12 +146,24 @@
         <div class="mb-4">
             <h3 class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Gestion</h3>
             <div class="space-y-1">
-                <a href="{{ route('parc.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('parc.*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">
+
+                {{-- Parc --}}
+                <a href="{{ route('parc.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('parc.index') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">
                     <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                     </svg>
                     <span class="text-sm">Parc</span>
                 </a>
+
+                {{-- ✅ Historique Réaffectations --}}
+                <a href="{{ route('parc.reaffectations.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('parc.reaffectations.*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">
+                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span class="text-sm">Historique Réaffectations</span>
+                </a>
+
+                {{-- Maintenances --}}
                 <a href="{{ route('maintenance.index') }}" class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('maintenance.*') ? 'sidebar-active' : 'text-gray-700 hover:bg-red-50' }}">
                     <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
@@ -192,6 +204,9 @@
                 </a>
             </div>
         </div>
+
+
+
 
         <hr class="my-4 border-gray-200">
 
@@ -293,14 +308,12 @@ document.addEventListener('DOMContentLoaded', function () {
         overlay.addEventListener('click', closeSidebar);
     }
 
-    // Fermer sur mobile après clic d'un lien
     sidebar.querySelectorAll('a').forEach(function (link) {
         link.addEventListener('click', function () {
             if (window.innerWidth < 1024) closeSidebar();
         });
     });
 
-    // Toggle des sous-menus
     document.querySelectorAll('[data-toggle]').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var key   = btn.dataset.toggle;
@@ -320,7 +333,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Auto-ouvrir le sous-menu actif
     var path = window.location.pathname;
 
     function autoOpen(key) {
@@ -333,5 +345,21 @@ document.addEventListener('DOMContentLoaded', function () {
     if (path.includes('celer') && !path.includes('deceler')) autoOpen('celer');
     if (path.includes('deceler'))                              autoOpen('deceler');
     if (path.includes('reports') || path.includes('rapports')) autoOpen('rapports');
+    if (path.includes('change') || path.includes('change/'))    autoOpen('change');
+    if (path.includes('eod') || path.includes('eod/'))          autoOpen('eod');
 });
 </script>
+
+<style>
+.sidebar-active {
+    background-color: #fee2e2;
+    color: #dc2626;
+    font-weight: 500;
+}
+.sidebar-active svg {
+    color: #dc2626;
+}
+.rotate-180 {
+    transform: rotate(180deg);
+}
+</style>
