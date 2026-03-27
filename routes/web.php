@@ -30,7 +30,7 @@ use App\Http\Controllers\EquipmentImportController;
 use App\Http\Controllers\AgencyImportController;
 use App\Http\Controllers\ChangeTicketController;
 use App\Http\Controllers\EodSuiviController;
-
+use App\Http\Controllers\ReaffectationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -285,7 +285,25 @@ Route::prefix('parc')->name('parc.')->group(function () {
     // ============================================
     // GESTION DU PARC (CRUD complet)
     // ============================================
-    Route::resource('parc', ParcController::class);
+    /* Route::resource('parc', ParcController::class); */
+
+    // =========================================================
+// ✅ AJOUTER CE BLOC juste AVANT la ligne :
+//    Route::resource('parc', ParcController::class);
+// =========================================================
+ 
+// --- Réaffectations (DOIT être avant resource parc) ---
+Route::get('/parc/reaffectations', [ReaffectationController::class, 'index'])
+    ->name('parc.reaffectations.index');
+ 
+Route::get('/parc/{equipment}/reaffecter', [ReaffectationController::class, 'create'])
+    ->name('parc.reaffecter');
+ 
+Route::post('/parc/{equipment}/reaffecter', [ReaffectationController::class, 'store'])
+    ->name('parc.reaffecter.store');
+ 
+// --- Ensuite seulement le resource ---
+Route::resource('parc', ParcController::class);
 
     // ============================================
     // GESTION DES ÉQUIPEMENTS PERDUS (CRUD complet)
