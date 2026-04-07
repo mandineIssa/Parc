@@ -17,6 +17,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Traits\HasRolePermissions;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class EquipmentController extends Controller
 {
@@ -30,262 +35,225 @@ class EquipmentController extends Controller
         
         return view('equipment.create', compact('agencies', 'suppliers'));
     }
-public function showTransition(Equipment $equipment)
-{
-    return view('equipment.transition', compact('equipment'));
-}
-    /**
-     * Stocker un nouvel équipement (VERSION SIMPLIFIÉE MAIS FONCTIONNELLE)
-     */
-    
-  public function store(Request $request)
-{
-    DB::beginTransaction();
-    
-    try {
-        // 1. VALIDATION DES DONNÉES DE BASE (pour la table equipment)
-        $validated = $request->validate([
-            'type' => 'required|in:Réseau,Informatique,Électronique,Logiciel',
-            'numero_serie' => 'required|unique:equipment,numero_serie',
-            'marque' => 'required_if:type,!=,Logiciel|string|max:255',
-            'modele' => 'required_if:type,!=,Logiciel|string|max:255',
-            'agency_id' => 'nullable|exists:agencies,id',
-            'localisation' => 'required|string|max:255',
-            'fournisseur_id' => 'nullable|exists:suppliers,id',
-            'date_livraison' => 'required|date',
-            'prix' => 'required|numeric|min:0',
-            'garantie' => 'required|string|max:100',
-            'reference_facture' => 'nullable|string|max:255',
-            'etat' => 'required|in:neuf,bon,moyen,mauvais',
-            'adresse_mac' => 'nullable|string|max:255',
-            'notes' => 'nullable|string',
-            'date_mise_service' => 'nullable|date',
-            'date_amortissement' => 'nullable|date',
-        ]);
-        
-        // 2. CRÉATION DE L'ÉQUIPEMENT (table equipment)
-        $equipment = Equipment::create($validated);
-        
-        // 3. CRÉATION DES DÉTAILS (table equipment_details)
-        $detailsData = [
-            'equipment_id' => $equipment->id,
-            'categorie' => $request->categorie, // Stocké ici
-            'sous_categorie' => $request->sous_categorie, // Stocké ici
-            'contrat_maintenance' => $request->has('contrat_maintenance'),
-        ];
-        
-        // Ajouter les champs spécifiques selon le type
-        switch ($request->type) {
-            case 'Réseau':
-                $detailsData['etat_specifique'] = $request->input('etat_reseau');
-                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip');
-                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac');
-                break;
-                
-            case 'Électronique':
-                $detailsData['etat_specifique'] = $request->input('etat_electronique');
-                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_elec');
-                $detailsData['numero_codification_specifique'] = $request->input('numero_codification');
-                break;
-                
-            case 'Informatique':
-                $detailsData['etat_specifique'] = $request->input('etat_stock');
-                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_info');
-                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac_info');
-                $detailsData['departement_specifique'] = $request->input('departement');
-                $detailsData['poste_staff_specifique'] = $request->input('poste_staff');
-                break;
-        }
-        
-        // Contrat maintenance
-        if ($request->has('contrat_maintenance')) {
-            $detailsData['type_contrat'] = $request->input('type_contrat');
-            $detailsData['date_debut_contrat'] = $request->input('date_debut_contrat');
-            $detailsData['date_fin_contrat'] = $request->input('date_fin_contrat');
-            $detailsData['periodicite_maintenance'] = $request->input('periodicite_maintenance');
-        }
-        
-        // Données spécifiques en JSON
-        $specificData = $this->extractSpecificData($request);
-        $detailsData['specific_data'] = json_encode($specificData);
-        
-        EquipmentDetail::create($detailsData);
-        
-        DB::commit();
-        
-        return redirect()->route('equipment.index')
-            ->with('success', 'Équipement créé avec succès !');
-            
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Erreur création équipement: ' . $e->getMessage());
-        
-        return back()->with('error', 'Erreur: ' . $e->getMessage())
-            ->withInput();
+
+    public function showTransition(Equipment $equipment)
+    {
+        return view('equipment.transition', compact('equipment'));
     }
-}
-public function update(Request $request, $id)
-{
-    DB::beginTransaction();
-    
-    try {
-        // Trouver l'équipement
-        $equipment = Equipment::findOrFail($id);
+
+    /**
+     * Stocker un nouvel équipement
+     */
+    public function store(Request $request)
+    {
+        DB::beginTransaction();
         
-        // 1. VALIDATION DES DONNÉES DE BASE
-        $validated = $request->validate([
-            'type' => 'sometimes|required|in:Réseau,Informatique,Électronique,Logiciel',
-            /* 'numero_serie' => 'required|unique:equipment,numero_serie,' . $id, */
-            'marque' => 'required_if:type,!=,Logiciel|string|max:255',
-            'modele' => 'required_if:type,!=,Logiciel|string|max:255',
-            'agency_id' => 'nullable|exists:agencies,id',
-            'localisation' => 'required|string|max:255',
-            'fournisseur_id' => 'nullable|exists:suppliers,id',
-            'date_livraison' => 'required|date',
-            'prix' => 'required|numeric|min:0',
-            'garantie' => 'required|string|max:100',
-            'reference_facture' => 'nullable|string|max:255',
-            'etat' => 'required|in:neuf,bon,moyen,mauvais',
-            'adresse_mac' => 'nullable|string|max:255',
-            'notes' => 'nullable|string',
-            'date_mise_service' => 'nullable|date',
-            'date_amortissement' => 'nullable|date',
-            'categorie' => 'sometimes|string|max:255',
-            'sous_categorie' => 'sometimes|string|max:255',
-        ]);
-        
-        // 2. MISE À JOUR DE L'ÉQUIPEMENT
-        // Filtrer seulement les champs qui ont changé
-        $equipmentData = array_filter($validated, function($key) {
-            return in_array($key, [
-                'type'/* , 'numero_serie' */, 'marque', 'modele', 'agency_id', 
-                'localisation', 'fournisseur_id', 'date_livraison', 'prix', 
-                'garantie', 'reference_facture', 'etat', 'adresse_mac', 
-                'notes', 'date_mise_service', 'date_amortissement'
+        try {
+            $validated = $request->validate([
+                'type' => 'required|in:Réseau,Informatique,Électronique,Logiciel',
+                'numero_serie' => 'required|unique:equipment,numero_serie',
+                'marque' => 'required_if:type,!=,Logiciel|string|max:255',
+                'modele' => 'required_if:type,!=,Logiciel|string|max:255',
+                'agency_id' => 'nullable|exists:agencies,id',
+                'localisation' => 'required|string|max:255',
+                'fournisseur_id' => 'nullable|exists:suppliers,id',
+                'date_livraison' => 'required|date',
+                'prix' => 'required|numeric|min:0',
+                'garantie' => 'required|string|max:100',
+                'reference_facture' => 'nullable|string|max:255',
+                'etat' => 'required|in:neuf,bon,moyen,mauvais',
+                'adresse_mac' => 'nullable|string|max:255',
+                'notes' => 'nullable|string',
+                'date_mise_service' => 'nullable|date',
+                'date_amortissement' => 'nullable|date',
             ]);
-        }, ARRAY_FILTER_USE_KEY);
-        
-        $equipment->update($equipmentData);
-        
-        // Utiliser le type existant ou celui de la requête
-        $type = $request->input('type', $equipment->type);
-        
-        // 3. MISE À JOUR DES DÉTAILS
-        $existingDetail = $equipment->detail;
-        
-        $detailsData = [
-            'categorie' => $request->input('categorie', $existingDetail->categorie ?? null),
-            'sous_categorie' => $request->input('sous_categorie', $existingDetail->sous_categorie ?? null),
-            'contrat_maintenance' => $request->has('contrat_maintenance'),
-        ];
-        
-        // Ajouter les champs spécifiques selon le type (garder les anciennes valeurs)
-        switch ($type) {
-            case 'Réseau':
-                $detailsData['etat_specifique'] = $request->input('etat_reseau', $existingDetail->etat_specifique ?? null);
-                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip', $existingDetail->adresse_ip_specifique ?? null);
-                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac', $existingDetail->adresse_mac_specifique ?? null);
-                break;
-                
-            case 'Électronique':
-                $detailsData['etat_specifique'] = $request->input('etat_electronique', $existingDetail->etat_specifique ?? null);
-                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_elec', $existingDetail->adresse_ip_specifique ?? null);
-                $detailsData['numero_codification_specifique'] = $request->input('numero_codification', $existingDetail->numero_codification_specifique ?? null);
-                break;
-                
-            case 'Informatique':
-                $detailsData['etat_specifique'] = $request->input('etat_stock', $existingDetail->etat_specifique ?? null);
-                $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_info', $existingDetail->adresse_ip_specifique ?? null);
-                $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac_info', $existingDetail->adresse_mac_specifique ?? null);
-                $detailsData['departement_specifique'] = $request->input('departement', $existingDetail->departement_specifique ?? null);
-                $detailsData['poste_staff_specifique'] = $request->input('poste_staff', $existingDetail->poste_staff_specifique ?? null);
-                break;
-        }
-        
-        // Contrat maintenance (garder les anciennes valeurs si non modifié)
-        if ($request->has('contrat_maintenance')) {
-            $detailsData['type_contrat'] = $request->input('type_contrat', $existingDetail->type_contrat ?? null);
-            $detailsData['date_debut_contrat'] = $request->input('date_debut_contrat', $existingDetail->date_debut_contrat ?? null);
-            $detailsData['date_fin_contrat'] = $request->input('date_fin_contrat', $existingDetail->date_fin_contrat ?? null);
-            $detailsData['periodicite_maintenance'] = $request->input('periodicite_maintenance', $existingDetail->periodicite_maintenance ?? null);
-        } else {
-            // Vider les champs de maintenance si la case n'est pas cochée
-            $detailsData['type_contrat'] = null;
-            $detailsData['date_debut_contrat'] = null;
-            $detailsData['date_fin_contrat'] = null;
-            $detailsData['periodicite_maintenance'] = null;
-        }
-        
-        // Données spécifiques en JSON (garder les anciennes si non modifiées)
-        $existingSpecificData = $existingDetail && $existingDetail->specific_data 
-            ? json_decode($existingDetail->specific_data, true) 
-            : [];
-        
-        $newSpecificData = $this->extractSpecificData($request);
-        
-        // Fusionner les anciennes données avec les nouvelles (les nouvelles écrasent les anciennes)
-        $mergedSpecificData = array_merge($existingSpecificData, $newSpecificData);
-        
-        $detailsData['specific_data'] = json_encode($mergedSpecificData);
-        
-        // Mettre à jour ou créer les détails de l'équipement
-        $equipment->details()->updateOrCreate(
-            ['equipment_id' => $equipment->id],
-            $detailsData
-        );
-        
-        DB::commit();
-        
-        return redirect()->route('equipment.index')
-            ->with('success', 'Équipement mis à jour avec succès !');
             
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Erreur mise à jour équipement: ' . $e->getMessage());
-        
-        return back()->with('error', 'Erreur: ' . $e->getMessage())
-            ->withInput();
+            $equipment = Equipment::create($validated);
+            
+            $detailsData = [
+                'equipment_id' => $equipment->id,
+                'categorie' => $request->categorie,
+                'sous_categorie' => $request->sous_categorie,
+                'contrat_maintenance' => $request->has('contrat_maintenance'),
+            ];
+            
+            switch ($request->type) {
+                case 'Réseau':
+                    $detailsData['etat_specifique'] = $request->input('etat_reseau');
+                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip');
+                    $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac');
+                    break;
+                case 'Électronique':
+                    $detailsData['etat_specifique'] = $request->input('etat_electronique');
+                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_elec');
+                    $detailsData['numero_codification_specifique'] = $request->input('numero_codification');
+                    break;
+                case 'Informatique':
+                    $detailsData['etat_specifique'] = $request->input('etat_stock');
+                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_info');
+                    $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac_info');
+                    $detailsData['departement_specifique'] = $request->input('departement');
+                    $detailsData['poste_staff_specifique'] = $request->input('poste_staff');
+                    break;
+            }
+            
+            if ($request->has('contrat_maintenance')) {
+                $detailsData['type_contrat'] = $request->input('type_contrat');
+                $detailsData['date_debut_contrat'] = $request->input('date_debut_contrat');
+                $detailsData['date_fin_contrat'] = $request->input('date_fin_contrat');
+                $detailsData['periodicite_maintenance'] = $request->input('periodicite_maintenance');
+            }
+            
+            $specificData = $this->extractSpecificData($request);
+            $detailsData['specific_data'] = json_encode($specificData);
+            
+            EquipmentDetail::create($detailsData);
+            
+            DB::commit();
+            
+            return redirect()->route('equipment.index')
+                ->with('success', 'Équipement créé avec succès !');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur création équipement: ' . $e->getMessage());
+            return back()->with('error', 'Erreur: ' . $e->getMessage())->withInput();
+        }
     }
-}
 
-    /**
-     * Remove the specified resource from storage.
-     */
-public function destroy($id)
-{
-    DB::transaction(function () use ($id) {
-        $equipment = Equipment::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        DB::beginTransaction();
+        
+        try {
+            $equipment = Equipment::findOrFail($id);
+            
+            $validated = $request->validate([
+                'type' => 'sometimes|required|in:Réseau,Informatique,Électronique,Logiciel',
+                'marque' => 'required_if:type,!=,Logiciel|string|max:255',
+                'modele' => 'required_if:type,!=,Logiciel|string|max:255',
+                'agency_id' => 'nullable|exists:agencies,id',
+                'localisation' => 'required|string|max:255',
+                'fournisseur_id' => 'nullable|exists:suppliers,id',
+                'date_livraison' => 'required|date',
+                'prix' => 'required|numeric|min:0',
+                'garantie' => 'required|string|max:100',
+                'reference_facture' => 'nullable|string|max:255',
+                'etat' => 'required|in:neuf,bon,moyen,mauvais',
+                'adresse_mac' => 'nullable|string|max:255',
+                'notes' => 'nullable|string',
+                'date_mise_service' => 'nullable|date',
+                'date_amortissement' => 'nullable|date',
+                'categorie' => 'sometimes|string|max:255',
+                'sous_categorie' => 'sometimes|string|max:255',
+            ]);
+            
+            $equipmentData = array_filter($validated, function($key) {
+                return in_array($key, [
+                    'type', 'marque', 'modele', 'agency_id',
+                    'localisation', 'fournisseur_id', 'date_livraison', 'prix',
+                    'garantie', 'reference_facture', 'etat', 'adresse_mac',
+                    'notes', 'date_mise_service', 'date_amortissement'
+                ]);
+            }, ARRAY_FILTER_USE_KEY);
+            
+            $equipment->update($equipmentData);
+            
+            $type = $request->input('type', $equipment->type);
+            $existingDetail = $equipment->detail;
+            
+            $detailsData = [
+                'categorie' => $request->input('categorie', $existingDetail->categorie ?? null),
+                'sous_categorie' => $request->input('sous_categorie', $existingDetail->sous_categorie ?? null),
+                'contrat_maintenance' => $request->has('contrat_maintenance'),
+            ];
+            
+            switch ($type) {
+                case 'Réseau':
+                    $detailsData['etat_specifique'] = $request->input('etat_reseau', $existingDetail->etat_specifique ?? null);
+                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip', $existingDetail->adresse_ip_specifique ?? null);
+                    $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac', $existingDetail->adresse_mac_specifique ?? null);
+                    break;
+                case 'Électronique':
+                    $detailsData['etat_specifique'] = $request->input('etat_electronique', $existingDetail->etat_specifique ?? null);
+                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_elec', $existingDetail->adresse_ip_specifique ?? null);
+                    $detailsData['numero_codification_specifique'] = $request->input('numero_codification', $existingDetail->numero_codification_specifique ?? null);
+                    break;
+                case 'Informatique':
+                    $detailsData['etat_specifique'] = $request->input('etat_stock', $existingDetail->etat_specifique ?? null);
+                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_info', $existingDetail->adresse_ip_specifique ?? null);
+                    $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac_info', $existingDetail->adresse_mac_specifique ?? null);
+                    $detailsData['departement_specifique'] = $request->input('departement', $existingDetail->departement_specifique ?? null);
+                    $detailsData['poste_staff_specifique'] = $request->input('poste_staff', $existingDetail->poste_staff_specifique ?? null);
+                    break;
+            }
+            
+            if ($request->has('contrat_maintenance')) {
+                $detailsData['type_contrat'] = $request->input('type_contrat', $existingDetail->type_contrat ?? null);
+                $detailsData['date_debut_contrat'] = $request->input('date_debut_contrat', $existingDetail->date_debut_contrat ?? null);
+                $detailsData['date_fin_contrat'] = $request->input('date_fin_contrat', $existingDetail->date_fin_contrat ?? null);
+                $detailsData['periodicite_maintenance'] = $request->input('periodicite_maintenance', $existingDetail->periodicite_maintenance ?? null);
+            } else {
+                $detailsData['type_contrat'] = null;
+                $detailsData['date_debut_contrat'] = null;
+                $detailsData['date_fin_contrat'] = null;
+                $detailsData['periodicite_maintenance'] = null;
+            }
+            
+            $existingSpecificData = $existingDetail && $existingDetail->specific_data
+                ? json_decode($existingDetail->specific_data, true)
+                : [];
+            
+            $newSpecificData = $this->extractSpecificData($request);
+            $mergedSpecificData = array_merge($existingSpecificData, $newSpecificData);
+            $detailsData['specific_data'] = json_encode($mergedSpecificData);
+            
+            $equipment->details()->updateOrCreate(
+                ['equipment_id' => $equipment->id],
+                $detailsData
+            );
+            
+            DB::commit();
+            
+            return redirect()->route('equipment.index')
+                ->with('success', 'Équipement mis à jour avec succès !');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur mise à jour équipement: ' . $e->getMessage());
+            return back()->with('error', 'Erreur: ' . $e->getMessage())->withInput();
+        }
+    }
 
-        // Trouver les transition_approvals liés à cet équipement
-        $approvalIds = DB::table('transition_approvals')
-            ->where('equipment_id', $id)  // vérifiez le vrai nom de colonne
-            ->pluck('id');
+    public function destroy($id)
+    {
+        DB::transaction(function () use ($id) {
+            $equipment = Equipment::findOrFail($id);
 
-        // Mettre à null dans parc
-        DB::table('parc')
-            ->whereIn('transition_approval_id', $approvalIds)
-            ->update(['transition_approval_id' => null]);
+            $approvalIds = DB::table('transition_approvals')
+                ->where('equipment_id', $id)
+                ->pluck('id');
 
-        // Supprimer les transition_approvals
-        DB::table('transition_approvals')
-            ->whereIn('id', $approvalIds)
-            ->delete();
+            DB::table('parc')
+                ->whereIn('transition_approval_id', $approvalIds)
+                ->update(['transition_approval_id' => null]);
 
-        $equipment->delete();
-    });
+            DB::table('transition_approvals')
+                ->whereIn('id', $approvalIds)
+                ->delete();
 
-    return redirect()->route('equipment.index')
-        ->with('success', 'Équipement supprimé avec succès');
-}
-    /**
-     * Extraire les données spécifiques selon le type d'équipement
-     */
-private function extractSpecificData(Request $request): array
+            $equipment->delete();
+        });
+
+        return redirect()->route('equipment.index')
+            ->with('success', 'Équipement supprimé avec succès');
+    }
+
+    private function extractSpecificData(Request $request): array
     {
         $specificData = [];
         
         $allPossibleFields = [
-            // Réseau
             'etat_reseau', 'adresse_ip', 'adresse_mac',
             'type_switch', 'ports_ethernet', 'ports_poe', 'puissance_poe_totale',
             'vitesse_ports', 'vlan_supportes', 'firmware_switch',
@@ -295,16 +263,12 @@ private function extractSpecificData(Request $request): array
             'responsable_routeur', 'type_wifi', 'utilisateurs_simultanes_wifi',
             'support_poe_wifi', 'firmware_wifi', 'date_mise_service_wifi',
             'etat_wifi', 'responsable_wifi',
-            
-            // Électronique
             'etat_electronique', 'adresse_ip_elec', 'numero_codification',
             'type_camera', 'resolution_camera', 'angle_vue', 'zoom_optique',
             'zoom_numerique', 'vision_nocturne', 'adresse_ip_camera',
             'adresse_mac_camera', 'alimentation_camera', 'norme_poe',
             'indice_protection', 'audio_camera', 'emplacement_camera',
             'date_installation_camera', 'etat_detaille_camera', 'responsable_camera',
-            
-            // Informatique
             'etat_stock', 'adresse_ip_info', 'adresse_mac_info', 'departement',
             'poste_staff', 'processeur', 'frequence_processeur', 'coeurs_threads',
             'ram_capacite', 'type_ram', 'stockage_capacite', 'type_stockage',
@@ -317,8 +281,6 @@ private function extractSpecificData(Request $request): array
             'taille_ecran_moniteur', 'resolution_ecran_moniteur', 'type_dalle',
             'frequence_ecran', 'temps_reponse', 'support_reglable',
             'date_mise_service_ecran',
-            
-            // Logiciel
             'editeur', 'version', 'type_licence', 'nombre_licences',
             'licences_utilisees', 'date_expiration_licence', 'reference_licence',
             'etat_logiciel',
@@ -332,13 +294,9 @@ private function extractSpecificData(Request $request): array
         
         return $specificData;
     }
-    
-    /**
-     * Préparer TOUTES les données de détails (version simplifiée)
-     */
+
     private function prepareAllDetailsData(Request $request): array
     {
-        // Données de base
         $data = [
             'type' => $request->type,
             'categorie' => $request->categorie,
@@ -346,12 +304,8 @@ private function extractSpecificData(Request $request): array
             'contrat_maintenance' => $request->has('contrat_maintenance'),
         ];
         
-        // Extraire TOUS les champs spécifiques du formulaire
         $specificData = [];
-        
-        // Liste de tous les champs possibles (à adapter selon vos besoins)
         $allPossibleFields = [
-            // Réseau
             'etat_reseau', 'adresse_ip', 'adresse_mac',
             'type_switch', 'ports_ethernet', 'ports_poe', 'puissance_poe_totale',
             'vitesse_ports', 'vlan_supportes', 'firmware_switch',
@@ -361,16 +315,12 @@ private function extractSpecificData(Request $request): array
             'responsable_routeur', 'type_wifi', 'utilisateurs_simultanes_wifi',
             'support_poe_wifi', 'firmware_wifi', 'date_mise_service_wifi',
             'etat_wifi', 'responsable_wifi',
-            
-            // Électronique
             'etat_electronique', 'adresse_ip_elec', 'numero_codification',
             'type_camera', 'resolution_camera', 'angle_vue', 'zoom_optique',
             'zoom_numerique', 'vision_nocturne', 'adresse_ip_camera',
             'adresse_mac_camera', 'alimentation_camera', 'norme_poe',
             'indice_protection', 'audio_camera', 'emplacement_camera',
             'date_installation_camera', 'etat_detaille_camera', 'responsable_camera',
-            
-            // Informatique
             'etat_stock', 'adresse_ip_info', 'adresse_mac_info', 'departement',
             'poste_staff', 'processeur', 'frequence_processeur', 'coeurs_threads',
             'ram_capacite', 'type_ram', 'stockage_capacite', 'type_stockage',
@@ -383,21 +333,17 @@ private function extractSpecificData(Request $request): array
             'taille_ecran_moniteur', 'resolution_ecran_moniteur', 'type_dalle',
             'frequence_ecran', 'temps_reponse', 'support_reglable',
             'date_mise_service_ecran',
-            
-            // Logiciel
             'editeur', 'version', 'type_licence', 'nombre_licences',
             'licences_utilisees', 'date_expiration_licence', 'reference_licence',
             'etat_logiciel',
         ];
         
-        // Extraire uniquement les champs qui existent dans la requête
         foreach ($allPossibleFields as $field) {
             if ($request->has($field) && $request->input($field) !== null) {
                 $specificData[$field] = $request->input($field);
             }
         }
         
-        // Gérer les champs spéciaux (cases à cocher multiples)
         $multiCheckboxFields = [
             'protocoles_switch', 'protocoles_routeur', 'interfaces_routeur',
             'normes_wifi', 'bandes_wifi', 'securite_wifi', 'protocoles_modem',
@@ -411,7 +357,6 @@ private function extractSpecificData(Request $request): array
             }
         }
         
-        // Contrat maintenance
         if ($request->has('contrat_maintenance')) {
             $data['type_contrat'] = $request->input('type_contrat');
             $data['date_debut_contrat'] = $request->input('date_debut_contrat');
@@ -423,68 +368,50 @@ private function extractSpecificData(Request $request): array
         
         return $data;
     }
-    
-    /**
-     * Afficher la liste des équipements
-     */
-/**
- * Afficher la liste des équipements
- */
-public function index(Request $request)
-{
-    $query = Equipment::with(['agence', 'fournisseur'])
-        ->orderBy('created_at', 'desc');
-    
-    // Filtres...
-    if ($request->filled('statut')) {
-        $query->where('statut', $request->statut);
-    }
-    
-    if ($request->filled('type')) {
-        $query->where('type', $request->type);
-    }
-    
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function($q) use ($search) {
-            $q->where('numero_serie', 'like', "%{$search}%")
-              ->orWhere('marque', 'like', "%{$search}%")
-              ->orWhere('modele', 'like', "%{$search}%")
-              ->orWhere('adresse_mac', 'like', "%{$search}%");
-        });
-    }
-    
-    $equipments = $query->paginate(20);
-    
-    // AJOUTEZ CE CODE POUR LES STATISTIQUES CORRECTES
-    $stats = [
-        'stock' => Equipment::where('statut', 'stock')->count(),
-        'parc' => Equipment::where('statut', 'parc')->count(),
-        'maintenance' => Equipment::where('statut', 'maintenance')->count(),
-        'hors_service' => Equipment::where('statut', 'hors_service')->count(),
-        'perdu' => Equipment::where('statut', 'perdu')->count(),
-    ];
-    
-    return view('equipment.index', compact('equipments', 'stats'));
-}
-    
-    /**
-     * Afficher un équipement
-     */
-   public function show($id)
+
+    public function index(Request $request)
     {
+        $query = Equipment::with(['agence', 'fournisseur'])
+            ->orderBy('created_at', 'desc');
         
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+        
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('numero_serie', 'like', "%{$search}%")
+                  ->orWhere('marque', 'like', "%{$search}%")
+                  ->orWhere('modele', 'like', "%{$search}%")
+                  ->orWhere('adresse_mac', 'like', "%{$search}%");
+            });
+        }
+        
+        $equipments = $query->paginate(20);
+        
+        $stats = [
+            'stock' => Equipment::where('statut', 'stock')->count(),
+            'parc' => Equipment::where('statut', 'parc')->count(),
+            'maintenance' => Equipment::where('statut', 'maintenance')->count(),
+            'hors_service' => Equipment::where('statut', 'hors_service')->count(),
+            'perdu' => Equipment::where('statut', 'perdu')->count(),
+        ];
+        
+        return view('equipment.index', compact('equipments', 'stats'));
+    }
+
+    public function show($id)
+    {
         try {
             $equipment = Equipment::with([
-                'agence', 
-                'fournisseur', 
-                'detail', // Important: charger les détails
-                'stock',
-                'parc',
-                'maintenance'
+                'agence', 'fournisseur', 'detail', 'stock', 'parc', 'maintenance'
             ])->findOrFail($id);
             
-            // Récupérer les données spécifiques
             $specificData = [];
             if ($equipment->detail && $equipment->detail->specific_data) {
                 $specificData = json_decode($equipment->detail->specific_data, true) ?? [];
@@ -494,46 +421,30 @@ public function index(Request $request)
             
         } catch (\Exception $e) {
             Log::error('Erreur affichage équipement: ' . $e->getMessage());
-            return redirect()->route('equipment.index')
-                ->with('error', 'Équipement non trouvé.');
+            return redirect()->route('equipment.index')->with('error', 'Équipement non trouvé.');
         }
     }
-    
-    /**
-     * Afficher le formulaire d'édition
-     */
+
     public function edit($id)
     {
         try {
-            // Récupérer l'équipement avec ses relations
             $equipment = Equipment::with(['agence', 'fournisseur', 'detail'])->findOrFail($id);
-            
-            // Données pour le formulaire
             $agencies = Agency::all();
             $suppliers = Supplier::all();
-            $users = \App\Models\User::all(); // Si nécessaire
+            $users = \App\Models\User::all();
             
-            // Récupérer les données spécifiques
             $specificData = [];
             if ($equipment->detail && $equipment->detail->specific_data) {
                 $specificData = json_decode($equipment->detail->specific_data, true) ?? [];
             }
             
-            return view('equipment.edit', compact(
-                'equipment', 
-                'agencies', 
-                'suppliers', 
-                'users',
-                'specificData'
-            ));
+            return view('equipment.edit', compact('equipment', 'agencies', 'suppliers', 'users', 'specificData'));
             
         } catch (\Exception $e) {
             Log::error('Erreur édition équipement: ' . $e->getMessage());
-            return redirect()->route('equipment.index')
-                ->with('error', 'Équipement non trouvé ou erreur d\'accès.');
+            return redirect()->route('equipment.index')->with('error', 'Équipement non trouvé ou erreur d\'accès.');
         }
     }
-    
 
     // ==================== TEMPLATE CSV ====================
     public function downloadTemplate()
@@ -550,11 +461,8 @@ public function index(Request $request)
 
         $callback = function() {
             $file = fopen('php://output', 'w');
-            
-            // BOM UTF-8 pour Excel
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             
-            // En-têtes EXACTEMENT comme dans votre fichier
             $headers = [
                 'type', 'categorie', 'sous_categorie', 'numero_serie', 'marque', 'modele',
                 'garantie', 'date_livraison', 'prix', 'reference_facture', 'etat',
@@ -570,14 +478,13 @@ public function index(Request $request)
             ];
             
             fputcsv($file, $headers, "\t");
-            
             fclose($file);
         };
 
         return response()->stream($callback, 200, $headers);
     }
 
-    // ==================== IMPORT CSV - VERSION ULTIME ====================
+    // ==================== IMPORT CSV ====================
     public function import(Request $request)
     {
         $request->validate([
@@ -593,61 +500,35 @@ public function index(Request $request)
                 'taille' => filesize($path) . ' octets'
             ]);
             
-            // 1. Lire le fichier COMPLET
             $content = file_get_contents($path);
             
             if (empty(trim($content))) {
-                return redirect()->route('equipment.import.form')
-                    ->with('error', 'Le fichier CSV est vide');
+                return redirect()->route('equipment.import.form')->with('error', 'Le fichier CSV est vide');
             }
             
-            // 2. DÉTECTER ET CORRIGER LE FORMAT - FORCER LE TRAITEMENT TABULATION
             $content = $this->fixCsvFormat($content);
-            
-            // 3. UTILISER LA MÉTHODE FIABLE avec fgetcsv()
             $data = $this->readCsvFileReliably($path);
             
             if (empty($data['headers']) || empty($data['rows'])) {
-                Log::error('Fichier vide après traitement', $data);
-                return redirect()->route('equipment.import.form')
-                    ->with('error', 'Aucune donnée valide trouvée dans le fichier');
+                return redirect()->route('equipment.import.form')->with('error', 'Aucune donnée valide trouvée dans le fichier');
             }
             
-            Log::info('Fichier analysé avec succès', [
-                'colonnes' => count($data['headers']),
-                'lignes' => count($data['rows'])
-            ]);
-            
-            // 4. IMPORTER LES DONNÉES
             return $this->processImportData($data['headers'], $data['rows']);
             
         } catch (\Exception $e) {
-            Log::error('ERREUR IMPORT GLOBALE', [
-                'message' => $e->getMessage(),
-                'fichier' => $file->getClientOriginalName(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return redirect()->route('equipment.import.form')
-                ->with('error', 'Erreur: ' . $e->getMessage());
+            Log::error('ERREUR IMPORT GLOBALE', ['message' => $e->getMessage()]);
+            return redirect()->route('equipment.import.form')->with('error', 'Erreur: ' . $e->getMessage());
         }
     }
 
     // ==================== MÉTHODES DE SUPPORT PRIVÉES ====================
-    
-    /**
-     * Corrige le format CSV problématique
-     */
+
     private function fixCsvFormat($content)
     {
-        // 1. Supprimer BOM UTF-8
         $content = preg_replace('/^\x{FEFF}/u', '', $content);
-        
-        // 2. Remplacer les retours chariot Windows (\r\n) par \n
         $content = str_replace("\r\n", "\n", $content);
         $content = str_replace("\r", "\n", $content);
         
-        // 3. Gérer les guillemets et retours à la ligne à l'intérieur
         $lines = [];
         $currentLine = '';
         $inQuotes = false;
@@ -667,12 +548,10 @@ public function index(Request $request)
             }
         }
         
-        // Dernière ligne
         if ($currentLine !== '') {
             $lines[] = $currentLine;
         }
         
-        // Reconstruire avec tabulations propres
         $fixedLines = [];
         foreach ($lines as $line) {
             if (trim($line) !== '') {
@@ -682,255 +561,131 @@ public function index(Request $request)
         
         return implode("\n", $fixedLines);
     }
-    
-    /**
-     * Lit le fichier CSV de manière fiable
-     */
+
     private function readCsvFileReliably($filePath)
     {
-        $result = [
-            'headers' => [],
-            'rows' => []
-        ];
-        
-        // Essayer plusieurs séparateurs
+        $result = ['headers' => [], 'rows' => []];
         $separators = ["\t", ";", ","];
         
         foreach ($separators as $separator) {
-            Log::info('Essai avec séparateur:', ['separator' => $separator === "\t" ? 'TAB' : $separator]);
-            
             $handle = fopen($filePath, 'r');
-            if (!$handle) {
-                throw new \Exception('Impossible d\'ouvrir le fichier');
-            }
+            if (!$handle) throw new \Exception('Impossible d\'ouvrir le fichier');
             
-            // Lire les en-têtes
             $headers = fgetcsv($handle, 0, $separator);
             
             if ($headers === false || count($headers) < 3) {
                 fclose($handle);
-                Log::warning('Séparateur échoué', ['separator' => $separator]);
                 continue;
             }
             
-            // Nettoyer les en-têtes
             $headers = array_map(function($header) {
                 $header = trim($header, " \t\n\r\0\x0B\"'");
-                // Supprimer BOM si présent
-                $header = preg_replace('/^\x{FEFF}/u', '', $header);
-                return $header;
+                return preg_replace('/^\x{FEFF}/u', '', $header);
             }, $headers);
             
-            Log::info('En-têtes trouvés avec séparateur ' . ($separator === "\t" ? 'TAB' : $separator), $headers);
-            
-            // Lire les lignes
             $rows = [];
-            $lineNum = 1;
             
             while (($row = fgetcsv($handle, 0, $separator)) !== false) {
-                $lineNum++;
+                if ($row === null || (count($row) === 1 && trim($row[0]) === '')) continue;
                 
-                // Ignorer les lignes vides
-                if ($row === null || (count($row) === 1 && trim($row[0]) === '')) {
-                    continue;
-                }
+                $row = array_map(fn($v) => trim($v, " \t\n\r\0\x0B\"'"), $row);
                 
-                // Nettoyer la ligne
-                $row = array_map(function($value) {
-                    return trim($value, " \t\n\r\0\x0B\"'");
-                }, $row);
-                
-                // Vérifier si la ligne est vide après nettoyage
-                $isEmpty = true;
-                foreach ($row as $value) {
-                    if ($value !== '') {
-                        $isEmpty = false;
-                        break;
-                    }
-                }
+                $isEmpty = empty(array_filter($row, fn($v) => $v !== ''));
                 
                 if (!$isEmpty) {
-                    // Ajuster la longueur
-                    if (count($row) < count($headers)) {
-                        $row = array_pad($row, count($headers), '');
-                    } elseif (count($row) > count($headers)) {
-                        $row = array_slice($row, 0, count($headers));
-                    }
-                    
+                    if (count($row) < count($headers)) $row = array_pad($row, count($headers), '');
+                    elseif (count($row) > count($headers)) $row = array_slice($row, 0, count($headers));
                     $rows[] = $row;
                 }
             }
             
             fclose($handle);
             
-            // Vérifier si on a des données
             if (count($rows) > 0) {
-                Log::info('Séparateur validé!', [
-                    'separator' => $separator === "\t" ? 'TAB' : $separator,
-                    'lignes' => count($rows)
-                ]);
-                
-                $result['headers'] = $headers;
-                $result['rows'] = $rows;
-                $result['separator'] = $separator;
+                $result = ['headers' => $headers, 'rows' => $rows, 'separator' => $separator];
                 break;
             }
         }
         
-        // Si aucun séparateur ne fonctionne, essayer une méthode manuelle
         if (empty($result['headers'])) {
-            Log::warning('Aucun séparateur standard ne fonctionne, tentative manuelle...');
             $result = $this->readCsvManually($filePath);
         }
         
         return $result;
     }
-    
-    /**
-     * Lecture manuelle du CSV (dernier recours)
-     */
+
     private function readCsvManually($filePath)
     {
         $content = file_get_contents($filePath);
         $content = $this->fixCsvFormat($content);
         
-        // Séparer les lignes
-        $lines = explode("\n", $content);
-        $lines = array_filter($lines, function($line) {
-            return trim($line) !== '';
-        });
+        $lines = array_filter(explode("\n", $content), fn($l) => trim($l) !== '');
         
-        if (count($lines) < 2) {
-            return ['headers' => [], 'rows' => []];
-        }
+        if (count($lines) < 2) return ['headers' => [], 'rows' => []];
         
-        // La première ligne est les en-têtes
         $firstLine = array_shift($lines);
+        $headers = array_map(
+            fn($h) => trim($h, " \t\n\r\0\x0B\"'"),
+            preg_split('/\t/', $firstLine, -1, PREG_SPLIT_NO_EMPTY)
+        );
         
-        // DIVISER PAR TABULATION manuellement
-        $headers = preg_split('/\t/', $firstLine, -1, PREG_SPLIT_NO_EMPTY);
-        
-        // Nettoyer les en-têtes
-        $headers = array_map(function($header) {
-            return trim($header, " \t\n\r\0\x0B\"'");
-        }, $headers);
-        
-        Log::info('Lecture manuelle - En-têtes:', $headers);
-        
-        // Lire les données
         $rows = [];
         foreach ($lines as $line) {
-            // Diviser par tabulation
-            $row = preg_split('/\t/', $line, -1, PREG_SPLIT_NO_EMPTY);
+            $row = array_map(
+                fn($v) => trim($v, " \t\n\r\0\x0B\"'"),
+                preg_split('/\t/', $line, -1, PREG_SPLIT_NO_EMPTY)
+            );
             
             if (count($row) > 0) {
-                // Nettoyer
-                $row = array_map(function($value) {
-                    return trim($value, " \t\n\r\0\x0B\"'");
-                }, $row);
-                
-                // Ajuster la longueur
-                if (count($row) < count($headers)) {
-                    $row = array_pad($row, count($headers), '');
-                } elseif (count($row) > count($headers)) {
-                    $row = array_slice($row, 0, count($headers));
-                }
-                
+                if (count($row) < count($headers)) $row = array_pad($row, count($headers), '');
+                elseif (count($row) > count($headers)) $row = array_slice($row, 0, count($headers));
                 $rows[] = $row;
             }
         }
         
-        return [
-            'headers' => $headers,
-            'rows' => $rows,
-            'separator' => "\t"
-        ];
+        return ['headers' => $headers, 'rows' => $rows, 'separator' => "\t"];
     }
-    
-    /**
-     * Traite l'import des données
-     */
+
     private function processImportData($headers, $rows)
     {
         $imported = 0;
         $errors = [];
-        $skipped = 0;
         
         DB::beginTransaction();
         
         try {
             foreach ($rows as $index => $row) {
-                $lineNumber = $index + 2; // +2 pour en-têtes + index 0-based
-                
-                // Créer tableau associatif
+                $lineNumber = $index + 2;
                 $data = [];
                 foreach ($headers as $i => $header) {
-                    $value = isset($row[$i]) ? $row[$i] : '';
-                    $data[$header] = $value;
+                    $data[$header] = $row[$i] ?? '';
                 }
                 
-                // DEBUG: Première ligne
-                if ($index === 0) {
-                    Log::info('Traitement ligne 1:', [
-                        'type' => $data['type'] ?? 'N/A',
-                        'numero_serie' => $data['numero_serie'] ?? 'N/A',
-                        'colonnes' => count($data)
-                    ]);
-                }
+                if (empty($data['type'])) { $errors[] = "Ligne $lineNumber: Type manquant"; continue; }
+                if (empty($data['numero_serie'])) { $errors[] = "Ligne $lineNumber: Numéro de série manquant"; continue; }
                 
-                // VALIDATION MINIMALE
-                if (empty($data['type'])) {
-                    $errors[] = "Ligne $lineNumber: Type manquant";
-                    continue;
-                }
-                
-                if (empty($data['numero_serie'])) {
-                    $errors[] = "Ligne $lineNumber: Numéro de série manquant";
-                    continue;
-                }
-                
-                // Vérifier unicité
                 if (Equipment::where('numero_serie', $data['numero_serie'])->exists()) {
                     $errors[] = "Ligne $lineNumber: Numéro de série '{$data['numero_serie']}' existe déjà";
                     continue;
                 }
                 
-                // Fournisseur
                 $fournisseurId = null;
                 if (!empty($data['fournisseur_id'])) {
-                    $supplierId = intval($data['fournisseur_id']);
-                    if (Supplier::where('id', $supplierId)->exists()) {
-                        $fournisseurId = $supplierId;
-                    }
+                    $sid = intval($data['fournisseur_id']);
+                    if (Supplier::where('id', $sid)->exists()) $fournisseurId = $sid;
                 }
                 
-                // Date
-                $dateLivraison = null;
-                if (!empty($data['date_livraison'])) {
-                    $dateLivraison = $this->parseDate($data['date_livraison']);
-                }
+                $dateLivraison = !empty($data['date_livraison']) ? $this->parseDate($data['date_livraison']) : null;
+                $prix = !empty($data['prix']) ? floatval(str_replace([',', ' '], ['.', ''], $data['prix'])) : 0;
                 
-                // Prix
-                $prix = 0;
-                if (!empty($data['prix'])) {
-                    $prix = floatval(str_replace([',', ' '], ['.', ''], $data['prix']));
-                }
-                
-                // État
                 $etat = 'neuf';
-                if (!empty($data['etat'])) {
-                    $etatsValides = ['neuf', 'bon', 'moyen', 'mauvais'];
-                    $etatInput = strtolower($data['etat']);
-                    if (in_array($etatInput, $etatsValides)) {
-                        $etat = $etatInput;
-                    }
+                if (!empty($data['etat']) && in_array(strtolower($data['etat']), ['neuf', 'bon', 'moyen', 'mauvais'])) {
+                    $etat = strtolower($data['etat']);
                 }
                 
-                // Contrat maintenance
-                $contratMaintenance = !empty($data['contrat_maintenance']) && 
+                $contratMaintenance = !empty($data['contrat_maintenance']) &&
                     in_array(strtolower($data['contrat_maintenance']), ['1', 'oui', 'yes', 'true']);
                 
-                // ========== CRÉATION EQUIPEMENT ==========
                 $equipmentData = [
                     'type' => $this->normalizeType($data['type']),
                     'numero_serie' => $data['numero_serie'],
@@ -950,17 +705,12 @@ public function index(Request $request)
                     'updated_at' => now(),
                 ];
                 
-                // Champs optionnels
-                $optionalFields = ['numero_codification', 'departement', 'poste_staff', 'notes'];
-                foreach ($optionalFields as $field) {
-                    if (isset($data[$field]) && $data[$field] !== '') {
-                        $equipmentData[$field] = $data[$field];
-                    }
+                foreach (['numero_codification', 'departement', 'poste_staff', 'notes'] as $field) {
+                    if (isset($data[$field]) && $data[$field] !== '') $equipmentData[$field] = $data[$field];
                 }
                 
                 $equipment = Equipment::create($equipmentData);
                 
-                // ========== CRÉATION DETAILS ==========
                 $detailsData = [
                     'equipment_id' => $equipment->id,
                     'categorie' => $data['categorie'] ?? null,
@@ -968,56 +718,33 @@ public function index(Request $request)
                     'contrat_maintenance' => $contratMaintenance,
                 ];
                 
-                // Données spécifiques
                 $specificData = $this->collectSpecificData($data, $headers);
                 $detailsData['specific_data'] = !empty($specificData) ? json_encode($specificData, JSON_UNESCAPED_UNICODE) : null;
                 
                 EquipmentDetail::create($detailsData);
-                
                 $imported++;
             }
             
             DB::commit();
             
-            Log::info('=== IMPORT RÉUSSI ===', [
-                'imported' => $imported,
-                'errors' => count($errors),
-                'skipped' => $skipped
-            ]);
-            
-            // Message final
             $message = "✅ Import terminé : $imported équipement(s) importé(s)";
             if (count($errors) > 0) {
                 $message .= ", " . count($errors) . " erreur(s)";
-                
                 return redirect()->route('equipment.import.form')
-                    ->with('warning', $message)
-                    ->with('import_errors', $errors);
+                    ->with('warning', $message)->with('import_errors', $errors);
             }
             
-            return redirect()->route('equipment.index')
-                ->with('success', $message);
+            return redirect()->route('equipment.index')->with('success', $message);
                 
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            Log::error('ERREUR IMPORT DATA', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+            Log::error('ERREUR IMPORT DATA', ['message' => $e->getMessage()]);
             throw new \Exception('Erreur base de données: ' . $e->getMessage());
         }
     }
-    
-    /**
-     * Collecte les données spécifiques
-     */
+
     private function collectSpecificData($data, $headers)
     {
-        $specificFields = [];
-        
-        // Champs de base à exclure
         $excludeFields = [
             'type', 'categorie', 'sous_categorie', 'numero_serie',
             'marque', 'modele', 'garantie', 'date_livraison', 'prix',
@@ -1027,139 +754,321 @@ public function index(Request $request)
             'date_mise_service'
         ];
         
+        $specificFields = [];
         foreach ($headers as $header) {
-            if (!in_array($header, $excludeFields) && 
-                isset($data[$header]) && 
-                $data[$header] !== '') {
+            if (!in_array($header, $excludeFields) && isset($data[$header]) && $data[$header] !== '') {
                 $specificFields[$header] = $data[$header];
             }
         }
         
         return $specificFields;
     }
-    
-    /**
-     * Parse une date
-     */
+
     private function parseDate($dateString)
     {
         if (empty($dateString)) return null;
-        
         $dateString = trim($dateString);
         
-        // Formats courants
-        $formats = ['d/m/Y', 'Y-m-d', 'd-m-Y', 'Y/m/d', 'd.m.Y'];
-        
-        foreach ($formats as $format) {
+        foreach (['d/m/Y', 'Y-m-d', 'd-m-Y', 'Y/m/d', 'd.m.Y'] as $format) {
             $date = \DateTime::createFromFormat($format, $dateString);
-            if ($date !== false) {
-                return $date->format('Y-m-d');
-            }
+            if ($date !== false) return $date->format('Y-m-d');
         }
         
-        // strtotime
         $timestamp = strtotime($dateString);
-        if ($timestamp !== false) {
-            return date('Y-m-d', $timestamp);
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Normalise le type
-     */
-    private function normalizeType($type)
-    {
-        $type = trim($type);
-        
-        $map = [
-            'reseau' => 'Réseau',
-            'reseaux' => 'Réseau',
-            'informatique' => 'Informatique',
-            'electronique' => 'Électronique',
-            'logiciel' => 'Logiciel',
-            'serveur' => 'Serveur',
-            'peripherique' => 'Périphérique',
-        ];
-        
-        $lower = strtolower($type);
-        return $map[$lower] ?? ucfirst($type);
+        return $timestamp !== false ? date('Y-m-d', $timestamp) : null;
     }
 
-    // ==================== FORMULAIRE IMPORT ====================
+    private function normalizeType($type)
+    {
+        $map = [
+            'reseau' => 'Réseau', 'reseaux' => 'Réseau',
+            'informatique' => 'Informatique', 'electronique' => 'Électronique',
+            'logiciel' => 'Logiciel', 'serveur' => 'Serveur',
+            'peripherique' => 'Périphérique',
+        ];
+        return $map[strtolower(trim($type))] ?? ucfirst(trim($type));
+    }
+
     public function showImportForm()
     {
         $suppliers = Supplier::orderBy('nom')->get();
         return view('equipment.import', compact('suppliers'));
     }
 
-    // ==================== EXPORT CSV ====================
+    // ==================== EXPORT XLSX ====================
+
+    /**
+     * Export standard — tous les équipements (tous statuts)
+     * Nécessite : composer require phpoffice/phpspreadsheet
+     *
+     * Paramètres GET optionnels : ?type=Réseau&etat=bon&statut=stock
+     */
     public function export(Request $request)
     {
-        $filename = 'export_equipements_' . date('Y-m-d_H-i-s') . '.csv';
-        
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'Pragma' => 'no-cache',
-            'Expires' => '0',
+        return $this->buildEquipmentXlsx($request, false);
+    }
+
+    /**
+     * Export complet — tous champs + données specific_data dépliées
+     * Paramètres GET optionnels : ?type=Réseau&etat=bon&localisation=Dakar
+     */
+    public function exportFull(Request $request)
+    {
+        return $this->buildEquipmentXlsx($request, true);
+    }
+
+    /**
+     * Construit et retourne le fichier xlsx.
+     * $full = false → colonnes de base | $full = true → toutes colonnes + specific_data
+     */
+    private function buildEquipmentXlsx(Request $request, bool $full)
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle($full ? 'Équipements Complet' : 'Équipements');
+
+        // ---- Colonnes communes ----------------------------------------------
+        $columns = [
+            'A'  => ['ID',                    8],
+            'B'  => ['Type',                 14],
+            'C'  => ['Numéro de série',       22],
+            'D'  => ['Marque',               14],
+            'E'  => ['Modèle',               18],
+            'F'  => ['Catégorie',            16],
+            'G'  => ['Sous-catégorie',       18],
+            'H'  => ['Nom',                  18],
+            'I'  => ['N° codification',      20],
+            'J'  => ['État',                 12],
+            'K'  => ['Statut',               14],
+            'L'  => ['Prix (FCFA)',          16],
+            'M'  => ['Date livraison',       16],
+            'N'  => ['Garantie',             14],
+            'O'  => ['Réf. facture',         18],
+            'P'  => ['Réf. installation',    20],
+            'Q'  => ['Fournisseur',          20],
+            'R'  => ['Agence',               16],
+            'S'  => ['Localisation',         18],
+            'T'  => ['Lieu stockage',        18],
+            'U'  => ['Adresse MAC',          18],
+            'V'  => ['Adresse IP',           16],
+            'W'  => ['Département',          18],
+            'X'  => ['Poste staff',          18],
+            'Y'  => ['Date mise en service', 20],
+            'Z'  => ['Date amortissement',   20],
+            'AA' => ['Contrat maintenance',  20],
+            'AB' => ['Notes',                35],
+            'AC' => ['Date création',        18],
+            'AD' => ['Dernière modif.',      18],
         ];
 
-        $callback = function() use ($request) {
-            $file = fopen('php://output', 'w');
-            
-            // BOM UTF-8
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
-            // En-têtes d'export
-            $headers = [
-                'ID', 'type', 'numero_serie', 'marque', 'modele',
-                'garantie', 'date_livraison', 'prix', 'etat',
-                'fournisseur', 'localisation', 'adresse_mac',
-                'categorie', 'sous_categorie',
-                'created_at', 'updated_at'
+        // ---- Colonnes supplémentaires pour l'export complet -----------------
+        $extraColumns = [];
+        if ($full) {
+            $extraColumns = [
+                'AE' => ['Processeur',           18],
+                'AF' => ['RAM',                  14],
+                'AG' => ['Stockage capacité',    18],
+                'AH' => ['Type stockage',        16],
+                'AI' => ['Système exploit.',     18],
+                'AJ' => ['Taille écran',         14],
+                'AK' => ['Éditeur',              16],
+                'AL' => ['Version',              14],
+                'AM' => ['Type licence',         16],
+                'AN' => ['Nb licences',          14],
+                'AO' => ['Exp. licence',         16],
+                'AP' => ['Réf. licence',         20],
+                'AQ' => ['Type switch',          16],
+                'AR' => ['Ports Ethernet',       16],
+                'AS' => ['Ports PoE',            14],
+                'AT' => ['Vitesse ports',        14],
+                'AU' => ['Type routeur',         16],
+                'AV' => ['Nb ports routeur',     16],
+                'AW' => ['Type WiFi',            14],
+                'AX' => ['Type caméra',          16],
+                'AY' => ['Résolution caméra',    18],
+                'AZ' => ['Type NVR/DVR',         16],
+                'BA' => ['Canaux supportés',     16],
+                'BB' => ['Type modem',           14],
+                'BC' => ['Vitesse modem',        14],
+                'BD' => ['N° badge',             16],
+                'BE' => ['Type alarme',          14],
+                'BF' => ['Type imprimante',      16],
+                'BG' => ['Vitesse impression',   18],
             ];
-            
-            fputcsv($file, $headers, "\t");
-            
-            // Données
-            $query = Equipment::with(['fournisseur', 'detail']);
-            
-            if ($request->has('type') && $request->type) {
-                $query->where('type', $request->type);
-            }
-            
-            $equipments = $query->orderBy('created_at', 'desc')->get();
-            
-            foreach ($equipments as $equipment) {
-                $row = [
-                    $equipment->id,
-                    $equipment->type,
-                    $equipment->numero_serie,
-                    $equipment->marque,
-                    $equipment->modele,
-                    $equipment->garantie,
-                    $equipment->date_livraison ? $equipment->date_livraison->format('Y-m-d') : '',
-                    $equipment->prix,
-                    $equipment->etat,
-                    $equipment->fournisseur ? $equipment->fournisseur->nom : '',
-                    $equipment->localisation,
-                    $equipment->adresse_mac,
-                    $equipment->detail ? $equipment->detail->categorie : '',
-                    $equipment->detail ? $equipment->detail->sous_categorie : '',
-                    $equipment->created_at ? $equipment->created_at->format('Y-m-d H:i:s') : '',
-                    $equipment->updated_at ? $equipment->updated_at->format('Y-m-d H:i:s') : '',
-                ];
-                
-                fputcsv($file, $row, "\t");
-            }
-            
-            fclose($file);
-        };
+            $columns = array_merge($columns, $extraColumns);
+        }
 
-        return response()->stream($callback, 200, $headers);
+        $lastCol = array_key_last($columns);
+        $colKeys  = array_keys($columns);
+
+        // ---- Ligne 1 : titre ------------------------------------------------
+        $label = $full ? 'INVENTAIRE ÉQUIPEMENTS (COMPLET)' : 'INVENTAIRE ÉQUIPEMENTS';
+        $sheet->mergeCells("A1:{$lastCol}1");
+        $sheet->setCellValue('A1', $label . ' — Export du ' . now()->format('d/m/Y H:i'));
+        $sheet->getStyle('A1')->applyFromArray([
+            'font'      => ['bold' => true, 'size' => 13, 'color' => ['argb' => 'FFFFFFFF'], 'name' => 'Arial'],
+            'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getRowDimension(1)->setRowHeight(28);
+
+        // ---- Ligne 2 : en-têtes ---------------------------------------------
+        foreach ($columns as $col => [$lbl, $width]) {
+            $sheet->setCellValue("{$col}2", $lbl);
+            $sheet->getColumnDimension($col)->setWidth($width);
+        }
+        $sheet->getStyle("A2:{$lastCol}2")->applyFromArray([
+            'font'      => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FFFFFFFF'], 'name' => 'Arial'],
+            'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+            'borders'   => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFFFFFFF']]],
+        ]);
+        $sheet->getRowDimension(2)->setRowHeight(22);
+
+        // ---- Requête --------------------------------------------------------
+        $query = Equipment::with(['fournisseur', 'detail', 'categorie', 'agence']);
+
+        if ($request->filled('type'))        $query->where('type', $request->type);
+        if ($request->filled('etat'))        $query->where('etat', $request->etat);
+        if ($request->filled('statut'))      $query->where('statut', $request->statut);
+        if ($request->filled('localisation'))
+            $query->where('localisation', 'like', '%' . $request->localisation . '%');
+
+        $equipments = $query->orderBy('created_at', 'desc')->get();
+
+        // ---- Données --------------------------------------------------------
+        $row = 3;
+        foreach ($equipments as $eq) {
+            $bg = ($row % 2 === 0) ? 'FFEEF4FB' : 'FFFAFAFA';
+
+            $sd = [];
+            if ($eq->detail?->specific_data) {
+                $sd = json_decode($eq->detail->specific_data, true) ?? [];
+            }
+
+            $data = [
+                'A'  => $eq->id,
+                'B'  => $eq->type,
+                'C'  => $eq->numero_serie,
+                'D'  => $eq->marque,
+                'E'  => $eq->modele,
+                'F'  => $eq->detail?->categorie ?? $eq->categorie?->nom ?? '',
+                'G'  => $eq->detail?->sous_categorie ?? '',
+                'H'  => $eq->nom,
+                'I'  => $eq->numero_codification,
+                'J'  => $eq->etat,
+                'K'  => $eq->statut,
+                'L'  => $eq->prix,
+                'M'  => $eq->date_livraison?->format('d/m/Y'),
+                'N'  => $eq->garantie,
+                'O'  => $eq->reference_facture,
+                'P'  => $eq->reference_installation,
+                'Q'  => $eq->fournisseur?->nom,
+                'R'  => $eq->agence?->nom ?? $eq->agence?->name ?? '',
+                'S'  => $eq->localisation,
+                'T'  => $eq->lieu_stockage,
+                'U'  => $eq->adresse_mac,
+                'V'  => $eq->adresse_ip,
+                'W'  => $eq->departement,
+                'X'  => $eq->poste_staff,
+                'Y'  => $eq->date_mise_service?->format('d/m/Y'),
+                'Z'  => $eq->date_amortissement?->format('d/m/Y'),
+                'AA' => $eq->detail ? ($eq->detail->contrat_maintenance ? 'Oui' : 'Non') : '',
+                'AB' => $eq->notes,
+                'AC' => $eq->created_at?->format('d/m/Y H:i'),
+                'AD' => $eq->updated_at?->format('d/m/Y H:i'),
+            ];
+
+            if ($full) {
+                $data = array_merge($data, [
+                    'AE' => $sd['processeur'] ?? '',
+                    'AF' => $sd['ram_capacite'] ?? '',
+                    'AG' => $sd['stockage_capacite'] ?? '',
+                    'AH' => $sd['type_stockage'] ?? '',
+                    'AI' => $sd['systeme_exploitation'] ?? $sd['os_portable'] ?? '',
+                    'AJ' => $sd['taille_ecran'] ?? $sd['taille_ecran_moniteur'] ?? '',
+                    'AK' => $sd['editeur'] ?? '',
+                    'AL' => $sd['version'] ?? '',
+                    'AM' => $sd['type_licence'] ?? '',
+                    'AN' => $sd['nombre_licences'] ?? '',
+                    'AO' => $sd['date_expiration_licence'] ?? '',
+                    'AP' => $sd['reference_licence'] ?? '',
+                    'AQ' => $sd['type_switch'] ?? '',
+                    'AR' => $sd['ports_ethernet'] ?? '',
+                    'AS' => $sd['ports_poe'] ?? '',
+                    'AT' => $sd['vitesse_ports'] ?? '',
+                    'AU' => $sd['type_routeur'] ?? '',
+                    'AV' => $sd['nombre_ports_routeur'] ?? '',
+                    'AW' => $sd['type_wifi'] ?? '',
+                    'AX' => $sd['type_camera'] ?? '',
+                    'AY' => $sd['resolution_camera'] ?? '',
+                    'AZ' => $sd['type_nvr_dvr'] ?? '',
+                    'BA' => $sd['canaux_supportes'] ?? '',
+                    'BB' => $sd['type_modem'] ?? '',
+                    'BC' => $sd['vitesse_max_modem'] ?? '',
+                    'BD' => $sd['numero_unique_badge'] ?? '',
+                    'BE' => $sd['type_alarme'] ?? '',
+                    'BF' => $sd['type_imprimante'] ?? '',
+                    'BG' => $sd['vitesse_impression'] ?? '',
+                ]);
+            }
+
+            foreach ($data as $col => $value) {
+                $sheet->setCellValue("{$col}{$row}", $value ?? '');
+            }
+
+            $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
+                'font'      => ['size' => 9, 'name' => 'Arial'],
+                'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $bg]],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            ]);
+
+            $sheet->getStyle("L{$row}")->getNumberFormat()->setFormatCode('#,##0 "FCFA"');
+            $sheet->getRowDimension($row)->setRowHeight(16);
+            $row++;
+        }
+
+        // ---- Bordures -------------------------------------------------------
+        if ($row > 3) {
+            $sheet->getStyle("A2:{$lastCol}" . ($row - 1))->applyFromArray([
+                'borders' => [
+                    'allBorders' => ['borderStyle' => Border::BORDER_THIN,  'color' => ['argb' => 'FFBDD7EE']],
+                    'outline'    => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['argb' => 'FF1F3864']],
+                ],
+            ]);
+        }
+
+        // ---- Ligne résumé ---------------------------------------------------
+        $total = count($equipments);
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->setCellValue("A{$row}", "Total : {$total} équipement(s)");
+        if ($row > 3) {
+            $sheet->setCellValue("L{$row}", "=SUM(L3:L" . ($row - 1) . ")");
+            $sheet->getStyle("L{$row}")->getNumberFormat()->setFormatCode('#,##0 "FCFA"');
+        }
+        $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 10, 'name' => 'Arial', 'color' => ['argb' => 'FFFFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getRowDimension($row)->setRowHeight(18);
+
+        // ---- Figer + filtre -------------------------------------------------
+        $sheet->freezePane('A3');
+        $sheet->setAutoFilter("A2:{$lastCol}2");
+
+        // ---- Stream ---------------------------------------------------------
+        $suffix   = $full ? 'complet_' : '';
+        $filename = "export_equipements_{$suffix}" . now()->format('Y-m-d_His') . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control'       => 'max-age=0',
+        ]);
     }
 
     // ==================== DEBUG CSV ====================
@@ -1182,7 +1091,7 @@ public function index(Request $request)
                     'taille' => filesize($path),
                     'colonnes' => count($result['headers']),
                     'lignes_donnees' => count($result['rows']),
-                    'separateur' => isset($result['separator']) ? 
+                    'separateur' => isset($result['separator']) ?
                         ($result['separator'] === "\t" ? 'TABULATION' : $result['separator']) : 'inconnu'
                 ],
                 'en_tetes' => $result['headers'],
@@ -1191,216 +1100,31 @@ public function index(Request $request)
             ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
             
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 
-    // ==================== VERSION SIMPLE POUR TEST ====================
     public function importTest(Request $request)
     {
-        $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:10240',
-        ]);
+        $request->validate(['csv_file' => 'required|file|mimes:csv,txt|max:10240']);
         
         $file = $request->file('csv_file');
         $path = $file->getRealPath();
-        
-        // Ouvrir le fichier et lire les 5 premières lignes
         $handle = fopen($path, 'r');
         
-        if (!$handle) {
-            return response()->json(['error' => 'Impossible d\'ouvrir le fichier'], 400);
-        }
+        if (!$handle) return response()->json(['error' => 'Impossible d\'ouvrir le fichier'], 400);
         
         $lines = [];
         for ($i = 0; $i < 5; $i++) {
             $line = fgets($handle);
-            if ($line !== false) {
-                $lines[] = $line;
-            }
+            if ($line !== false) $lines[] = $line;
         }
         fclose($handle);
         
-        // Afficher ce qui est lu
         return response()->json([
             'raw_lines' => $lines,
             'line_count' => count($lines),
             'first_100_chars' => substr(file_get_contents($path), 0, 100)
         ]);
     }
-
-// ==================== EXPORT COMPLET CSV ====================
-public function exportFull(Request $request)
-{
-    $filename = 'export_equipements_complet_' . date('Y-m-d_H-i-s') . '.csv';
-    
-    $headers = [
-        'Content-Type' => 'text/csv; charset=UTF-8',
-        'Content-Disposition' => "attachment; filename=\"$filename\"",
-        'Cache-Control' => 'no-cache, no-store, must-revalidate',
-        'Pragma' => 'no-cache',
-        'Expires' => '0',
-    ];
-
-    $callback = function() use ($request) {
-        $file = fopen('php://output', 'w');
-        
-        // BOM UTF-8
-        fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-        
-        // En-têtes COMPLETS pour export multi-feuilles
-        $headers = [
-            // Information de base
-            'ID', 'type', 'numero_serie', 'marque', 'modele',
-            'garantie', 'date_livraison', 'prix', 'reference_facture', 'etat', 'statut',
-            
-            // Information fournisseur et localisation
-            'fournisseur_id', 'fournisseur_nom', 'localisation', 'departement',
-            
-            // Information réseau
-            'adresse_mac', 'adresse_ip', 'numero_codification',
-            
-            // Dates
-            'date_mise_service', 'created_at', 'updated_at',
-            
-            // Information catégorie
-            'categorie', 'sous_categorie', 'contrat_maintenance',
-            
-            // Information spécifique
-            'processeur', 'ram_capacite', 'stockage_capacite', 'type_stockage',
-            'systeme_exploitation', 'editeur', 'version', 'type_licence',
-            'nombre_licences', 'date_expiration_licence', 'reference_licence',
-            
-            // Réseau
-            'type_switch', 'ports_ethernet', 'ports_poe', 'vitesse_ports',
-            'type_routeur', 'nombre_ports_routeur', 'type_wifi',
-            
-            // Vidéosurveillance
-            'type_camera', 'resolution_camera', 'type_nvr_dvr', 'canaux_supportes',
-            
-            // Autres
-            'type_modem', 'vitesse_max_modem', 'numero_unique_badge',
-            'type_alarme', 'taille_ecran', 'type_imprimante', 'vitesse_impression',
-            
-            // Notes
-            'notes', 'poste_staff'
-        ];
-        
-        fputcsv($file, $headers, "\t");
-        
-        // Données complètes
-        $query = Equipment::with(['fournisseur', 'detail']);
-        
-        // Filtres
-        if ($request->has('type') && $request->type) {
-            $query->where('type', $request->type);
-        }
-        
-        if ($request->has('etat') && $request->etat) {
-            $query->where('etat', $request->etat);
-        }
-        
-        if ($request->has('localisation') && $request->localisation) {
-            $query->where('localisation', 'like', '%' . $request->localisation . '%');
-        }
-        
-        $equipments = $query->orderBy('created_at', 'desc')->get();
-        
-        foreach ($equipments as $equipment) {
-            // Récupérer les données spécifiques
-            $specificData = [];
-            if ($equipment->detail && $equipment->detail->specific_data) {
-                $specificData = json_decode($equipment->detail->specific_data, true);
-            }
-            
-            $row = [
-                // Information de base
-                $equipment->id,
-                $equipment->type,
-                $equipment->numero_serie,
-                $equipment->marque,
-                $equipment->modele,
-                $equipment->garantie,
-                $equipment->date_livraison ? $equipment->date_livraison->format('Y-m-d') : '',
-                $equipment->prix,
-                $equipment->reference_facture,
-                $equipment->etat,
-                $equipment->statut,
-                
-                // Information fournisseur et localisation
-                $equipment->fournisseur_id,
-                $equipment->fournisseur ? $equipment->fournisseur->nom : '',
-                $equipment->localisation,
-                $equipment->departement,
-                
-                // Information réseau
-                $equipment->adresse_mac,
-                $equipment->adresse_ip,
-                $equipment->numero_codification,
-                
-                // Dates
-                $equipment->date_mise_service ? $equipment->date_mise_service->format('Y-m-d') : '',
-                $equipment->created_at ? $equipment->created_at->format('Y-m-d H:i:s') : '',
-                $equipment->updated_at ? $equipment->updated_at->format('Y-m-d H:i:s') : '',
-                
-                // Information catégorie
-                $equipment->detail ? $equipment->detail->categorie : '',
-                $equipment->detail ? $equipment->detail->sous_categorie : '',
-                $equipment->detail ? ($equipment->detail->contrat_maintenance ? '1' : '0') : '0',
-                
-                // Information spécifique (extraite de specific_data)
-                $specificData['processeur'] ?? '',
-                $specificData['ram_capacite'] ?? '',
-                $specificData['stockage_capacite'] ?? '',
-                $specificData['type_stockage'] ?? '',
-                $specificData['systeme_exploitation'] ?? '',
-                $specificData['editeur'] ?? '',
-                $specificData['version'] ?? '',
-                $specificData['type_licence'] ?? '',
-                $specificData['nombre_licences'] ?? '',
-                $specificData['date_expiration_licence'] ?? '',
-                $specificData['reference_licence'] ?? '',
-                
-                // Réseau
-                $specificData['type_switch'] ?? '',
-                $specificData['ports_ethernet'] ?? '',
-                $specificData['ports_poe'] ?? '',
-                $specificData['vitesse_ports'] ?? '',
-                $specificData['type_routeur'] ?? '',
-                $specificData['nombre_ports_routeur'] ?? '',
-                $specificData['type_wifi'] ?? '',
-                
-                // Vidéosurveillance
-                $specificData['type_camera'] ?? '',
-                $specificData['resolution_camera'] ?? '',
-                $specificData['type_nvr_dvr'] ?? '',
-                $specificData['canaux_supportes'] ?? '',
-                
-                // Autres
-                $specificData['type_modem'] ?? '',
-                $specificData['vitesse_max_modem'] ?? '',
-                $specificData['numero_unique_badge'] ?? '',
-                $specificData['type_alarme'] ?? '',
-                $specificData['taille_ecran'] ?? '',
-                $specificData['type_imprimante'] ?? '',
-                $specificData['vitesse_impression'] ?? '',
-                
-                // Notes
-                $equipment->notes,
-                $equipment->poste_staff
-            ];
-            
-            fputcsv($file, $row, "\t");
-        }
-        
-        fclose($file);
-    };
-
-    return response()->stream($callback, 200, $headers);
-}
-
-
 }
