@@ -10,6 +10,12 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Font;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class ParcController extends Controller
 {
@@ -250,38 +256,6 @@ public function store(Request $request)
     /**
      * Update the specified resource in storage.
      */
-   /*  public function update(Request $request, string $id)
-    {
-        $parc = Parc::findOrFail($id);
-        
-        $request->validate([
-            'numero_serie' => 'required|exists:equipment,numero_serie',
-            'utilisateur_id' => 'required|exists:users,id',
-            'departement' => 'required|string|max:100',
-            'poste_affecte' => 'required|string|max:100',
-            'date_affectation' => 'required|date',
-            'date_retour_prevue' => 'nullable|date|after_or_equal:date_affectation',
-            'statut_usage' => 'required|in:en_service,reserve,maintenance',
-            'notes_affectation' => 'nullable|string|max:500'
-        ]);
-        
-        // Si le numéro de série change, mettre à jour le statut de l'ancien équipement
-        if ($parc->numero_serie != $request->numero_serie) {
-            Equipment::where('numero_serie', $parc->numero_serie)
-                ->update(['statut' => 'stock']);
-        }
-        
-        // Mettre à jour l'affectation
-        $parc->update($request->all());
-        
-        // Mettre à jour le statut du nouvel équipement
-        Equipment::where('numero_serie', $request->numero_serie)
-            ->update(['statut' => 'parc']);
-        
-        return redirect()->route('parc.index')
-            ->with('success', 'Affectation mise à jour avec succès.');
-    } */
-
 public function update(Request $request, string $id)
 {
     $parc = Parc::findOrFail($id);
@@ -336,9 +310,6 @@ public function update(Request $request, string $id)
     /**
      * Télécharger le template CSV
      */
-  /**
- * Télécharger le template CSV
- */
 public function downloadTemplate()
 {
     $filename = 'template_import_parc_' . date('Y-m-d') . '.csv';
@@ -373,10 +344,8 @@ public function downloadTemplate()
             'utilisateur_id', 'departement', 'poste_affecte', 'date_affectation', 'notes_affectation'
         ];
         
-        // Écrire les en-têtes avec point-virgule comme séparateur
         fputcsv($file, $headers, ';');
         
-        // Ajouter 3 lignes d'exemple
         $examples = [
             [
                 'Informatique', 'Ordinateur portable', 'Professionnel', 'SN2024001', 'DELL', 'Latitude 5420',
@@ -406,20 +375,6 @@ public function downloadTemplate()
                 '', '', '', '',
                 '4', 'Infrastructure', 'Admin Réseau', '2024-01-25', 'Installation réseau'
             ],
-            [
-                'Logiciel', 'Suite bureautique', 'Standard', 'LIC-MSOFF2024', 'Microsoft', 'Office 365',
-                '1 an', '2024-01-01', '500000', 'FACT-2024-003', 'neuf',
-                '1', 'Tous sites', '', 'non',
-                '', '', '', '',
-                '', '', '', '',
-                '', '', '', '',
-                '', '', '', '',
-                '', '', '', '',
-                '', '', '', '',
-                'Microsoft', '365', 'Abonnement', '50',
-                '2025-01-01', 'LIC-MS-OFF365-2024',
-                '5', 'Direction', 'Directeur', '2024-01-05', 'Licence direction'
-            ]
         ];
         
         foreach ($examples as $example) {
@@ -450,7 +405,6 @@ public function downloadTemplate()
                 'taille' => filesize($path) . ' octets'
             ]);
             
-            // 1. Lire le fichier COMPLET
             $content = file_get_contents($path);
             
             if (empty(trim($content))) {
@@ -458,10 +412,7 @@ public function downloadTemplate()
                     ->with('error', 'Le fichier CSV est vide');
             }
             
-            // 2. DÉTECTER ET CORRIGER LE FORMAT - FORCER LE TRAITEMENT TABULATION
             $content = $this->fixCsvFormat($content);
-            
-            // 3. UTILISER LA MÉTHODE FIABLE avec fgetcsv()
             $data = $this->readCsvFileReliably($path);
             
             if (empty($data['headers']) || empty($data['rows'])) {
@@ -475,7 +426,6 @@ public function downloadTemplate()
                 'lignes' => count($data['rows'])
             ]);
             
-            // 4. IMPORTER LES DONNÉES DIRECTEMENT DANS LE PARC
             return $this->processImportToParc($data['headers'], $data['rows']);
             
         } catch (\Exception $e) {
@@ -503,16 +453,14 @@ public function downloadTemplate()
         
         try {
             foreach ($rows as $index => $row) {
-                $lineNumber = $index + 2; // +2 pour en-têtes + index 0-based
+                $lineNumber = $index + 2;
                 
-                // Créer tableau associatif
                 $data = [];
                 foreach ($headers as $i => $header) {
                     $value = isset($row[$i]) ? $row[$i] : '';
                     $data[$header] = $value;
                 }
                 
-                // DEBUG: Première ligne
                 if ($index === 0) {
                     Log::info('Traitement ligne 1 vers Parc:', [
                         'type' => $data['type'] ?? 'N/A',
@@ -521,7 +469,6 @@ public function downloadTemplate()
                     ]);
                 }
                 
-                // VALIDATION MINIMALE
                 if (empty($data['type'])) {
                     $errors[] = "Ligne $lineNumber: Type manquant";
                     continue;
@@ -532,13 +479,11 @@ public function downloadTemplate()
                     continue;
                 }
                 
-                // Vérifier unicité
                 if (Equipment::where('numero_serie', $data['numero_serie'])->exists()) {
                     $errors[] = "Ligne $lineNumber: Numéro de série '{$data['numero_serie']}' existe déjà";
                     continue;
                 }
                 
-                // Fournisseur
                 $fournisseurId = null;
                 if (!empty($data['fournisseur_id'])) {
                     $supplierId = intval($data['fournisseur_id']);
@@ -547,7 +492,6 @@ public function downloadTemplate()
                     }
                 }
                 
-                // Utilisateur pour le parc
                 $utilisateurId = null;
                 $utilisateurInfo = null;
                 if (!empty($data['utilisateur_id'])) {
@@ -555,14 +499,10 @@ public function downloadTemplate()
                     $user = User::find($userId);
                     if ($user) {
                         $utilisateurId = $userId;
-                        $utilisateurInfo = [
-                            'name' => $user->name,
-                            'email' => $user->email
-                        ];
+                        $utilisateurInfo = ['name' => $user->name, 'email' => $user->email];
                     }
                 }
                 
-                // Dates
                 $dateLivraison = null;
                 if (!empty($data['date_livraison'])) {
                     $dateLivraison = $this->parseDate($data['date_livraison']);
@@ -573,13 +513,11 @@ public function downloadTemplate()
                     $dateAffectation = $this->parseDate($data['date_affectation']);
                 }
                 
-                // Prix
                 $prix = 0;
                 if (!empty($data['prix'])) {
                     $prix = floatval(str_replace([',', ' '], ['.', ''], $data['prix']));
                 }
                 
-                // État
                 $etat = 'neuf';
                 if (!empty($data['etat'])) {
                     $etatsValides = ['neuf', 'bon', 'moyen', 'mauvais'];
@@ -589,11 +527,9 @@ public function downloadTemplate()
                     }
                 }
                 
-                // Contrat maintenance
                 $contratMaintenance = !empty($data['contrat_maintenance']) && 
                     in_array(strtolower($data['contrat_maintenance']), ['1', 'oui', 'yes', 'true']);
                 
-                // ========== CRÉATION EQUIPEMENT (STATUT PARC DIRECTEMENT) ==========
                 $equipmentData = [
                     'type' => $this->normalizeType($data['type']),
                     'numero_serie' => $data['numero_serie'],
@@ -604,7 +540,7 @@ public function downloadTemplate()
                     'prix' => $prix,
                     'reference_facture' => $data['reference_facture'] ?? null,
                     'etat' => $etat,
-                    'statut' => 'parc', // DIRECTEMENT EN PARC
+                    'statut' => 'parc',
                     'fournisseur_id' => $fournisseurId,
                     'localisation' => $data['localisation'] ?? 'Non spécifié',
                     'adresse_mac' => $data['adresse_mac'] ?? null,
@@ -617,7 +553,6 @@ public function downloadTemplate()
                     'updated_at' => now(),
                 ];
                 
-                // Champs optionnels
                 $optionalFields = ['numero_codification'];
                 foreach ($optionalFields as $field) {
                     if (isset($data[$field]) && $data[$field] !== '') {
@@ -627,7 +562,6 @@ public function downloadTemplate()
                 
                 $equipment = Equipment::create($equipmentData);
                 
-                // ========== CRÉATION DETAILS ==========
                 $detailsData = [
                     'equipment_id' => $equipment->id,
                     'categorie' => $data['categorie'] ?? null,
@@ -635,13 +569,11 @@ public function downloadTemplate()
                     'contrat_maintenance' => $contratMaintenance,
                 ];
                 
-                // Données spécifiques
                 $specificData = $this->collectSpecificData($data, $headers);
                 $detailsData['specific_data'] = !empty($specificData) ? json_encode($specificData, JSON_UNESCAPED_UNICODE) : null;
                 
                 EquipmentDetail::create($detailsData);
                 
-                // ========== CRÉATION ENREGISTREMENT PARC ==========
                 $parcData = [
                     'numero_serie' => $equipment->numero_serie,
                     'equipment_id' => $equipment->id,
@@ -655,7 +587,6 @@ public function downloadTemplate()
                     'updated_at' => now(),
                 ];
                 
-                // Ajouter les infos utilisateur si disponible
                 if ($utilisateurInfo) {
                     $parcData['utilisateur_nom'] = $utilisateurInfo['name'];
                     $parcData['utilisateur_email'] = $utilisateurInfo['email'];
@@ -665,7 +596,6 @@ public function downloadTemplate()
                 
                 $imported++;
                 
-                // Log pour suivi
                 Log::info('Équipement importé vers parc', [
                     'id' => $equipment->id,
                     'numero_serie' => $equipment->numero_serie,
@@ -682,7 +612,6 @@ public function downloadTemplate()
                 'skipped' => $skipped
             ]);
             
-            // Message final
             $message = "✅ Import terminé : $imported équipement(s) importé(s) directement dans le parc";
             if (count($errors) > 0) {
                 $message .= ", " . count($errors) . " erreur(s)";
@@ -709,19 +638,12 @@ public function downloadTemplate()
 
     // ==================== MÉTHODES DE SUPPORT PRIVÉES ====================
     
-    /**
-     * Corrige le format CSV problématique
-     */
     private function fixCsvFormat($content)
     {
-        // 1. Supprimer BOM UTF-8
         $content = preg_replace('/^\x{FEFF}/u', '', $content);
-        
-        // 2. Remplacer les retours chariot Windows (\r\n) par \n
         $content = str_replace("\r\n", "\n", $content);
         $content = str_replace("\r", "\n", $content);
         
-        // 3. Gérer les guillemets et retours à la ligne à l'intérieur
         $lines = [];
         $currentLine = '';
         $inQuotes = false;
@@ -741,12 +663,10 @@ public function downloadTemplate()
             }
         }
         
-        // Dernière ligne
         if ($currentLine !== '') {
             $lines[] = $currentLine;
         }
         
-        // Reconstruire avec tabulations propres
         $fixedLines = [];
         foreach ($lines as $line) {
             if (trim($line) !== '') {
@@ -757,93 +677,59 @@ public function downloadTemplate()
         return implode("\n", $fixedLines);
     }
     
-    /**
-     * Lit le fichier CSV de manière fiable
-     */
     private function readCsvFileReliably($filePath)
     {
-        $result = [
-            'headers' => [],
-            'rows' => []
-        ];
-        
-        // Essayer plusieurs séparateurs
+        $result = ['headers' => [], 'rows' => []];
         $separators = ["\t", ";", ","];
         
         foreach ($separators as $separator) {
-            Log::info('Essai avec séparateur:', ['separator' => $separator === "\t" ? 'TAB' : $separator]);
-            
             $handle = fopen($filePath, 'r');
             if (!$handle) {
                 throw new \Exception('Impossible d\'ouvrir le fichier');
             }
             
-            // Lire les en-têtes
             $headers = fgetcsv($handle, 0, $separator);
             
             if ($headers === false || count($headers) < 3) {
                 fclose($handle);
-                Log::warning('Séparateur échoué', ['separator' => $separator]);
                 continue;
             }
             
-            // Nettoyer les en-têtes
             $headers = array_map(function($header) {
                 $header = trim($header, " \t\n\r\0\x0B\"'");
-                // Supprimer BOM si présent
                 $header = preg_replace('/^\x{FEFF}/u', '', $header);
                 return $header;
             }, $headers);
             
-            Log::info('En-têtes trouvés avec séparateur ' . ($separator === "\t" ? 'TAB' : $separator), $headers);
-            
-            // Lire les lignes
             $rows = [];
-            $lineNum = 1;
             
             while (($row = fgetcsv($handle, 0, $separator)) !== false) {
-                $lineNum++;
-                
-                // Ignorer les lignes vides
                 if ($row === null || (count($row) === 1 && trim($row[0]) === '')) {
                     continue;
                 }
                 
-                // Nettoyer la ligne
                 $row = array_map(function($value) {
                     return trim($value, " \t\n\r\0\x0B\"'");
                 }, $row);
                 
-                // Vérifier si la ligne est vide après nettoyage
                 $isEmpty = true;
                 foreach ($row as $value) {
-                    if ($value !== '') {
-                        $isEmpty = false;
-                        break;
-                    }
+                    if ($value !== '') { $isEmpty = false; break; }
                 }
                 
                 if (!$isEmpty) {
-                    // Ajuster la longueur
                     if (count($row) < count($headers)) {
                         $row = array_pad($row, count($headers), '');
                     } elseif (count($row) > count($headers)) {
                         $row = array_slice($row, 0, count($headers));
                     }
-                    
                     $rows[] = $row;
                 }
             }
             
             fclose($handle);
             
-            // Vérifier si on a des données
             if (count($rows) > 0) {
-                Log::info('Séparateur validé!', [
-                    'separator' => $separator === "\t" ? 'TAB' : $separator,
-                    'lignes' => count($rows)
-                ]);
-                
                 $result['headers'] = $headers;
                 $result['rows'] = $rows;
                 $result['separator'] = $separator;
@@ -851,24 +737,18 @@ public function downloadTemplate()
             }
         }
         
-        // Si aucun séparateur ne fonctionne, essayer une méthode manuelle
         if (empty($result['headers'])) {
-            Log::warning('Aucun séparateur standard ne fonctionne, tentative manuelle...');
             $result = $this->readCsvManually($filePath);
         }
         
         return $result;
     }
     
-    /**
-     * Lecture manuelle du CSV (dernier recours)
-     */
     private function readCsvManually($filePath)
     {
         $content = file_get_contents($filePath);
         $content = $this->fixCsvFormat($content);
         
-        // Séparer les lignes
         $lines = explode("\n", $content);
         $lines = array_filter($lines, function($line) {
             return trim($line) !== '';
@@ -878,32 +758,21 @@ public function downloadTemplate()
             return ['headers' => [], 'rows' => []];
         }
         
-        // La première ligne est les en-têtes
         $firstLine = array_shift($lines);
-        
-        // DIVISER PAR TABULATION manuellement
         $headers = preg_split('/\t/', $firstLine, -1, PREG_SPLIT_NO_EMPTY);
-        
-        // Nettoyer les en-têtes
         $headers = array_map(function($header) {
             return trim($header, " \t\n\r\0\x0B\"'");
         }, $headers);
         
-        Log::info('Lecture manuelle - En-têtes:', $headers);
-        
-        // Lire les données
         $rows = [];
         foreach ($lines as $line) {
-            // Diviser par tabulation
             $row = preg_split('/\t/', $line, -1, PREG_SPLIT_NO_EMPTY);
             
             if (count($row) > 0) {
-                // Nettoyer
                 $row = array_map(function($value) {
                     return trim($value, " \t\n\r\0\x0B\"'");
                 }, $row);
                 
-                // Ajuster la longueur
                 if (count($row) < count($headers)) {
                     $row = array_pad($row, count($headers), '');
                 } elseif (count($row) > count($headers)) {
@@ -914,21 +783,13 @@ public function downloadTemplate()
             }
         }
         
-        return [
-            'headers' => $headers,
-            'rows' => $rows,
-            'separator' => "\t"
-        ];
+        return ['headers' => $headers, 'rows' => $rows, 'separator' => "\t"];
     }
     
-    /**
-     * Collecte les données spécifiques
-     */
     private function collectSpecificData($data, $headers)
     {
         $specificFields = [];
         
-        // Champs de base à exclure
         $excludeFields = [
             'type', 'categorie', 'sous_categorie', 'numero_serie',
             'marque', 'modele', 'garantie', 'date_livraison', 'prix',
@@ -950,16 +811,11 @@ public function downloadTemplate()
         return $specificFields;
     }
     
-    /**
-     * Parse une date
-     */
     private function parseDate($dateString)
     {
         if (empty($dateString)) return null;
         
         $dateString = trim($dateString);
-        
-        // Formats courants
         $formats = ['d/m/Y', 'Y-m-d', 'd-m-Y', 'Y/m/d', 'd.m.Y'];
         
         foreach ($formats as $format) {
@@ -969,7 +825,6 @@ public function downloadTemplate()
             }
         }
         
-        // strtotime
         $timestamp = strtotime($dateString);
         if ($timestamp !== false) {
             return date('Y-m-d', $timestamp);
@@ -978,9 +833,6 @@ public function downloadTemplate()
         return null;
     }
     
-    /**
-     * Normalise le type
-     */
     private function normalizeType($type)
     {
         $type = trim($type);
@@ -999,9 +851,6 @@ public function downloadTemplate()
         return $map[$lower] ?? ucfirst($type);
     }
 
-    /**
-     * Debug CSV
-     */
     public function debugCsv(Request $request)
     {
         if (!$request->hasFile('csv_file')) {
@@ -1037,89 +886,207 @@ public function downloadTemplate()
         }
     }
 
+    // ==================== EXPORT XLSX ====================
+
     /**
-     * Exporter les données du parc
+     * Exporter les données du parc en fichier Excel (.xlsx)
+     * Nécessite : composer require phpoffice/phpspreadsheet
+     *
+     * Paramètres GET optionnels : ?type=Informatique&etat=bon&statut_usage=actif
      */
     public function export(Request $request)
     {
-        $filename = 'export_parc_' . date('Y-m-d_H-i-s') . '.csv';
-        
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'Pragma' => 'no-cache',
-            'Expires' => '0',
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Parc Informatique');
+
+        // ---- Définition des colonnes [libellé, largeur] ----------------------
+        $columns = [
+            'A'  => ['ID',                    8],
+            'B'  => ['Type',                 14],
+            'C'  => ['Numéro de série',       22],
+            'D'  => ['Marque',               14],
+            'E'  => ['Modèle',               18],
+            'F'  => ['Catégorie',            16],
+            'G'  => ['Sous-catégorie',       18],
+            'H'  => ['État',                 12],
+            'I'  => ['Statut',               12],
+            'J'  => ['Prix (FCFA)',          16],
+            'K'  => ['Garantie',             14],
+            'L'  => ['Date livraison',       16],
+            'M'  => ['Fournisseur',          20],
+            'N'  => ['Adresse MAC',          18],
+            'O'  => ['Adresse IP',           16],
+            'P'  => ['Réf. facture',         18],
+            'Q'  => ['Localisation équip.',  20],
+            // --- Données parc ---
+            'R'  => ['Utilisateur (compte)', 22],
+            'S'  => ['Nom',                  16],
+            'T'  => ['Prénom',               16],
+            'U'  => ['Position',             16],
+            'V'  => ['Département',          18],
+            'W'  => ['Poste affecté',        18],
+            'X'  => ['Date affectation',     18],
+            'Y'  => ['Date retour prévue',   18],
+            'Z'  => ['Statut usage',         14],
+            'AA' => ['Raison affectation',   22],
+            'AB' => ['Détail raison',        30],
+            'AC' => ['Localisation parc',    20],
+            'AD' => ['Téléphone',            16],
+            'AE' => ['Email',                24],
+            'AF' => ['Affecté par',          20],
+            'AG' => ['N° bon affectation',   22],
+            'AH' => ['Notes affectation',    35],
+            'AI' => ['Date création',        18],
+            'AJ' => ['Dernière modif.',      18],
         ];
 
-        $callback = function() use ($request) {
-            $file = fopen('php://output', 'w');
-            
-            // BOM UTF-8
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
-            // En-têtes d'export
-            $headers = [
-                'ID', 'type', 'numero_serie', 'marque', 'modele',
-                'garantie', 'date_livraison', 'prix', 'etat', 'statut',
-                'fournisseur', 'localisation', 'adresse_mac',
-                'categorie', 'sous_categorie',
-                'departement', 'poste_staff', 'date_mise_service',
-                'utilisateur', 'date_affectation', 'statut_usage', 'notes_affectation',
-                'created_at', 'updated_at'
-            ];
-            
-            fputcsv($file, $headers, "\t");
-            
-            // Données
-            $query = Equipment::where('statut', 'parc')
-                ->with(['fournisseur', 'detail', 'parc.utilisateur']);
-            
-            if ($request->has('type') && $request->type) {
-                $query->where('type', $request->type);
-            }
-            
-            $equipments = $query->orderBy('created_at', 'desc')->get();
-            
-            foreach ($equipments as $equipment) {
-                // Récupérer l'utilisateur depuis le parc
-                $parcData = $equipment->parc;
-                $utilisateur = $parcData ? ($parcData->utilisateur ? $parcData->utilisateur->name : '') : '';
-                
-                $row = [
-                    $equipment->id,
-                    $equipment->type,
-                    $equipment->numero_serie,
-                    $equipment->marque,
-                    $equipment->modele,
-                    $equipment->garantie,
-                    $equipment->date_livraison ? $equipment->date_livraison->format('Y-m-d') : '',
-                    $equipment->prix,
-                    $equipment->etat,
-                    $equipment->statut,
-                    $equipment->fournisseur ? $equipment->fournisseur->nom : '',
-                    $equipment->localisation,
-                    $equipment->adresse_mac,
-                    $equipment->detail ? $equipment->detail->categorie : '',
-                    $equipment->detail ? $equipment->detail->sous_categorie : '',
-                    $equipment->departement,
-                    $equipment->poste_staff,
-                    $equipment->date_mise_service ? $equipment->date_mise_service->format('Y-m-d') : '',
-                    $utilisateur,
-                    $parcData ? ($parcData->date_affectation ? $parcData->date_affectation->format('Y-m-d') : '') : '',
-                    $parcData ? $parcData->statut_usage : '',
-                    $parcData ? $parcData->notes_affectation : '',
-                    $equipment->created_at ? $equipment->created_at->format('Y-m-d H:i:s') : '',
-                    $equipment->updated_at ? $equipment->updated_at->format('Y-m-d H:i:s') : '',
-                ];
-                
-                fputcsv($file, $row, "\t");
-            }
-            
-            fclose($file);
-        };
+        $lastCol  = array_key_last($columns);
+        $colKeys  = array_keys($columns);
 
-        return response()->stream($callback, 200, $headers);
+        // ---- Ligne 1 : titre -------------------------------------------------
+        $sheet->mergeCells("A1:{$lastCol}1");
+        $sheet->setCellValue('A1', 'PARC INFORMATIQUE — Export du ' . now()->format('d/m/Y H:i'));
+        $sheet->getStyle('A1')->applyFromArray([
+            'font'      => ['bold' => true, 'size' => 13, 'color' => ['argb' => 'FFFFFFFF'], 'name' => 'Arial'],
+            'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getRowDimension(1)->setRowHeight(28);
+
+        // ---- Ligne 2 : en-têtes ----------------------------------------------
+        foreach ($columns as $col => [$label, $width]) {
+            $sheet->setCellValue("{$col}2", $label);
+            $sheet->getColumnDimension($col)->setWidth($width);
+        }
+        $sheet->getStyle("A2:{$lastCol}2")->applyFromArray([
+            'font'      => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FFFFFFFF'], 'name' => 'Arial'],
+            'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+            'borders'   => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFFFFFFF']]],
+        ]);
+        $sheet->getRowDimension(2)->setRowHeight(22);
+
+        // ---- Requête ---------------------------------------------------------
+        $query = Equipment::where('statut', 'parc')
+            ->with([
+                'fournisseur',
+                'detail',
+                'categorie',
+                'parc.utilisateur',
+                'parc.affectePar',
+            ]);
+
+        if ($request->filled('type'))         $query->where('type', $request->type);
+        if ($request->filled('etat'))         $query->where('etat', $request->etat);
+        if ($request->filled('statut_usage'))
+            $query->whereHas('parc', fn($q) => $q->where('statut_usage', $request->statut_usage));
+
+        $equipments = $query->orderBy('created_at', 'desc')->get();
+
+        // ---- Données ---------------------------------------------------------
+        $row = 3;
+        foreach ($equipments as $eq) {
+            $parc = $eq->parc;
+            $util = $parc?->utilisateur;
+            $bg   = ($row % 2 === 0) ? 'FFEEF4FB' : 'FFFAFAFA';
+
+            $data = [
+                'A'  => $eq->id,
+                'B'  => $eq->type,
+                'C'  => $eq->numero_serie,
+                'D'  => $eq->marque,
+                'E'  => $eq->modele,
+                'F'  => $eq->detail?->categorie ?? $eq->categorie?->nom ?? '',
+                'G'  => $eq->detail?->sous_categorie ?? '',
+                'H'  => $eq->etat,
+                'I'  => $eq->statut,
+                'J'  => $eq->prix,
+                'K'  => $eq->garantie,
+                'L'  => $eq->date_livraison?->format('d/m/Y'),
+                'M'  => $eq->fournisseur?->nom,
+                'N'  => $eq->adresse_mac,
+                'O'  => $eq->adresse_ip,
+                'P'  => $eq->reference_facture,
+                'Q'  => $eq->localisation,
+                'R'  => $util?->name,
+                'S'  => $parc?->utilisateur_nom,
+                'T'  => $parc?->utilisateur_prenom,
+                'U'  => $parc?->position,
+                'V'  => $eq->departement,
+                'W'  => $parc?->poste_affecte ?? $eq->poste_staff,
+                'X'  => $parc?->date_affectation?->format('d/m/Y'),
+                'Y'  => $parc?->date_retour_prevue?->format('d/m/Y'),
+                'Z'  => $parc?->statut_usage,
+                'AA' => $parc?->affectation_reason,
+                'AB' => $parc?->affectation_reason_detail,
+                'AC' => $parc?->localisation,
+                'AD' => $parc?->telephone,
+                'AE' => $parc?->email,
+                'AF' => $parc?->affectePar?->name,
+                'AG' => $parc?->numero_bon_affectation,
+                'AH' => $parc?->notes_affectation,
+                'AI' => $eq->created_at?->format('d/m/Y H:i'),
+                'AJ' => ($parc?->derniere_modification ?? $eq->updated_at)?->format('d/m/Y H:i'),
+            ];
+
+            foreach ($data as $col => $value) {
+                $sheet->setCellValue("{$col}{$row}", $value ?? '');
+            }
+
+            $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
+                'font'      => ['size' => 9, 'name' => 'Arial'],
+                'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $bg]],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            ]);
+
+            // Format prix
+            $sheet->getStyle("J{$row}")->getNumberFormat()->setFormatCode('#,##0 "FCFA"');
+
+            $sheet->getRowDimension($row)->setRowHeight(16);
+            $row++;
+        }
+
+        // ---- Bordures sur toutes les données ---------------------------------
+        if ($row > 3) {
+            $sheet->getStyle("A2:{$lastCol}" . ($row - 1))->applyFromArray([
+                'borders' => [
+                    'allBorders' => ['borderStyle' => Border::BORDER_THIN,   'color' => ['argb' => 'FFBDD7EE']],
+                    'outline'    => ['borderStyle' => Border::BORDER_MEDIUM,  'color' => ['argb' => 'FF1F3864']],
+                ],
+            ]);
+        }
+
+        // ---- Ligne de résumé -------------------------------------------------
+        $total = count($equipments);
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->setCellValue("A{$row}", "Total : {$total} équipement(s)");
+        if ($row > 3) {
+            $sheet->setCellValue("J{$row}", "=SUM(J3:J" . ($row - 1) . ")");
+            $sheet->getStyle("J{$row}")->getNumberFormat()->setFormatCode('#,##0 "FCFA"');
+        }
+        $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 10, 'name' => 'Arial', 'color' => ['argb' => 'FFFFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getRowDimension($row)->setRowHeight(18);
+
+        // ---- Figer + filtre automatique --------------------------------------
+        $sheet->freezePane('A3');
+        $sheet->setAutoFilter("A2:{$lastCol}2");
+
+        // ---- Stream du fichier -----------------------------------------------
+        $filename = 'export_parc_' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control'       => 'max-age=0',
+        ]);
     }
 
     /**
@@ -1127,7 +1094,6 @@ public function downloadTemplate()
      */
     public function processImport(Request $request)
     {
-        // Rediriger vers la nouvelle méthode import()
         return $this->import($request);
     }
 }
