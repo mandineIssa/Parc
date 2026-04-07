@@ -109,6 +109,11 @@ class Parc extends Model
     {
         return $this->belongsTo(User::class, 'affecte_par');
     }
+
+    public function affectePar()
+{
+    return $this->belongsTo(User::class, 'affecte_par');
+}
     
     // Boot du modèle pour générer automatiquement certaines valeurs
     protected static function boot()
