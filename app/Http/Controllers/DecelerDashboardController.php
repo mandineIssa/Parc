@@ -23,7 +23,7 @@ class DecelerDashboardController extends Controller
             ->orderBy('date_entree', 'desc')
             ->paginate(20);
         
-        // Statistiques
+        // Statistiques - CORRECTION : utiliser la valeur résiduelle au lieu du prix
         $stats = [
             'total' => Stock::where('type_stock', 'deceler')
                 ->whereHas('equipment', function($query) {
@@ -34,34 +34,40 @@ class DecelerDashboardController extends Controller
                 ->whereHas('equipment', function($query) {
                     $query->where('type', 'informatique');
                 })
-                ->with(['equipment'])
+                ->with(['deceler']) // Charger la relation deceler
                 ->get()
                 ->sum(function($stock) {
-                    return $stock->equipment ? ($stock->equipment->prix ?? 0) * $stock->quantite : 0;
+                    // Utiliser la valeur résiduelle du deceler au lieu du prix de l'équipement
+                    return ($stock->deceler?->valeur_residuelle ?? 0) * $stock->quantite;
                 }),
             
             'recent_entries' => Stock::where('type_stock', 'deceler')
                 ->whereHas('equipment', function($query) {
                     $query->where('type', 'informatique');
                 })
+                ->with(['equipment', 'deceler'])
                 ->orderBy('date_entree', 'desc')
                 ->take(5)
                 ->get(),
         ];
         
         // Catégories d'équipements
-        $categorie_ids = Equipment::where('type', 'informatique')
-            ->select('categorie_id')
-            ->distinct()
-            ->pluck('categorie_id');
-            
         $categoryStats = [];
-        foreach ($categorie_ids as $category) {
-            $categoryStats[$category] = Stock::where('type_stock', 'deceler')
-                ->whereHas('equipment', function($query) use ($category) {
-                    $query->where('type', 'informatique')
-                          ->where('categorie_id', $category);
-                })->count();
+        $categories = Equipment::where('type', 'informatique')
+            ->select('categorie_id')
+            ->with('categorie')
+            ->distinct()
+            ->get();
+            
+        foreach ($categories as $equipment) {
+            if ($equipment->categorie) {
+                $categoryName = $equipment->categorie->nom;
+                $categoryStats[$categoryName] = Stock::where('type_stock', 'deceler')
+                    ->whereHas('equipment', function($query) use ($equipment) {
+                        $query->where('type', 'informatique')
+                              ->where('categorie_id', $equipment->categorie_id);
+                    })->count();
+            }
         }
         
         return view('dashboard.deceler-informatique', compact('stocks', 'stats', 'categoryStats'));
@@ -79,43 +85,43 @@ class DecelerDashboardController extends Controller
             });
         
         // Filtres
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('numero_serie', 'like', '%' . $search . '%')
+                  ->orWhereHas('equipment', function($eq) use ($search) {
+                      $eq->where('marque', 'like', '%' . $search . '%')
+                         ->orWhere('modele', 'like', '%' . $search . '%')
+                         ->orWhere('nom', 'like', '%' . $search . '%');
+                  })
+                  ->orWhereHas('deceler', function($dec) use ($search) {
+                      $dec->where('diagnostic', 'like', '%' . $search . '%')
+                          ->orWhere('raison_retour', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+        
         if ($request->filled('etat')) {
-            $query->where('etat', $request->etat);
-        }
-        
-        if ($request->filled('categorie_id')) {
-            $query->whereHas('equipment', function($q) use ($request) {
-                $q->where('categorie_id', $request->categorie_id);
+            $query->whereHas('deceler', function($q) use ($request) {
+                $q->where('etat_retour', $request->etat);
             });
         }
         
-        if ($request->filled('marque')) {
+        if ($request->filled('categorie')) {
             $query->whereHas('equipment', function($q) use ($request) {
-                $q->where('marque', 'like', '%' . $request->marque . '%');
+                $q->whereHas('categorie', function($cat) use ($request) {
+                    $cat->where('nom', $request->categorie);
+                });
             });
         }
         
-        if ($request->filled('localisation')) {
-            $query->where('localisation_physique', 'like', '%' . $request->localisation . '%');
+        if ($request->filled('origine')) {
+            $query->whereHas('deceler', function($q) use ($request) {
+                $q->where('origine', $request->origine);
+            });
         }
         
-        if ($request->filled('date_from')) {
-            $query->where('date_entree', '>=', $request->date_from);
-        }
-        
-        if ($request->filled('date_to')) {
-            $query->where('date_entree', '<=', $request->date_to);
-        }
-        
-        if ($request->filled('en_stock')) {
-            if ($request->en_stock == 'oui') {
-                $query->whereNull('date_sortie');
-            } else {
-                $query->whereNotNull('date_sortie');
-            }
-        }
-        
-        $stocks = $query->orderBy('date_entree', 'desc')->paginate(20);
+        $stocks = $query->orderBy('date_entree', 'desc')->paginate(20)->appends($request->all());
         
         // Récupérer les statistiques
         $stats = [
@@ -128,34 +134,39 @@ class DecelerDashboardController extends Controller
                 ->whereHas('equipment', function($query) {
                     $query->where('type', 'informatique');
                 })
-                ->with(['equipment'])
+                ->with(['deceler'])
                 ->get()
                 ->sum(function($stock) {
-                    return $stock->equipment ? ($stock->equipment->prix ?? 0) * $stock->quantite : 0;
+                    return ($stock->deceler?->valeur_residuelle ?? 0) * $stock->quantite;
                 }),
             
             'recent_entries' => Stock::where('type_stock', 'deceler')
                 ->whereHas('equipment', function($query) {
                     $query->where('type', 'informatique');
                 })
+                ->with(['equipment', 'deceler'])
                 ->orderBy('date_entree', 'desc')
                 ->take(5)
                 ->get(),
         ];
         
         // Récupérer les catégories
-        $categorie_ids = Equipment::where('type', 'informatique')
-            ->select('categorie_id')
-            ->distinct()
-            ->pluck('categorie_id');
-            
         $categoryStats = [];
-        foreach ($categorie_ids as $category) {
-            $categoryStats[$category] = Stock::where('type_stock', 'deceler')
-                ->whereHas('equipment', function($query) use ($category) {
-                    $query->where('type', 'informatique')
-                          ->where('categorie_id', $category);
-                })->count();
+        $categories = Equipment::where('type', 'informatique')
+            ->select('categorie_id')
+            ->with('categorie')
+            ->distinct()
+            ->get();
+            
+        foreach ($categories as $equipment) {
+            if ($equipment->categorie) {
+                $categoryName = $equipment->categorie->nom;
+                $categoryStats[$categoryName] = Stock::where('type_stock', 'deceler')
+                    ->whereHas('equipment', function($query) use ($equipment) {
+                        $query->where('type', 'informatique')
+                              ->where('categorie_id', $equipment->categorie_id);
+                    })->count();
+            }
         }
         
         return view('dashboard.deceler-informatique', compact('stocks', 'stats', 'categoryStats'));
@@ -166,7 +177,7 @@ class DecelerDashboardController extends Controller
      */
     public function export(Request $request)
     {
-        $stocks = Stock::with(['equipment', 'deceler'])
+        $stocks = Stock::with(['equipment', 'deceler', 'equipment.categorie', 'equipment.fournisseur'])
             ->where('type_stock', 'deceler')
             ->whereHas('equipment', function($query) {
                 $query->where('type', 'informatique');
@@ -187,9 +198,10 @@ class DecelerDashboardController extends Controller
             fputcsv($file, [
                 'N° Série',
                 'Type',
+                'Catégorie',
                 'Marque',
                 'Modèle',
-                'categorie_id',
+                'Fournisseur',
                 'État stock',
                 'Localisation',
                 'Quantité',
@@ -201,9 +213,9 @@ class DecelerDashboardController extends Controller
                 'Raison retour',
                 'Diagnostic',
                 'État retour',
-                'Valeur résiduelle',
+                'Valeur résiduelle (FCFA)',
                 'Observations retour',
-                'Valeur',
+                'Prix d\'achat (FCFA)',
                 'Observations stock'
             ]);
             
@@ -211,9 +223,10 @@ class DecelerDashboardController extends Controller
                 fputcsv($file, [
                     $stock->numero_serie,
                     $stock->equipment->type ?? '',
+                    $stock->equipment->categorie->nom ?? '',
                     $stock->equipment->marque ?? '',
                     $stock->equipment->modele ?? '',
-                    $stock->equipment->categorie_id ?? '',
+                    $stock->equipment->fournisseur->nom ?? '',
                     $stock->etat,
                     $stock->localisation_physique,
                     $stock->quantite,
@@ -243,7 +256,8 @@ class DecelerDashboardController extends Controller
      */
     public function show($id)
     {
-        $stock = Stock::with(['equipment', 'deceler'])->findOrFail($id);
+        $stock = Stock::with(['equipment', 'deceler', 'equipment.categorie', 'equipment.fournisseur'])
+            ->findOrFail($id);
         
         // Vérifier que c'est bien un stock deceler informatique
         if ($stock->type_stock !== 'deceler' || !$stock->equipment || $stock->equipment->type !== 'informatique') {

@@ -31,6 +31,12 @@ use App\Http\Controllers\AgencyImportController;
 use App\Http\Controllers\ChangeTicketController;
 use App\Http\Controllers\EodSuiviController;
 use App\Http\Controllers\ReaffectationController;
+use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\NetworkAddressController;
+use App\Http\Controllers\LicenceController;
+use App\Http\Controllers\ControlController;
+use App\Http\Controllers\ControlTaskController;
+use App\Http\Controllers\ControlTemplateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -900,6 +906,194 @@ Route::get('/dashboard', [DashboardsController::class, 'index'])->name('dashboar
 
 
 
+
+Route::middleware(['auth'])->group(function () {
+    // ==================== CHANGE MANAGEMENT ====================
+    
+    // Route principale qui redirige automatiquement selon le rôle
+    Route::get('/change', [ChangeTicketController::class, 'redirectToRolePage'])
+        ->name('change.index');
+    
+    // Route pour la sélection manuelle de rôle (si pas de rôle assigné)
+    Route::get('/change/role', [ChangeTicketController::class, 'selectRole'])
+        ->name('change.role');
+    Route::post('/change/role', [ChangeTicketController::class, 'setRole'])
+        ->name('change.role.set');
+    Route::post('/change/role/clear', [ChangeTicketController::class, 'clearRole'])
+        ->name('change.role.clear');
+    
+    // Dashboard (redirection)
+    Route::get('/change/dashboard', [ChangeTicketController::class, 'dashboard'])
+        ->name('change.dashboard');
+
+    // N+1 Routes
+    Route::prefix('change/n1')->name('change.n1.')->group(function () {
+        Route::get('/', [ChangeTicketController::class, 'n1Index'])->name('index');
+        Route::get('/create', [ChangeTicketController::class, 'n1Create'])->name('create');
+        Route::post('/', [ChangeTicketController::class, 'n1Store'])->name('store');
+        Route::get('/{ticket}', [ChangeTicketController::class, 'n1Edit'])->name('edit');
+        Route::put('/{ticket}', [ChangeTicketController::class, 'n1Update'])->name('update');
+        Route::post('/{ticket}/submit-n2', [ChangeTicketController::class, 'n1SubmitToN2'])->name('submit-n2');
+        Route::post('/{ticket}/submit-n3', [ChangeTicketController::class, 'n1SubmitToN3'])->name('submit-n3');
+        Route::delete('/{ticket}/file/{fileIndex}', [ChangeTicketController::class, 'deleteFile'])->name('delete-file');
+        Route::delete('/{ticket}/file/{fileIndex}/{type}', [ChangeTicketController::class, 'deleteFile'])->name('delete-file-type');
+    });
+
+    // N+2 Routes
+    Route::prefix('change/n2')->name('change.n2.')->group(function () {
+        Route::get('/', [ChangeTicketController::class, 'n2Index'])->name('index');
+        Route::get('/{ticket}', [ChangeTicketController::class, 'n2Edit'])->name('edit');
+        Route::put('/{ticket}', [ChangeTicketController::class, 'n2Update'])->name('update');
+        Route::post('/{ticket}/validate', [ChangeTicketController::class, 'n2Validate'])->name('validate');
+        Route::post('/{ticket}/reject', [ChangeTicketController::class, 'n2Reject'])->name('reject');
+    });
+
+    // N+3 Routes
+    Route::prefix('change/n3')->name('change.n3.')->group(function () {
+        Route::get('/', [ChangeTicketController::class, 'n3Index'])->name('index');
+        Route::get('/{ticket}', [ChangeTicketController::class, 'n3Edit'])->name('edit');
+        Route::post('/{ticket}/close', [ChangeTicketController::class, 'n3Close'])->name('close');
+    });
+
+    // File download
+    Route::get('/change/ticket/{ticketId}/file/{fileIndex}', [ChangeTicketController::class, 'downloadFile'])
+        ->name('change.file.download');
+    Route::get('/change/ticket/{ticketId}/file/{fileIndex}/{type}', [ChangeTicketController::class, 'downloadFile'])
+        ->name('change.file.download-type');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    // ==================== EOD Suivi ====================
+    
+    // N+1 Routes
+    Route::prefix('eod/n1')->name('eod.n1.')->group(function () {
+        Route::get('/', [EodSuiviController::class, 'n1Index'])->name('index');
+        Route::get('/create', [EodSuiviController::class, 'n1Create'])->name('create');
+        Route::post('/', [EodSuiviController::class, 'n1Store'])->name('store');
+        Route::get('/{fiche}', [EodSuiviController::class, 'n1Edit'])->name('edit');
+        Route::put('/{fiche}', [EodSuiviController::class, 'n1Update'])->name('update');
+        Route::post('/{fiche}/submit', [EodSuiviController::class, 'n1SubmitToN2'])->name('submit');
+    });
+
+    // N+2 Routes
+    Route::prefix('eod/n2')->name('eod.n2.')->group(function () {
+        Route::get('/', [EodSuiviController::class, 'n2Index'])->name('index');
+        Route::get('/{fiche}', [EodSuiviController::class, 'n2Edit'])->name('edit');
+        Route::post('/{fiche}/validate', [EodSuiviController::class, 'n2Validate'])->name('validate');
+        Route::post('/{fiche}/reject', [EodSuiviController::class, 'n2Reject'])->name('reject');
+        Route::get('/{fiche}/pdf', [EodSuiviController::class, 'generatePdf'])->name('pdf');
+    });
+
+    // N+3 Routes (NOUVEAU)
+    Route::prefix('eod/n3')->name('eod.n3.')->group(function () {
+        Route::get('/', [EodSuiviController::class, 'n3Index'])->name('index');
+        Route::get('/statistiques', [EodSuiviController::class, 'n3Statistiques'])->name('statistiques');
+        Route::get('/{fiche}', [EodSuiviController::class, 'n3Show'])->name('show');
+        Route::get('/export/{format}', [EodSuiviController::class, 'n3Export'])->name('export');
+    });
+});
+
+// routes/web_additions.php — Coller dans routes/web.php
+// use App\Http\Controllers\PasswordController;
+// use App\Http\Controllers\NetworkAddressController;
+// use App\Http\Controllers\LicenceController;
+
+Route::middleware(['auth'])->group(function () {
+       Route::prefix('passwords')->name('passwords.')->group(function () {
+        Route::get('/',                                   [PasswordController::class, 'index'])         ->name('index');
+        Route::get('/create',                             [PasswordController::class, 'create'])        ->name('create');
+        Route::post('/',                                  [PasswordController::class, 'store'])         ->name('store');
+        Route::get('/{password}',                         [PasswordController::class, 'show'])          ->name('show');
+        Route::get('/{password}/edit',                    [PasswordController::class, 'edit'])          ->name('edit');
+        Route::put('/{password}',                         [PasswordController::class, 'update'])        ->name('update');
+        Route::delete('/{password}',                      [PasswordController::class, 'destroy'])       ->name('destroy');
+        // OTP
+        Route::post('/{password}/otp/send',               [PasswordController::class, 'sendOtp'])       ->name('otp.send');
+        Route::post('/{password}/otp/verify',             [PasswordController::class, 'verifyOtp'])     ->name('otp.verify');
+        // Partages
+        Route::post('/{password}/share',                  [PasswordController::class, 'share'])         ->name('share');
+        Route::patch('/{password}/share/{share}',         [PasswordController::class, 'updateShare'])   ->name('share.update');
+        Route::delete('/{password}/share/{share}',        [PasswordController::class, 'revokeShare'])   ->name('share.revoke');
+        // Fichiers
+        Route::get('/{password}/fichier/{id}/download',   [PasswordController::class, 'downloadFichier'])->name('fichier.download');
+        Route::delete('/{password}/fichier/{id}',         [PasswordController::class, 'deleteFichier']) ->name('fichier.delete');
+    });
+    Route::prefix('network')->name('network.')->group(function () {
+        Route::get('/',               [NetworkAddressController::class, 'index'])  ->name('index');
+        Route::get('/create',         [NetworkAddressController::class, 'create']) ->name('create');
+        Route::post('/',              [NetworkAddressController::class, 'store'])  ->name('store');
+        Route::get('/{network}/edit', [NetworkAddressController::class, 'edit'])   ->name('edit');
+        Route::put('/{network}',      [NetworkAddressController::class, 'update']) ->name('update');
+        Route::delete('/{network}',   [NetworkAddressController::class, 'destroy'])->name('destroy');
+    });
+    Route::prefix('licences')->name('licences.')->group(function () {
+        Route::get('/',               [LicenceController::class, 'index'])  ->name('index');
+        Route::get('/create',         [LicenceController::class, 'create']) ->name('create');
+        Route::post('/',              [LicenceController::class, 'store'])  ->name('store');
+        Route::get('/{licence}/edit', [LicenceController::class, 'edit'])   ->name('edit');
+        Route::put('/{licence}',      [LicenceController::class, 'update']) ->name('update');
+        Route::delete('/{licence}',   [LicenceController::class, 'destroy'])->name('destroy');
+    });
+});
+
+
+// ── USE statements à ajouter en haut de web.php ───────────────────────────────
+// use App\Http\Controllers\PasswordController;
+// use App\Http\Controllers\NetworkAddressController;
+// use App\Http\Controllers\LicenceController;
+
+
+// =============================================
+// CONTRÔLES IT - À PLACER À LA FIN DU FICHIER web.php
+// =============================================
+
+
+
+Route::middleware(['auth'])->prefix('controls')->name('controls.')->group(function () {
+    
+    // Dashboard
+    Route::get('/dashboard', [ControlTaskController::class, 'dashboard'])->name('dashboard');
+
+        // =============================================
+    // ROUTES POUR LES TÂCHES
+    // =============================================
+    Route::prefix('tasks')->name('tasks.')->group(function () {
+        Route::get('/', [ControlTaskController::class, 'index'])->name('index');
+        Route::get('/{task}', [ControlTaskController::class, 'show'])->name('show');
+        Route::put('/{task}/status', [ControlTaskController::class, 'updateStatus'])->name('update-status');
+        Route::post('/{task}/validate', [ControlTaskController::class, 'validateTask'])->name('validate');
+        Route::post('/{task}/attachments', [ControlTaskController::class, 'uploadAttachment'])->name('upload-attachment');
+        Route::delete('/attachments/{attachment}', [ControlTaskController::class, 'deleteAttachment'])->name('delete-attachment');
+    });
+    
+    // =============================================
+    // ROUTES POUR LES CONTRÔLES
+    // =============================================
+    Route::get('/', [ControlController::class, 'index'])->name('index');
+    Route::get('/create', [ControlController::class, 'create'])->name('create');
+    Route::post('/', [ControlController::class, 'store'])->name('store');
+    Route::get('/{control}', [ControlController::class, 'show'])->name('show');
+    Route::get('/{control}/edit', [ControlController::class, 'edit'])->name('edit');
+    Route::put('/{control}', [ControlController::class, 'update'])->name('update');
+    Route::delete('/{control}', [ControlController::class, 'destroy'])->name('destroy');
+    Route::post('/{control}/generate-tasks', [ControlController::class, 'generateTasks'])->name('generate-tasks');
+    
+
+    
+    // =============================================
+    // ROUTES POUR LES TEMPLATES (Admin uniquement)
+    // =============================================
+    Route::prefix('templates')->name('templates.')->middleware('admin')->group(function () {
+        Route::get('/', [ControlTemplateController::class, 'index'])->name('index');
+        Route::get('/create', [ControlTemplateController::class, 'create'])->name('create');
+        Route::post('/', [ControlTemplateController::class, 'store'])->name('store');
+        Route::get('/{template}/edit', [ControlTemplateController::class, 'edit'])->name('edit');
+        Route::put('/{template}', [ControlTemplateController::class, 'update'])->name('update');
+        Route::delete('/{template}', [ControlTemplateController::class, 'destroy'])->name('destroy');
+        Route::get('/{template}/details', [ControlTemplateController::class, 'details'])->name('details');
+    });
+});
 
 if (app()->environment('local')) {
     

@@ -1,3 +1,4 @@
+{{-- resources/views/admin/users/create.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Créer un nouvel utilisateur')
@@ -41,20 +42,37 @@
                         @enderror
                     </div>
 
-                    <!-- Rôle -->
-                    <div>
-                        <label for="role" class="block font-medium text-gray-700">Rôle *</label>
-                        <select id="role" name="role" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                            <option value="">{{ __('Sélectionnez un rôle') }}</option>
-                            <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>Utilisateur</option>
-                            <option value="agent_it" {{ old('role') === 'agent_it' ? 'selected' : '' }}>Agent IT</option>
-                            @if(auth()->user()->isSuperAdmin())
-                                <option value="super_admin" {{ old('role') === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
-                            @endif
-                        </select>
-                        @error('role')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Rôle Principal -->
+                        <div>
+                            <label for="role" class="block font-medium text-gray-700">Rôle Principal *</label>
+                            <select id="role" name="role" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <option value="">{{ __('Sélectionnez un rôle') }}</option>
+                                <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>Utilisateur</option>
+                                <option value="agent_it" {{ old('role') === 'agent_it' ? 'selected' : '' }}>Agent IT</option>
+                                @if(auth()->user()->isSuperAdmin())
+                                    <option value="super_admin" {{ old('role') === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
+                                @endif
+                            </select>
+                            @error('role')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Rôle Change Management (NOUVEAU) -->
+                        <div>
+                            <label for="role_change" class="block font-medium text-gray-700">Rôle Change Management</label>
+                            <select id="role_change" name="role_change" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">{{ __('Aucun') }}</option>
+                                <option value="N1" {{ old('role_change') === 'N1' ? 'selected' : '' }}>N+1 - Demandeur</option>
+                                <option value="N2" {{ old('role_change') === 'N2' ? 'selected' : '' }}>N+2 - Technicien</option>
+                                <option value="N3" {{ old('role_change') === 'N3' ? 'selected' : '' }}>N+3 - Validateur</option>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">Rôle pour l'application Change Management</p>
+                            @error('role_change')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     <!-- Département -->

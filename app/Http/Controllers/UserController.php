@@ -1,43 +1,34 @@
 <?php
+// app/Http/Controllers/UserController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-
- /**
+    /**
      * Afficher les détails d'un utilisateur
      */
     public function show(User $user)
     {
-        // Vérifier si la relation equipment existe dans le modèle
         try {
-            // Charger les relations nécessaires (5 derniers équipements)
             $user->load(['equipment' => function ($query) {
                 $query->latest()->take(5);
             }]);
-
-            // Compter les équipements
             $user->loadCount('equipment');
         } catch (\Exception $e) {
-            // Si la relation n'existe pas, on continue sans charger les équipements
             $user->equipment_count = 0;
         }
 
-        // Si vous avez des tickets, chargez-les aussi
-        // try {
-        //     $user->loadCount('tickets');
-        // } catch (\Exception $e) {
-        //     $user->tickets_count = 0;
-        // }
-
         return view('admin.users.show', compact('user'));
     }
+
     /**
      * Afficher la liste des utilisateurs
      */
@@ -66,6 +57,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', Rule::in(['user', 'agent_it', 'super_admin'])],
+            'role_change' => ['nullable', Rule::in(['N1', 'N2', 'N3'])],
             'departement' => ['nullable', 'string', 'max:255'],
             'fonction' => ['nullable', 'string', 'max:255'],
         ]);
@@ -88,31 +80,54 @@ class UserController extends Controller
 
     /**
      * Mettre à jour un utilisateur
+     * CORRECTION IMPORTANTE ICI
      */
-    public function update(Request $request, User $user)
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'prenom' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role' => ['required', Rule::in(['user', 'agent_it', 'super_admin'])],
-            'departement' => ['nullable', 'string', 'max:255'],
-            'fonction' => ['nullable', 'string', 'max:255'],
+
+
+public function update(Request $request, User $user)
+{
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'prenom' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+        'role' => ['required', Rule::in(['user', 'agent_it', 'super_admin'])],
+        'role_change' => ['nullable', Rule::in(['N1', 'N2', 'N3'])],
+        'departement' => ['nullable', 'string', 'max:255'],
+        'fonction' => ['nullable', 'string', 'max:255'],
+    ]);
+
+    // Mise à jour du mot de passe si fourni
+    if ($request->filled('password')) {
+        $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+        $validated['password'] = Hash::make($request->password);
+    }
+
+    // SOLUTION 1: Mise à jour avec Query Builder (contourne les problèmes d'Elquent)
+    DB::table('users')
+        ->where('id', $user->id)
+        ->update([
+            'name' => $validated['name'],
+            'prenom' => $validated['prenom'],
+            'email' => $validated['email'],
+            'role' => $validated['role'],
+            'role_change' => $validated['role_change'] ?? null, // Force la mise à jour
+            'departement' => $validated['departement'] ?? null,
+            'fonction' => $validated['fonction'] ?? null,
+            'updated_at' => now(),
         ]);
 
-        // Mettre à jour le mot de passe uniquement s'il est fourni
-        if ($request->filled('password')) {
-            $request->validate([
-                'password' => ['required', 'string', 'min:8', 'confirmed'],
-            ]);
-            $validated['password'] = Hash::make($request->password);
-        }
+    // Vérification immédiate
+    $updated = DB::table('users')->where('id', $user->id)->first();
+    Log::info('Vérification après mise à jour:', [
+        'id' => $updated->id,
+        'role_change' => $updated->role_change
+    ]);
 
-        $user->update($validated);
-
-        return redirect()->route('users.index')
-            ->with('success', 'Utilisateur mis à jour avec succès.');
-    }
+    return redirect()->route('users.index')
+        ->with('success', 'Utilisateur mis à jour avec succès.');
+}
 
     /**
      * Supprimer un utilisateur
@@ -130,6 +145,4 @@ class UserController extends Controller
         return redirect()->route('users.index')
             ->with('success', 'Utilisateur supprimé avec succès.');
     }
-
-    
 }

@@ -20,7 +20,7 @@ const RoleConfig = {
         },
         agent_it: {
             name: 'Agent IT',
-            description: 'Gestion des équipements, affectations et maintenance',  // ← MIS À JOUR
+            description: 'Gestion des équipements, affectations et maintenance',
             color: 'warning',
             icon: 'fa-laptop-code'
         },
@@ -59,7 +59,7 @@ const RoleConfig = {
             canDeleteEquipment: true,
             canAssignEquipment: true,
             
-            // === AFFECTATIONS ===              // ← SECTION AJOUTÉE
+            // === AFFECTATIONS ===
             canManageAssignments: true,
             canManageAssignmentCRUD: true,
             canDeleteAssignment: true,
@@ -104,10 +104,10 @@ const RoleConfig = {
             canDeleteEquipment: true,
             canAssignEquipment: true,
             
-            // === AFFECTATIONS ===              // ← SECTION AJOUTÉE
-            canManageAssignments: true,          // ← Peut gérer les affectations
-            canManageAssignmentCRUD: true,       // ← CRUD complet sur affectations
-            canDeleteAssignment: true,           // ← Peut supprimer des affectations
+            // === AFFECTATIONS ===
+            canManageAssignments: true,
+            canManageAssignmentCRUD: true,
+            canDeleteAssignment: true,
             
             // === APPROBATIONS ===
             canApproveRequests: false,
@@ -149,10 +149,10 @@ const RoleConfig = {
             canDeleteEquipment: false,
             canAssignEquipment: false,
             
-            // === AFFECTATIONS ===              // ← SECTION AJOUTÉE
-            canManageAssignments: false,         // ← Pas de gestion
-            canManageAssignmentCRUD: false,      // ← Pas de CRUD
-            canDeleteAssignment: false,          // ← Pas de suppression
+            // === AFFECTATIONS ===
+            canManageAssignments: false,
+            canManageAssignmentCRUD: false,
+            canDeleteAssignment: false,
             
             // === APPROBATIONS ===
             canApproveRequests: false,
@@ -194,7 +194,9 @@ const RoleConfig = {
             '/categories', '/categories/*',
             '/suppliers', '/suppliers/*',
             '/maintenance', '/maintenance/*',
-            '/assignments', '/assignments/*',  // ← AJOUT
+            '/assignments', '/assignments/*',
+            '/change', '/change/*',
+            '/eod', '/eod/*',           // ← AJOUT
             '/parc', '/parc/*'
         ],
         
@@ -206,7 +208,9 @@ const RoleConfig = {
             '/equipment', '/equipment/*',
             '/approvals', '/approvals/*',
             '/maintenance', '/maintenance/*',
-            '/assignments', '/assignments/*',  // ← AJOUT : agent IT accède aux routes d'affectation
+            '/assignments', '/assignments/*',
+            '/change', '/change/*',
+            '/eod', '/eod/*',           // ← AJOUT
             '/parc', '/parc/*'
         ],
         
@@ -215,8 +219,9 @@ const RoleConfig = {
             '/profile',
             '/logout',
             '/equipment/my-equipment',
-            '/requests/my-requests'
-            // ← Pas de /assignments pour les utilisateurs normaux
+            '/requests/my-requests',
+            '/change', '/change/*',
+            '/eod', '/eod/*'            // ← AJOUT
         ]
     },
 
@@ -225,27 +230,33 @@ const RoleConfig = {
         super_admin: {
             user: ['create', 'read', 'update', 'delete'],
             equipment: ['create', 'read', 'update', 'delete', 'import', 'export'],
-            assignment: ['create', 'read', 'update', 'delete'],  // ← AJOUT
+            assignment: ['create', 'read', 'update', 'delete'],
             agency: ['create', 'read', 'update', 'delete'],
             category: ['create', 'read', 'update', 'delete'],
             supplier: ['create', 'read', 'update', 'delete'],
             maintenance: ['create', 'read', 'update', 'delete'],
             report: ['create', 'read', 'update', 'delete', 'export'],
+            change: ['create', 'read', 'update', 'delete'],
+            eod: ['create', 'read', 'update', 'delete'],    // ← AJOUT
             settings: ['create', 'read', 'update', 'delete']
         },
         
         agent_it: {
             equipment: ['create', 'read', 'update', 'delete', 'import', 'export'],
-            assignment: ['create', 'read', 'update', 'delete'],  // ← AJOUT : CRUD complet affectations
+            assignment: ['create', 'read', 'update', 'delete'],
             maintenance: ['create', 'read', 'update', 'delete'],
             report: ['read', 'export'],
+            change: ['create', 'read', 'update', 'delete'],
+            eod: ['create', 'read', 'update', 'delete'],    // ← AJOUT
             user: ['read']
         },
         
         user: {
             equipment: ['read'],
             profile: ['read', 'update'],
-            request: ['create', 'read']
+            request: ['create', 'read'],
+            change: ['create', 'read'],
+            eod: ['create', 'read']                         // ← AJOUT
             // ← Pas d'accès aux affectations pour les utilisateurs normaux
         }
     },
@@ -291,15 +302,15 @@ const RoleConfig = {
                 '.delete-button',
                 '.import-button',
                 '.export-button',
-                '.assignment-actions',              // ← AJOUT : masquer les actions affectation pour user
+                '.assignment-actions',
                 '[data-action="create"]',
                 '[data-action="edit"]',
                 '[data-action="delete"]',
                 '[data-action="import"]',
                 '[data-action="export"]',
-                '[data-entity="assignment"][data-action="create"]',   // ← AJOUT
-                '[data-entity="assignment"][data-action="edit"]',     // ← AJOUT
-                '[data-entity="assignment"][data-action="delete"]'    // ← AJOUT
+                '[data-entity="assignment"][data-action="create"]',
+                '[data-entity="assignment"][data-action="edit"]',
+                '[data-entity="assignment"][data-action="delete"]'
             ]
         },
         

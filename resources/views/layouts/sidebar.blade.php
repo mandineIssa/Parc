@@ -205,11 +205,293 @@
             </div>
         </div>
 
+        <hr class="my-4 border-gray-200">
+
+        {{-- EOD SUIVI --}}
+        <div class="mb-4">
+            <div class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-red-50 transition-all duration-200" data-toggle="eod">
+                <div class="flex items-center min-w-0">
+                    <svg class="w-5 h-5 mr-3 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="font-medium text-sm truncate">EOD Suivi</span>
+                </div>
+                <svg id="eod-arrow" class="w-4 h-4 flex-shrink-0 ml-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+            <div id="eod-menu" class="ml-8 mt-1 space-y-1 hidden">
+                @php
+                    $user = auth()->user();
+                    $hasChangeRole = $user && $user->role_change;
+                @endphp
+
+                @if($hasChangeRole)
+                    @if($user->role_change === 'N1')
+                        <a href="{{ route('eod.n1.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('eod.n1.*') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                            <span class="truncate">Mes fiches EOD</span>
+                        </a>
+                        <a href="{{ route('eod.n1.create') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('eod.n1.create') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                            <span class="truncate">Nouvelle fiche EOD</span>
+                        </a>
+                    @elseif($user->role_change === 'N2')
+                        <a href="{{ route('eod.n2.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('eod.n2.*') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                            <span class="truncate">Fiches à valider</span>
+                        </a>
+                    @elseif($user->role_change === 'N3')
+                        <a href="{{ route('eod.n3.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('eod.n3.*') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                            <span class="truncate">Supervision EOD</span>
+                        </a>
+                    @endif
+                @else
+                    <div class="px-4 py-2 text-xs text-gray-400 italic">
+                        Sélectionnez un rôle Change Management
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <hr class="my-4 border-gray-200">
+
+        
+<hr class="my-4 border-gray-200">
+
+{{-- INFRASTRUCTURE IT --}}
+<div class="mb-4">
+    <h3 class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Infrastructure IT</h3>
+
+    {{-- Mots de passe --}}
+    <div class="mb-1">
+        <div class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-red-50 transition-all duration-200" data-toggle="passwords">
+            <div class="flex items-center min-w-0">
+                <svg class="w-5 h-5 mr-3 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                </svg>
+                <span class="font-medium text-sm truncate">Mots de Passe IT</span>
+            </div>
+            <svg id="passwords-arrow" class="w-4 h-4 flex-shrink-0 ml-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </div>
+        <div id="passwords-menu" class="ml-8 mt-1 space-y-1 hidden">
+            <a href="{{ route('passwords.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('passwords.index') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                <span class="truncate">Tous les mots de passe</span>
+            </a>
+            <a href="{{ route('passwords.create') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('passwords.create') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                <span class="truncate">Nouvelle fiche</span>
+            </a>
+        </div>
+    </div>
+
+    {{-- Plan d'adressage --}}
+    <div class="mb-1">
+        <div class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-red-50 transition-all duration-200" data-toggle="network">
+            <div class="flex items-center min-w-0">
+                <svg class="w-5 h-5 mr-3 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+                </svg>
+                <span class="font-medium text-sm truncate">Plan d'Adressage</span>
+            </div>
+            <svg id="network-arrow" class="w-4 h-4 flex-shrink-0 ml-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </div>
+        <div id="network-menu" class="ml-8 mt-1 space-y-1 hidden">
+            <a href="{{ route('network.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('network.index') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                <span class="truncate">Vue d'ensemble</span>
+            </a>
+            <a href="{{ route('network.index', ['type' => 'plan_adressage']) }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request('type') === 'plan_adressage' ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                <span class="truncate">Plans VLAN</span>
+            </a>
+            <a href="{{ route('network.index', ['type' => 'branchement_local']) }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request('type') === 'branchement_local' ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                <span class="truncate">Branchements locaux</span>
+            </a>
+            <a href="{{ route('network.create') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('network.create') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                <span class="truncate">Ajouter une entrée</span>
+            </a>
+        </div>
+    </div>
+
+    {{-- Licences --}}
+    <div class="mb-1">
+        <div class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-red-50 transition-all duration-200" data-toggle="licences">
+            <div class="flex items-center min-w-0">
+                <svg class="w-5 h-5 mr-3 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                </svg>
+                <span class="font-medium text-sm truncate">Suivi des Licences</span>
+            </div>
+            <svg id="licences-arrow" class="w-4 h-4 flex-shrink-0 ml-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </div>
+        <div id="licences-menu" class="ml-8 mt-1 space-y-1 hidden">
+            <a href="{{ route('licences.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('licences.index') && !request('type') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                <span class="truncate">Toutes les licences</span>
+            </a>
+            @foreach(['Fortinet' => '🛡', 'FAI' => '🌐', 'Certificat' => '🔐', 'Office365' => '📧'] as $type => $icon)
+            <a href="{{ route('licences.index', ['type' => $type]) }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request('type') === $type ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                <span class="mr-2 text-xs">{{ $icon }}</span>
+                <span class="truncate">{{ $type }}</span>
+            </a>
+            @endforeach
+            <hr class="my-1 border-gray-200">
+            <a href="{{ route('licences.create') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('licences.create') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                <span class="truncate">Nouvelle licence</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+{{-- ═══════════════════════════════════════════════════════════════════════════
+     À AJOUTER dans le JS du sidebar (dans la fonction autoOpen)
+     ═══════════════════════════════════════════════════════════════════════════ --}}
+{{--
+    if (path.includes('passwords'))  autoOpen('passwords');
+    if (path.includes('network'))    autoOpen('network');
+    if (path.includes('licences'))   autoOpen('licences');
+--}}
+
+        {{-- CHANGE MANAGEMENT --}}
+        <div class="mb-4">
+            <div class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-red-50 transition-all duration-200" data-toggle="change">
+                <div class="flex items-center min-w-0">
+                    <svg class="w-5 h-5 mr-3 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span class="font-medium text-sm truncate">Change Management</span>
+                </div>
+                <svg id="change-arrow" class="w-4 h-4 flex-shrink-0 ml-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+            <div id="change-menu" class="ml-8 mt-1 space-y-1 hidden">
+                @php
+                    $user = auth()->user();
+                    $hasChangeRole = $user && $user->role_change;
+                @endphp
+
+                @if($hasChangeRole)
+                    @if($user->role_change === 'N1')
+                        <a href="{{ route('change.n1.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('change.n1.*') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                            <span class="truncate">N+1 - Mes formulaires</span>
+                        </a>
+                        <a href="{{ route('change.n1.create') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('change.n1.create') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                            <span class="truncate">Nouveau formulaire</span>
+                        </a>
+                    @elseif($user->role_change === 'N2')
+                        <a href="{{ route('change.n2.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('change.n2.*') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                            <span class="truncate">N+2 - Formulaires à traiter</span>
+                        </a>
+                    @elseif($user->role_change === 'N3')
+                        <a href="{{ route('change.n3.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('change.n3.*') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                            <span class="truncate">N+3 - Validation finale</span>
+                        </a>
+                    @endif
+                    
+                    <hr class="my-2 border-gray-200">
+                    
+                    <form method="POST" action="{{ route('change.role.clear') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm text-gray-600 w-full text-left">
+                            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                            <span class="truncate">Changer de rôle (session)</span>
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('change.role') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('change.role') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+                        <span class="truncate">Sélectionner un rôle</span>
+                    </a>
+                @endif
+                
+                <hr class="my-2 border-gray-200">
+                
+                <div class="px-4 py-2">
+                    <div class="text-xs text-gray-400">
+                        @if($hasChangeRole)
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                                  style="background: {{ $user->role_change === 'N1' ? 'rgba(59,130,246,0.1)' : ($user->role_change === 'N2' ? 'rgba(16,185,129,0.1)' : 'rgba(139,92,246,0.1)') }}; 
+                                         color: {{ $user->role_change === 'N1' ? '#3b82f6' : ($user->role_change === 'N2' ? '#10b981' : '#8b5cf6') }};">
+                                Rôle: {{ $user->role_change === 'N1' ? 'N+1' : ($user->role_change === 'N2' ? 'N+2' : 'N+3') }}
+                            </span>
+                            @if(session('change_role') && session('change_role') !== $user->role_change)
+                                <br>
+                                <span class="text-xs text-yellow-600 mt-1 inline-block">
+                                    Session: {{ session('change_role') }} (différent)
+                                </span>
+                            @endif
+                        @else
+                            <span class="text-gray-400">Aucun rôle Change Management</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
 
         <hr class="my-4 border-gray-200">
 
+{{-- CONTRÔLES IT --}}
+<div class="mb-4">
+    <div class="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer hover:bg-red-50 transition-all duration-200" data-toggle="controls">
+        <div class="flex items-center min-w-0">
+            <svg class="w-5 h-5 mr-3 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+            <span class="font-medium text-sm truncate">Contrôles IT</span>
+        </div>
+        <svg id="controls-arrow" class="w-4 h-4 flex-shrink-0 ml-2 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </div>
+    <div id="controls-menu" class="ml-8 mt-1 space-y-1 hidden">
+        <a href="{{ route('controls.dashboard') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('controls.dashboard') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+            <span class="truncate">Tableau de bord</span>
+        </a>
+        <a href="{{ route('controls.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('controls.index') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+            <span class="truncate">Tous les contrôles</span>
+        </a>
+        <a href="{{ route('controls.create') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('controls.create') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+            <span class="truncate">Nouveau contrôle</span>
+        </a>
+        <a href="{{ route('controls.tasks.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('controls.tasks.index') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+            <span class="truncate">Mes tâches</span>
+        </a>
+        @if(auth()->user() && auth()->user()->is_admin)
+        <hr class="my-2 border-gray-200">
+        <a href="{{ route('controls.templates.index') }}" class="flex items-center px-4 py-2 rounded hover:bg-red-50 transition-all duration-200 text-sm {{ request()->routeIs('controls.templates.*') ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+            <svg class="w-3 h-3 mr-2 flex-shrink-0" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>
+            <span class="truncate">Templates</span>
+        </a>
+        @endif
+    </div>
+</div>
+        <hr class="my-4 border-gray-200">
+
+
+        
         @auth
         <div class="mb-4">
             <a href="{{ route('dashboard') }}"
@@ -348,6 +630,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (path.includes('change') || path.includes('change/'))    autoOpen('change');
     if (path.includes('eod') || path.includes('eod/'))          autoOpen('eod');
 });
+    if (path.includes('passwords'))  autoOpen('passwords');
+    if (path.includes('network'))    autoOpen('network');
+    if (path.includes('licences'))   autoOpen('licences');
+    if (path.includes('controls')) autoOpen('controls');
 </script>
 
 <style>

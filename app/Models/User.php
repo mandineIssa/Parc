@@ -1,4 +1,5 @@
 <?php
+// app/Models/User.php
 
 namespace App\Models;
 
@@ -8,17 +9,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class User extends Authenticatable
 {
-    use HasFactory,Notifiable;
+    use HasFactory, Notifiable;
    
     protected $fillable = [
         'name',
-        'prenom',           // Ajouté
+        'prenom',
         'email',
         'password',
-        'role',             // Ajouté: 'user', 'agent_it', 'super_admin'
-        'departement',      // Ajouté
+        'role',              // Rôle principal (user, agent_it, super_admin)
+        'role_change',        // NOUVEAU: Rôle Change Management (N1, N2, N3, null)
+        'departement',
         'fonction',
-        'email_verified_at',         // Ajouté
+        'email_verified_at',
     ];
     
     protected $hidden = [
@@ -31,31 +33,41 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
     
-
-        /**
+    /**
      * Relation: Équipements associés à l'utilisateur
      */
     public function equipment()
     {
         return $this->hasMany(Equipment::class, 'user_id');
     }
-    // Méthodes helper pour vérifier les rôles
+
+    // ==================== RÔLES PRINCIPAUX ====================
+    
+    /**
+     * Vérifier si l'utilisateur est Super Admin
+     */
     public function isSuperAdmin()
     {
         return $this->role === 'super_admin';
     }
     
+    /**
+     * Vérifier si l'utilisateur est Agent IT
+     */
     public function isAgentIT()
     {
         return $this->role === 'agent_it' || $this->isSuperAdmin();
     }
 
+    /**
+     * Vérifier si l'utilisateur est un utilisateur standard
+     */
     public function isUser()
-{
-    return $this->role === 'user';
-}
+    {
+        return $this->role === 'user';
+    }
 
-        /**
+    /**
      * Vérifier si l'utilisateur peut gérer les utilisateurs
      */
     public function canManageUsers(): bool
@@ -63,10 +75,67 @@ class User extends Authenticatable
         return $this->isSuperAdmin();
     }
 
+    // ==================== RÔLES CHANGE MANAGEMENT ====================
     
-    
+    /**
+     * Vérifier si l'utilisateur a un rôle Change Management
+     */
+    public function hasChangeRole()
+    {
+        return !is_null($this->role_change);
+    }
 
-    // ... vos attributs existants ...
+    /**
+     * Vérifier si l'utilisateur est N+1
+     */
+    public function isN1()
+    {
+        return $this->role_change === 'N1';
+    }
+
+    /**
+     * Vérifier si l'utilisateur est N+2
+     */
+    public function isN2()
+    {
+        return $this->role_change === 'N2';
+    }
+
+    /**
+     * Vérifier si l'utilisateur est N+3
+     */
+    public function isN3()
+    {
+        return $this->role_change === 'N3';
+    }
+
+    /**
+     * Obtenir le libellé du rôle Change Management
+     */
+    public function getChangeRoleLabelAttribute()
+    {
+        return match($this->role_change) {
+            'N1' => 'N+1 - Demandeur',
+            'N2' => 'N+2 - Technicien',
+            'N3' => 'N+3 - Validateur',
+            default => 'Aucun rôle Change Management'
+        };
+    }
+
+    /**
+     * Obtenir la couleur du badge pour le rôle Change Management
+     */
+    public function getChangeRoleColorAttribute()
+    {
+        return match($this->role_change) {
+            'N1' => 'blue',
+            'N2' => 'green',
+            'N3' => 'purple',
+            default => 'gray'
+        };
+    }
+
+    // ==================== PERMISSIONS EXISTANTES ====================
 
     /**
      * Vérifier si l'utilisateur peut approuver une approbation
@@ -128,4 +197,31 @@ class User extends Authenticatable
         return false;
     }
 
+    // ==================== VALIDATION DES TÂCHES DE CONTRÔLE ====================
+    
+    /**
+     * Vérifier si l'utilisateur peut valider une tâche de contrôle
+     * 
+     * @param \App\Models\ControlTask $task
+     * @return bool
+     */
+    public function canValidateTask($task): bool
+    {
+        // Hiérarchie des rôles Change Management
+        $roleHierarchy = [
+            'N1' => 1,  // Contrôleur (exécutant)
+            'N2' => 2,  // Superviseur (validation)
+            'N3' => 3   // Direction (validation finale)
+        ];
+        
+        // Niveau du rôle requis pour la tâche
+        $taskRoleLevel = $roleHierarchy[$task->control->responsible_role] ?? 0;
+        
+        // Niveau du rôle de l'utilisateur
+        $userRoleLevel = $roleHierarchy[$this->role_change] ?? 0;
+        
+        // L'utilisateur peut valider si son niveau est supérieur au niveau requis
+        // Par exemple: N2 peut valider les tâches N1, N3 peut valider les tâches N1 et N2
+        return $userRoleLevel > $taskRoleLevel;
+    }
 }

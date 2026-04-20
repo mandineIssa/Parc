@@ -15,9 +15,20 @@ class RoleManager {
             'agent_it': 'mixed',        // CRUD sur équipements + affectations, lecture sur le reste
             'user': 'readonly'          // Lecture seulement
         };
+
+        // pages exclues du système de rôles UI
+        this.CHANGE_PAGES = [
+            '/change',
+            '/eod'      // ← AJOUT
+        ];
         
         this.initializeFromDOM();
         this.checkCurrentRoute();
+    }
+
+    // vérifie si on est sur une page Change Management ou EOD
+    isChangePage() {
+        return this.CHANGE_PAGES.some(path => window.location.pathname.startsWith(path));
     }
 
     initializeFromDOM() {
@@ -28,7 +39,6 @@ class RoleManager {
             if (roleMeta) {
                 this.userRole = roleMeta.getAttribute('content');
                 
-                // Définir les permissions selon le mode d'accès
                 this.definePermissionsByAccessMode();
                 
                 if (userMeta) {
@@ -63,19 +73,18 @@ class RoleManager {
         switch(accessMode) {
             case 'full': // Super Admin
                 this.userPermissions = {
-                    // CRUD complet
                     canCreate: true,
                     canRead: true,
                     canUpdate: true,
                     canDelete: true,
-                    
-                    // Spécifiques
                     canManageUsers: true,
                     canManageEquipment: true,
                     canManageEquipmentCRUD: true,
                     canAssignEquipment: true,
-                    canManageAssignments: true,       // ← AJOUT
-                    canManageAssignmentCRUD: true,    // ← AJOUT
+                    canManageAssignments: true,
+                    canManageAssignmentCRUD: true,
+                    canManageChange: true,
+                    canManageEod: true,             // ← AJOUT
                     canApproveRequests: true,
                     canRejectRequests: true,
                     canViewAllRequests: true,
@@ -90,19 +99,18 @@ class RoleManager {
                 
             case 'mixed': // Agent IT
                 this.userPermissions = {
-                    // CRUD limité
                     canCreate: true,
                     canRead: true,
                     canUpdate: true,
                     canDelete: true,
-                    
-                    // Spécifiques
                     canManageUsers: false,
                     canManageEquipment: true,
                     canManageEquipmentCRUD: true,
                     canAssignEquipment: true,
-                    canManageAssignments: true,       // ← AJOUT : peut gérer les affectations
-                    canManageAssignmentCRUD: true,    // ← AJOUT : CRUD sur les affectations
+                    canManageAssignments: true,
+                    canManageAssignmentCRUD: true,
+                    canManageChange: true,
+                    canManageEod: true,             // ← AJOUT
                     canApproveRequests: false,
                     canRejectRequests: false,
                     canViewAllRequests: true,
@@ -122,13 +130,14 @@ class RoleManager {
                     canRead: true,
                     canUpdate: false,
                     canDelete: false,
-                    
                     canManageUsers: false,
                     canManageEquipment: false,
                     canManageEquipmentCRUD: false,
                     canAssignEquipment: false,
-                    canManageAssignments: false,      // ← AJOUT
-                    canManageAssignmentCRUD: false,   // ← AJOUT
+                    canManageAssignments: false,
+                    canManageAssignmentCRUD: false,
+                    canManageChange: true,
+                    canManageEod: true,             // ← AJOUT : user peut accéder à EOD
                     canApproveRequests: false,
                     canRejectRequests: false,
                     canViewAllRequests: false,
@@ -146,15 +155,8 @@ class RoleManager {
     // ==================== VÉRIFICATIONS DE BASE ====================
     hasRole(role) {
         if (!this.isInitialized) return false;
-        
-        if (Array.isArray(role)) {
-            return role.includes(this.userRole);
-        }
-        
-        if (typeof role === 'string' && role.includes('|')) {
-            return role.split('|').includes(this.userRole);
-        }
-        
+        if (Array.isArray(role)) return role.includes(this.userRole);
+        if (typeof role === 'string' && role.includes('|')) return role.split('|').includes(this.userRole);
         return this.userRole === role;
     }
 
@@ -166,57 +168,47 @@ class RoleManager {
     // ==================== VÉRIFICATIONS CRUD SPÉCIFIQUES ====================
     
     canCreate(entity = null) {
+        if (entity === 'change') return true;
+        if (entity === 'eod') return true;              // ← AJOUT
         if (!this.hasPermission('canCreate')) return false;
-        
         if (entity === 'user' && !this.hasPermission('canManageUsers')) return false;
         if (entity === 'equipment' && !this.hasPermission('canManageEquipmentCRUD')) return false;
-        // ↓ AJOUT : l'agent IT peut créer des affectations
         if (entity === 'assignment' && !this.hasPermission('canManageAssignmentCRUD')) return false;
-        
         return true;
     }
     
     canRead(entity = null) {
+        if (entity === 'change') return true;
+        if (entity === 'eod') return true;              // ← AJOUT
         if (!this.hasPermission('canRead')) return false;
-        
-        if (this.hasRole('user')) {
-            return entity !== 'admin' && entity !== 'settings';
-        }
-        
+        if (this.hasRole('user')) return entity !== 'admin' && entity !== 'settings';
         return true;
     }
     
     canUpdate(entity = null, item = null) {
+        if (entity === 'change') return true;
+        if (entity === 'eod') return true;              // ← AJOUT
         if (!this.hasPermission('canUpdate')) return false;
-        
         if (this.hasRole('agent_it')) {
-            // ↓ MODIFIÉ : agent IT peut modifier équipements ET affectations
             if (entity === 'equipment') return this.hasPermission('canManageEquipmentCRUD');
             if (entity === 'assignment') return this.hasPermission('canManageAssignmentCRUD');
             return false;
         }
-        
         if (this.hasRole('super_admin')) return true;
-        
-        if (this.hasRole('user')) {
-            return entity === 'profile' && item && item.id === this.userData?.id;
-        }
-        
+        if (this.hasRole('user')) return entity === 'profile' && item && item.id === this.userData?.id;
         return false;
     }
     
     canDelete(entity = null) {
+        if (entity === 'change') return true;
+        if (entity === 'eod') return true;              // ← AJOUT
         if (!this.hasPermission('canDelete')) return false;
-        
         if (this.hasRole('agent_it')) {
-            // ↓ MODIFIÉ : agent IT peut supprimer équipements ET affectations
             if (entity === 'equipment') return this.hasPermission('canManageEquipmentCRUD');
             if (entity === 'assignment') return this.hasPermission('canManageAssignmentCRUD');
             return false;
         }
-        
         if (this.hasRole('super_admin')) return true;
-        
         return false;
     }
     
@@ -236,65 +228,43 @@ class RoleManager {
     
     shouldShowButton(action, entity = null) {
         switch(action) {
-            case 'create':
-            case 'add':
-            case 'new':
-                return this.canCreate(entity);
-                
-            case 'edit':
-            case 'update':
-            case 'modify':
-                return this.canUpdate(entity);
-                
-            case 'delete':
-            case 'remove':
-            case 'destroy':
-                return this.canDelete(entity);
-                
-            case 'import':
-                return this.canImport(entity);
-                
-            case 'export':
-                return this.canExport(entity);
-                
-            case 'view':
-            case 'show':
-            case 'read':
-                return this.canRead(entity);
-                
-            default:
-                return true;
+            case 'create': case 'add': case 'new': return this.canCreate(entity);
+            case 'edit': case 'update': case 'modify': return this.canUpdate(entity);
+            case 'delete': case 'remove': case 'destroy': return this.canDelete(entity);
+            case 'import': return this.canImport(entity);
+            case 'export': return this.canExport(entity);
+            case 'view': case 'show': case 'read': return this.canRead(entity);
+            default: return true;
         }
     }
     
     isLogoutElement(element) {
         if (!element) return false;
-        
         const href = element.getAttribute?.('href') || element.href || '';
         const action = element.getAttribute?.('action') || element.action || '';
         const dataAction = element.getAttribute?.('data-action') || '';
-        
-        if (href.includes('/logout') || 
-            action.includes('/logout') || 
-            dataAction === 'logout' ||
-            element.classList?.contains('logout-btn') ||
-            element.classList?.contains('logout-link') ||
-            element.classList?.contains('logout-form')) {
-            return true;
-        }
-        
-        const closestLogoutForm = element.closest?.('form[action*="/logout"]');
-        const closestLogoutLink = element.closest?.('a[href*="/logout"]');
-        const closestLogoutBtn = element.closest?.('.logout-btn, .logout-link, .logout-form');
-        const closestDataAction = element.closest?.('[data-action="logout"]');
-        
-        return !!(closestLogoutForm || closestLogoutLink || closestLogoutBtn || closestDataAction);
+        if (href.includes('/logout') || action.includes('/logout') || dataAction === 'logout' ||
+            element.classList?.contains('logout-btn') || element.classList?.contains('logout-link') ||
+            element.classList?.contains('logout-form')) return true;
+        return !!(element.closest?.('form[action*="/logout"]') || element.closest?.('a[href*="/logout"]') ||
+            element.closest?.('.logout-btn, .logout-link, .logout-form') || element.closest?.('[data-action="logout"]'));
+    }
+
+    // vérifie si un élément appartient à une page/action Change ou EOD
+    isChangeElement(element) {
+        if (!element) return false;
+        const action = element.getAttribute?.('action') || element.action || '';
+        const href = element.getAttribute?.('href') || element.href || '';
+        return action.includes('/change') || href.includes('/change')
+            || action.includes('/eod') || href.includes('/eod')     // ← AJOUT
+            || this.isChangePage();
     }
     
     // ==================== GESTION DE L'INTERFACE ====================
     
     checkCurrentRoute() {
         if (!this.isInitialized) return true;
+        if (this.isChangePage()) return true; // pages Change/EOD toujours autorisées
         
         const currentPath = window.location.pathname;
         
@@ -309,7 +279,6 @@ class RoleManager {
                 '/agencies/create', '/agencies/edit',
                 '/categories/create', '/categories/edit',
                 '/suppliers/create', '/suppliers/edit',
-                // ↓ AJOUT : utilisateur ne peut pas accéder aux routes d'affectation
                 '/assignments/create', '/assignments/edit',
                 '/assignments/delete', '/assignments/store',
                 '/assignments/update', '/assignments/destroy',
@@ -330,22 +299,21 @@ class RoleManager {
 
     redirectToAuthorizedPage() {
         let redirectPath = '/dashboard';
-        
-        if (this.hasRole('super_admin')) {
-            redirectPath = '/admin/dashboard';
-        } else if (this.hasRole('agent_it')) {
-            redirectPath = '/it/dashboard';
-        } else if (this.hasRole('user')) {
-            redirectPath = '/dashboard';
-        }
-        
-        if (window.location.pathname !== redirectPath) {
-            window.location.href = redirectPath;
-        }
+        if (this.hasRole('super_admin')) redirectPath = '/admin/dashboard';
+        else if (this.hasRole('agent_it')) redirectPath = '/it/dashboard';
+        else if (this.hasRole('user')) redirectPath = '/dashboard';
+        if (window.location.pathname !== redirectPath) window.location.href = redirectPath;
     }
 
     applyUIRules() {
         if (!this.isInitialized) return;
+
+        // sur les pages Change/EOD, uniquement les styles, pas de restrictions
+        if (this.isChangePage()) {
+            console.log('Page Change/EOD - règles UI restrictives désactivées');
+            this.applyRoleStyles();
+            return;
+        }
         
         this.hideUnauthorizedElements();
         this.disableUnauthorizedElements();
@@ -364,7 +332,6 @@ class RoleManager {
                 '[data-role="super_admin"]',
                 '.user-management',
                 '.system-settings'
-                // ↓ NOTE : .assignment-actions N'EST PAS masqué pour agent_it
             ],
             'user': [
                 '.admin-only',
@@ -379,34 +346,30 @@ class RoleManager {
                 '.export-button',
                 '.settings-section',
                 '.reports-section',
-                '.assignment-actions'  // ← AJOUT : cacher les actions d'affectation pour les users
+                '.assignment-actions'
             ]
         };
         
         const selectors = elementsToHide[this.userRole] || [];
         selectors.forEach(selector => {
             document.querySelectorAll(selector).forEach(element => {
-                if (!this.isLogoutElement(element)) {
+                if (!this.isLogoutElement(element) && !this.isChangeElement(element)) {
                     element.style.display = 'none';
                 }
             });
         });
         
         document.querySelectorAll('[data-role]').forEach(element => {
-            if (!this.isLogoutElement(element)) {
+            if (!this.isLogoutElement(element) && !this.isChangeElement(element)) {
                 const requiredRoles = element.getAttribute('data-role').split('|');
-                if (!this.hasRole(requiredRoles)) {
-                    element.style.display = 'none';
-                }
+                if (!this.hasRole(requiredRoles)) element.style.display = 'none';
             }
         });
         
         document.querySelectorAll('[data-permission]').forEach(element => {
-            if (!this.isLogoutElement(element)) {
+            if (!this.isLogoutElement(element) && !this.isChangeElement(element)) {
                 const requiredPermission = element.getAttribute('data-permission');
-                if (!this.hasPermission(requiredPermission)) {
-                    element.style.display = 'none';
-                }
+                if (!this.hasPermission(requiredPermission)) element.style.display = 'none';
             }
         });
         
@@ -422,13 +385,10 @@ class RoleManager {
     hideActionButtonsByRole() {
         if (this.hasRole('user')) {
             document.querySelectorAll('.btn-create, .btn-edit, .btn-delete, .btn-import, .btn-export').forEach(btn => {
-                if (!this.isLogoutElement(btn)) {
-                    btn.style.display = 'none';
-                }
+                if (!this.isLogoutElement(btn) && !this.isChangeElement(btn)) btn.style.display = 'none';
             });
-            
             document.querySelectorAll('a[href*="/create"], a[href*="/edit/"], a[href*="/delete/"]').forEach(link => {
-                if (!this.isLogoutElement(link) && !link.href.includes('/profile')) {
+                if (!this.isLogoutElement(link) && !this.isChangeElement(link) && !link.href.includes('/profile')) {
                     link.style.display = 'none';
                 }
             });
@@ -436,15 +396,14 @@ class RoleManager {
         
         if (this.hasRole('agent_it')) {
             document.querySelectorAll('.user-action, .settings-action, .admin-action').forEach(btn => {
-                if (!this.isLogoutElement(btn)) {
-                    btn.style.display = 'none';
-                }
+                if (!this.isLogoutElement(btn) && !this.isChangeElement(btn)) btn.style.display = 'none';
             });
-            // ↓ NOTE : .assignment-action N'EST PAS masqué — l'agent IT peut agir sur les affectations
         }
     }
 
     disableUnauthorizedElements() {
+        if (this.isChangePage()) return; // pas de désactivation sur les pages Change/EOD
+
         if (this.hasRole('user')) {
             document.querySelectorAll('input, select, textarea').forEach(field => {
                 if (!field.classList.contains('readonly-allowed') && !this.isLogoutElement(field)) {
@@ -459,7 +418,6 @@ class RoleManager {
                     btn.classList.remove('disabled-action');
                     return;
                 }
-                
                 if (!btn.closest('form')?.classList.contains('profile-form')) {
                     btn.disabled = true;
                     btn.classList.add('disabled-action');
@@ -483,52 +441,36 @@ class RoleManager {
                 element.classList.remove('disabled-action');
                 return;
             }
-            
             const requirement = element.getAttribute('data-requires');
-            
             if (requirement.startsWith('role:')) {
                 const requiredRole = requirement.replace('role:', '');
-                if (!this.hasRole(requiredRole)) {
-                    element.disabled = true;
-                    element.classList.add('disabled-action');
-                }
+                if (!this.hasRole(requiredRole)) { element.disabled = true; element.classList.add('disabled-action'); }
             } else if (requirement.startsWith('permission:')) {
                 const requiredPermission = requirement.replace('permission:', '');
-                if (!this.hasPermission(requiredPermission)) {
-                    element.disabled = true;
-                    element.classList.add('disabled-action');
-                }
+                if (!this.hasPermission(requiredPermission)) { element.disabled = true; element.classList.add('disabled-action'); }
             } else if (requirement.startsWith('action:')) {
                 const action = requirement.replace('action:', '');
-                if (!this.shouldShowButton(action)) {
-                    element.disabled = true;
-                    element.classList.add('disabled-action');
-                }
+                if (!this.shouldShowButton(action)) { element.disabled = true; element.classList.add('disabled-action'); }
             }
         });
     }
 
     protectFormsAndButtons() {
+        if (this.isChangePage()) return; // pas de protection sur les pages Change/EOD
+
         document.querySelectorAll('form').forEach(form => {
-            if (this.isLogoutElement(form)) {
-                return;
-            }
-            
+            if (this.isLogoutElement(form)) return;
             if (!this.isFormAuthorized(form)) {
                 form.addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.showAccessDeniedAlert();
                 }, { capture: true });
-                
                 form.classList.add('readonly-form');
             }
         });
         
         document.querySelectorAll('a[href*="/edit/"], a[href*="/delete/"], a[href*="/create"]').forEach(link => {
-            if (this.isLogoutElement(link)) {
-                return;
-            }
-            
+            if (this.isLogoutElement(link) || this.isChangeElement(link)) return;
             if (!this.isLinkAuthorized(link)) {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -541,45 +483,28 @@ class RoleManager {
 
     isFormAuthorized(form) {
         const formAction = form.getAttribute('action') || '';
-        
-        if (formAction.includes('/logout')) {
-            return true;
-        }
-        
-        if (this.hasRole('user')) {
-            return formAction.includes('/profile') || form.classList.contains('profile-form');
-        }
-        
+        if (formAction.includes('/logout')) return true;
+        if (formAction.includes('/change')) return true;
+        if (formAction.includes('/eod')) return true;       // ← AJOUT
+        if (this.hasRole('user')) return formAction.includes('/profile') || form.classList.contains('profile-form');
         if (this.hasRole('agent_it')) {
             return formAction.includes('/equipment') 
                 || formAction.includes('/maintenance')
                 || formAction.includes('/assignments')
                 || formAction.includes('/assignment')
-                || formAction.includes('/parc');  // ← AJOUT : route parc = affectation
+                || formAction.includes('/parc');
         }
-        
         return true;
     }
 
     isLinkAuthorized(link) {
         const href = link.getAttribute('href') || '';
-        
-        if (href.includes('/logout')) {
-            return true;
-        }
-        
-        if (href.includes('/create')) {
-            return this.canCreate(this.getEntityFromUrl(href));
-        }
-        
-        if (href.includes('/edit/')) {
-            return this.canUpdate(this.getEntityFromUrl(href));
-        }
-        
-        if (href.includes('/delete/')) {
-            return this.canDelete(this.getEntityFromUrl(href));
-        }
-        
+        if (href.includes('/logout')) return true;
+        if (href.includes('/change')) return true;
+        if (href.includes('/eod')) return true;             // ← AJOUT
+        if (href.includes('/create')) return this.canCreate(this.getEntityFromUrl(href));
+        if (href.includes('/edit/')) return this.canUpdate(this.getEntityFromUrl(href));
+        if (href.includes('/delete/')) return this.canDelete(this.getEntityFromUrl(href));
         return true;
     }
 
@@ -592,43 +517,25 @@ class RoleManager {
         if (url.includes('/maintenance/')) return 'maintenance';
         if (url.includes('/assignments/')) return 'assignment';
         if (url.includes('/assignment/')) return 'assignment';
-        if (url.includes('/parc/')) return 'assignment'; // ← AJOUT : route parc = entité assignment
+        if (url.includes('/change/')) return 'change';
+        if (url.includes('/eod/')) return 'eod';            // ← AJOUT
+        if (url.includes('/parc/')) return 'assignment';
         return null;
     }
 
     applyRoleStyles() {
         document.body.classList.remove('role-super_admin', 'role-agent_it', 'role-user');
         document.body.classList.remove('access-full', 'access-mixed', 'access-readonly');
-        
         document.body.classList.add(`role-${this.userRole}`);
         document.body.classList.add(`access-${this.ACCESS_MODES[this.userRole]}`);
-        
-        if (this.hasRole('user')) {
-            document.body.classList.add('readonly-mode');
-        }
-        
+        if (this.hasRole('user')) document.body.classList.add('readonly-mode');
         this.addRoleBadge();
     }
 
     addRoleBadge() {
         const userNameElement = document.querySelector('.user-name');
         if (!userNameElement) return;
-
-        const roleNames = {
-            'super_admin': 'Super Admin',
-            'admin': 'Administrateur',
-            'agent_it': 'Agent IT',
-            'user': 'Utilisateur'
-        };
-
-        const roleName = roleNames[this.userRole] || this.userRole;
-        const roleColors = {
-            'super_admin': 'bg-red-500',
-            'admin': 'bg-blue-500',
-            'agent_it': 'bg-green-500',
-            'user': 'bg-gray-500'
-        };
-        
+        const roleNames = { 'super_admin': 'Super Admin', 'admin': 'Administrateur', 'agent_it': 'Agent IT', 'user': 'Utilisateur' };
         const badgeContainer = document.getElementById('role-badge-container');
         if (badgeContainer) {
             badgeContainer.innerHTML = `
@@ -641,20 +548,12 @@ class RoleManager {
     }
 
     getRoleColor() {
-        const colors = {
-            'super_admin': 'danger',
-            'agent_it': 'warning',
-            'user': 'secondary'
-        };
+        const colors = { 'super_admin': 'danger', 'agent_it': 'warning', 'user': 'secondary' };
         return colors[this.userRole] || 'secondary';
     }
 
     getRoleIcon() {
-        const icons = {
-            'super_admin': 'fa-crown',
-            'agent_it': 'fa-laptop-code',
-            'user': 'fa-user'
-        };
+        const icons = { 'super_admin': 'fa-crown', 'agent_it': 'fa-laptop-code', 'user': 'fa-user' };
         return icons[this.userRole] || 'fa-user';
     }
 
@@ -667,7 +566,6 @@ class RoleManager {
                 .replace(/canUpdate\('([^']*)'\)/g, (match, entity) => this.canUpdate(entity))
                 .replace(/canDelete\('([^']*)'\)/g, (match, entity) => this.canDelete(entity))
                 .replace(/canRead\('([^']*)'\)/g, (match, entity) => this.canRead(entity));
-            
             return eval(evalCondition);
         } catch (e) {
             console.error('Erreur lors de l\'évaluation de la condition:', condition, e);
@@ -677,36 +575,21 @@ class RoleManager {
 
     setupProtectedClickHandlers() {
         document.addEventListener('click', (e) => {
-            if (this.isLogoutElement(e.target)) {
-                return;
-            }
+            if (this.isLogoutElement(e.target)) return;
+            if (this.isChangePage()) return; // pas d'interception sur les pages Change/EOD
             
             const protectedElement = e.target.closest('[data-protected-click]');
-            
             if (protectedElement && !this.isLogoutElement(protectedElement)) {
                 const requirement = protectedElement.getAttribute('data-protected-click');
-                
                 if (requirement.startsWith('role:')) {
                     const requiredRole = requirement.replace('role:', '');
-                    if (!this.hasRole(requiredRole)) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.showAccessDeniedAlert();
-                    }
+                    if (!this.hasRole(requiredRole)) { e.preventDefault(); e.stopPropagation(); this.showAccessDeniedAlert(); }
                 } else if (requirement.startsWith('permission:')) {
                     const requiredPermission = requirement.replace('permission:', '');
-                    if (!this.hasPermission(requiredPermission)) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.showAccessDeniedAlert();
-                    }
+                    if (!this.hasPermission(requiredPermission)) { e.preventDefault(); e.stopPropagation(); this.showAccessDeniedAlert(); }
                 } else if (requirement.startsWith('action:')) {
                     const action = requirement.replace('action:', '');
-                    if (!this.shouldShowButton(action)) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.showAccessDeniedAlert();
-                    }
+                    if (!this.shouldShowButton(action)) { e.preventDefault(); e.stopPropagation(); this.showAccessDeniedAlert(); }
                 }
             }
             
@@ -721,7 +604,6 @@ class RoleManager {
 
     showAccessDeniedAlert(message = null) {
         const alertMessage = message || RoleConfig.MESSAGES.ACCESS_DENIED;
-        
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 icon: 'error',

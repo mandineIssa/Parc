@@ -205,4 +205,5 @@ public function reaffectations() {
     return $this->hasMany(Reaffectation::class);
 }
 
+
 }
