@@ -1,20 +1,15 @@
 <?php
-// app/Http/Controllers/PasswordController.php
-
 namespace App\Http\Controllers;
 
 use App\Models\Password;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class PasswordController extends Controller
 {
-    
-
     // ── Index ─────────────────────────────────────────────────────────────────
     public function index(Request $request)
     {
@@ -111,7 +106,11 @@ class PasswordController extends Controller
         $availableUsers     = User::whereNotIn('id', array_merge([$password->created_by], $usersAlreadyShared))
                                   ->orderBy('name')->get();
 
-        return view('passwords.show', compact('password', 'availableUsers'));
+        $user            = auth()->user();
+        $canManageShares = in_array($user->role ?? '', ['admin', 'responsable_it'])
+                        || $password->created_by === $user->id;
+
+        return view('passwords.show', compact('password', 'availableUsers', 'canManageShares'));
     }
 
     // ── Edit / Update ─────────────────────────────────────────────────────────
@@ -194,6 +193,7 @@ class PasswordController extends Controller
 
     public function deleteFichier(Password $password, $id)
     {
+        $this->checkManageShares($password);
         $f = $password->fichiers()->findOrFail($id);
         \Storage::disk('private')->delete($f->chemin);
         $f->delete();
@@ -206,7 +206,6 @@ class PasswordController extends Controller
         $this->checkAccess($password);
         $user = auth()->user();
 
-        // Code 6 chiffres
         $otp      = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $cacheKey = "pwd_otp_{$password->id}_{$user->id}";
         Cache::put($cacheKey, $otp, now()->addMinutes(5));
@@ -233,13 +232,12 @@ class PasswordController extends Controller
         } catch (\Exception $e) {
             Log::error('OTP mail error: ' . $e->getMessage());
 
-            // En mode debug seulement : afficher le code à l'écran
             return response()->json([
-                'success'      => true,
-                'email'        => $email,
-                'message'      => "Code envoyé à {$email}",
-                'debug_code'   => config('app.debug') ? $otp : null,
-                'mail_error'   => config('app.debug') ? $e->getMessage() : null,
+                'success'    => true,
+                'email'      => $email,
+                'message'    => "Code envoyé à {$email}",
+                'debug_code' => config('app.debug') ? $otp : null,
+                'mail_error' => config('app.debug') ? $e->getMessage() : null,
             ]);
         }
     }
@@ -267,6 +265,8 @@ class PasswordController extends Controller
     // ── Partages ──────────────────────────────────────────────────────────────
     public function share(Request $request, Password $password)
     {
+        $this->checkManageShares($password);
+
         $request->validate([
             'partages'               => 'required|array|min:1',
             'partages.*.user_id'     => 'required|exists:users,id',
@@ -294,6 +294,8 @@ class PasswordController extends Controller
 
     public function updateShare(Request $request, Password $password, $shareId)
     {
+        $this->checkManageShares($password);
+
         $request->validate([
             'droit'      => 'required|in:lecture,modification,administration',
             'expiration' => 'nullable|date',
@@ -312,6 +314,8 @@ class PasswordController extends Controller
 
     public function revokeShare(Password $password, $shareId)
     {
+        $this->checkManageShares($password);
+
         $share    = $password->shares()->findOrFail($shareId);
         $userName = $share->user?->name ?? 'inconnu';
         $share->delete();
@@ -339,10 +343,17 @@ class PasswordController extends Controller
         }
     }
 
+    private function checkManageShares(Password $password): void
+    {
+        $user = auth()->user();
+        if (in_array($user->role ?? '', ['admin', 'responsable_it'])) return;
+        if ($password->created_by === $user->id) return;
+        abort(403, 'Seul le créateur ou un administrateur peut gérer les partages.');
+    }
+
     // ── Template email OTP ────────────────────────────────────────────────────
     private function buildOtpHtml(string $otp, string $nomFiche, string $nom): string
     {
-        // Séparer les chiffres pour les afficher un par un
         $digits = implode('</td><td style="width:44px;height:52px;background:#eef2fa;border-radius:8px;text-align:center;vertical-align:middle;font-size:28px;font-weight:800;color:#0a2558;font-family:Courier New,monospace;border:2px solid #c6d2e8">', str_split($otp));
 
         return <<<HTML
@@ -358,8 +369,6 @@ class PasswordController extends Controller
   <tr><td align="center">
     <table width="520" cellpadding="0" cellspacing="0" role="presentation"
            style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(10,37,88,.10);max-width:520px;width:100%">
-
-      <!-- HEADER -->
       <tr>
         <td style="background:linear-gradient(135deg,#0a2558 0%,#1a3a8a 100%);padding:28px 36px;text-align:center">
           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
@@ -375,18 +384,13 @@ class PasswordController extends Controller
           </table>
         </td>
       </tr>
-
-      <!-- BODY -->
       <tr>
         <td style="padding:32px 36px">
-
           <p style="margin:0 0 6px;color:#1a2a40;font-size:15px;font-weight:600">Bonjour {$nom},</p>
           <p style="margin:0 0 24px;color:#5a6e8a;font-size:13px;line-height:1.7">
             Vous avez demandé l'accès au mot de passe de la fiche :<br>
             <strong style="color:#0a2558;font-size:14px">📋 {$nomFiche}</strong>
           </p>
-
-          <!-- CODE DIGITS -->
           <table cellpadding="0" cellspacing="0" role="presentation" width="100%"
                  style="margin-bottom:24px;background:#f8fafc;border-radius:12px;padding:24px">
             <tr>
@@ -406,8 +410,6 @@ class PasswordController extends Controller
               </td>
             </tr>
           </table>
-
-          <!-- AVERTISSEMENT -->
           <table cellpadding="0" cellspacing="0" role="presentation" width="100%" style="margin-bottom:20px">
             <tr>
               <td style="background:#fef6e4;border-left:4px solid #f59e0b;border-radius:0 6px 6px 0;padding:14px 16px">
@@ -419,14 +421,11 @@ class PasswordController extends Controller
               </td>
             </tr>
           </table>
-
           <p style="margin:0;color:#94a3b8;font-size:11px;text-align:center;line-height:1.6">
             COFINA Sénégal — Service IT &amp; Exploitation
           </p>
         </td>
       </tr>
-
-      <!-- FOOTER -->
       <tr>
         <td style="background:#f8fafc;padding:14px 36px;border-top:1px solid #e2e8f0;text-align:center">
           <p style="margin:0;color:#94a3b8;font-size:10px">
@@ -434,7 +433,6 @@ class PasswordController extends Controller
           </p>
         </td>
       </tr>
-
     </table>
   </td></tr>
 </table>
