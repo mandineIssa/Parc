@@ -27,11 +27,13 @@
                 <p class="text-sm text-gray-500 mt-0.5">{{ $password->site ?? '—' }} · Créée par {{ $password->creator?->name }}</p>
             </div>
         </div>
+        @if($canManageShares)
         <a href="{{ route('passwords.edit', $password) }}"
            class="flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg text-sm font-medium transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             Modifier
         </a>
+        @endif
     </div>
 
     @if(session('success'))
@@ -229,6 +231,18 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                             Télécharger
                         </a>
+                        @if($canManageShares)
+                        <form method="POST"
+                              action="{{ route('passwords.fichier.delete', [$password, $f]) }}"
+                              onsubmit="return confirm('Supprimer ce fichier ?')">
+                            @csrf @method('DELETE')
+                            <button type="submit"
+                                    class="p-1 text-gray-300 hover:text-red-500 transition"
+                                    title="Supprimer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </form>
+                        @endif
                     </div>
                     @endforeach
                 </div>
@@ -242,14 +256,17 @@
                         <h2 class="text-sm font-semibold text-gray-700">Partages d'accès</h2>
                         <p class="text-xs text-gray-400 mt-0.5">{{ $password->shares->count() }} utilisateur(s) ayant accès</p>
                     </div>
+                    @if($canManageShares)
                     <button onclick="toggleSharePanel()"
                             class="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         Partager l'accès
                     </button>
+                    @endif
                 </div>
 
-                {{-- Panneau ajout multiple --}}
+                {{-- Panneau ajout — uniquement si canManageShares --}}
+                @if($canManageShares)
                 <div id="share-panel" class="hidden bg-purple-50 border-b border-purple-200 p-5">
                     <form method="POST" action="{{ route('passwords.share', $password) }}" id="share-form">
                         @csrf
@@ -262,7 +279,6 @@
                             </button>
                         </div>
 
-                        {{-- En-têtes colonnes --}}
                         <div class="grid grid-cols-12 gap-2 mb-2 px-1">
                             <div class="col-span-5 text-xs text-purple-600 font-semibold uppercase tracking-wide">Utilisateur</div>
                             <div class="col-span-3 text-xs text-purple-600 font-semibold uppercase tracking-wide">Rôle</div>
@@ -271,7 +287,6 @@
                         </div>
 
                         <div id="share-rows" class="space-y-2 mb-4">
-                            {{-- Ligne 0 initiale --}}
                             <div class="share-row grid grid-cols-12 gap-2 items-center">
                                 <div class="col-span-5">
                                     <select name="partages[0][user_id]" required
@@ -316,23 +331,28 @@
                         </div>
                     </form>
                 </div>
+                @endif
 
                 {{-- Tableau des partages existants --}}
                 @if($password->shares->count())
                 <div>
                     {{-- En-têtes --}}
-                    <div class="grid grid-cols-12 gap-2 px-5 py-2.5 bg-gray-50 border-b border-gray-200
-                                text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    <div class="grid gap-2 px-5 py-2.5 bg-gray-50 border-b border-gray-200
+                                text-xs font-semibold text-gray-500 uppercase tracking-wide
+                                {{ $canManageShares ? 'grid-cols-12' : 'grid-cols-11' }}">
                         <div class="col-span-4">Utilisateur</div>
-                        <div class="col-span-2">Rôle</div>
-                        <div class="col-span-3">Expiration</div>
+                        <div class="col-span-3">Rôle</div>
+                        <div class="col-span-2">Expiration</div>
                         <div class="col-span-2">Ajouté le</div>
+                        @if($canManageShares)
                         <div class="col-span-1 text-right">Action</div>
+                        @endif
                     </div>
 
                     <div class="divide-y divide-gray-100">
                         @foreach($password->shares as $share)
-                        <div class="grid grid-cols-12 gap-2 px-5 py-3 items-center hover:bg-gray-50 transition">
+                        <div class="grid gap-2 px-5 py-3 items-center hover:bg-gray-50 transition
+                                    {{ $canManageShares ? 'grid-cols-12' : 'grid-cols-11' }}">
 
                             {{-- Avatar + nom --}}
                             <div class="col-span-4 flex items-center gap-2.5 min-w-0">
@@ -345,8 +365,9 @@
                                 </div>
                             </div>
 
-                            {{-- Rôle modifiable inline --}}
-                            <div class="col-span-2">
+                            {{-- Rôle : select si canManageShares, badge sinon --}}
+                            <div class="col-span-3">
+                                @if($canManageShares)
                                 <form method="POST"
                                       action="{{ route('passwords.share.update', [$password, $share]) }}"
                                       id="rf-{{ $share->id }}">
@@ -362,16 +383,25 @@
                                         <option value="administration" @selected($share->droit==='administration')>⚙️ Admin</option>
                                     </select>
                                 </form>
+                                @else
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold
+                                    {{ $share->droit==='administration' ? 'bg-red-50 text-red-700 border border-red-200' :
+                                       ($share->droit==='modification'  ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                                                          'bg-gray-50 text-gray-700 border border-gray-200') }}">
+                                    {{ $share->droit==='administration' ? '⚙️ Admin' :
+                                       ($share->droit==='modification'  ? '✏️ Modif.' : '👁 Lecture') }}
+                                </span>
+                                @endif
                             </div>
 
                             {{-- Expiration --}}
-                            <div class="col-span-3">
+                            <div class="col-span-2">
                                 @if($share->expiration)
                                     @php $exp = $share->expiration->isPast(); @endphp
                                     <span class="inline-flex items-center gap-1.5 text-xs {{ $exp ? 'text-red-600 font-semibold' : 'text-gray-600' }}">
                                         <span class="w-1.5 h-1.5 rounded-full {{ $exp ? 'bg-red-500' : 'bg-green-500' }}"></span>
                                         {{ $share->expiration->format('d/m/Y') }}
-                                        @if($exp) <span class="text-red-500">(expiré)</span> @endif
+                                        @if($exp)<span class="text-red-500">(expiré)</span>@endif
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1.5 text-xs text-green-700">
@@ -386,7 +416,8 @@
                                 {{ $share->created_at->format('d/m/Y') }}
                             </div>
 
-                            {{-- Révoquer --}}
+                            {{-- Révoquer — uniquement si canManageShares --}}
+                            @if($canManageShares)
                             <div class="col-span-1 flex justify-end">
                                 <form method="POST"
                                       action="{{ route('passwords.share.revoke', [$password, $share]) }}"
@@ -402,6 +433,7 @@
                                     </button>
                                 </form>
                             </div>
+                            @endif
                         </div>
                         @endforeach
                     </div>
@@ -412,7 +444,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
                     <p class="text-sm text-gray-400">Aucun partage actif</p>
+                    @if($canManageShares)
                     <button onclick="toggleSharePanel()" class="mt-2 text-xs text-purple-600 hover:underline">Partager maintenant</button>
+                    @endif
                 </div>
                 @endif
             </div>
@@ -520,12 +554,9 @@ async function sendOtp() {
         });
         const data = await res.json();
 
-        // Mettre à jour l'email affiché
         if (data.email) {
             document.getElementById('otp-email-display').textContent = data.email;
         }
-
-        // Si mail KO et mode debug : afficher le code
         if (data.debug_code) {
             document.getElementById('otp-debug').classList.remove('hidden');
             document.getElementById('otp-debug-code').textContent = data.debug_code;
@@ -634,6 +665,7 @@ async function copyText(text, btn) {
 }
 
 // ─── Partages ─────────────────────────────────────────────────────────────────
+@if($canManageShares)
 let shareRowCount = 1;
 const AVAILABLE_USERS = @json($availableUsers->map(fn($u)=>['id'=>$u->id,'name'=>$u->name,'email'=>$u->email]));
 
@@ -649,11 +681,9 @@ function addShareRow() {
     const container = document.getElementById('share-rows');
     const div = document.createElement('div');
     div.className = 'share-row grid grid-cols-12 gap-2 items-center';
-
     const userOpts = AVAILABLE_USERS
         .map(u => `<option value="${u.id}">${u.name} — ${u.email}</option>`)
         .join('');
-
     div.innerHTML = `
         <div class="col-span-5">
             <select name="partages[${shareRowCount}][user_id]" required
@@ -693,13 +723,13 @@ function removeShareRow(btn) {
     }
     btn.closest('.share-row').remove();
 }
+@endif
 
 // Événements clavier
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('otp-input')?.addEventListener('keydown', e => {
         if (e.key === 'Enter') { e.preventDefault(); verifyOtp(); }
     });
-    // Accepter uniquement les chiffres
     document.getElementById('otp-input')?.addEventListener('input', e => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
