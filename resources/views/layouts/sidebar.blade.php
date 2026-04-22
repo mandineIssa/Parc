@@ -1,49 +1,49 @@
 {{-- resources/views/layouts/sidebar.blade.php --}}
 <aside id="sidebar" class="fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 shadow-xl transform -translate-x-full lg:translate-x-0 transition-all duration-300 ease-in-out z-40 flex flex-col">
 
-    <nav class="flex-1 overflow-y-auto py-4 custom-scrollbar" id="sidebar-nav">
+    <nav class="flex-1 overflow-y-auto py-4 sidebar-custom-scrollbar" id="sidebar-nav">
 
         {{-- ════════════════════════════════════════
              SECTION : RAPPORTS
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="rapports">
-            <button class="section-header group" data-section="rapports">
+            <button class="sidebar-section-header group" data-section="rapports">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-purple-500 group-hover:text-purple-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-purple-500 group-hover:text-purple-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
                     <span class="font-medium">Rapports</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
-                <a href="{{ route('reports.index') }}" class="s-item {{ request()->routeIs('reports.index') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+            <div class="sidebar-section-body">
+                <a href="{{ route('reports.index') }}" class="sidebar-item {{ request()->routeIs('reports.index') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Vue d'ensemble</span>
                 </a>
-                <a href="{{ route('reports.equipment') }}" class="s-item {{ request()->routeIs('reports.equipment') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('reports.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.equipment') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Équipements</span>
                 </a>
-                <a href="{{ route('reports.financial') }}" class="s-item {{ request()->routeIs('reports.financial') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('reports.financial') }}" class="sidebar-item {{ request()->routeIs('reports.financial') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Financier</span>
                 </a>
                 @if(class_exists('App\Models\Maintenance'))
-                <a href="{{ route('reports.maintenance') }}" class="s-item {{ request()->routeIs('reports.maintenance') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('reports.maintenance') }}" class="sidebar-item {{ request()->routeIs('reports.maintenance') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Maintenance</span>
                 </a>
                 @endif
-                <div class="s-divider"></div>
-                <a href="{{ route('reports.import.equipment') }}" class="s-item {{ request()->routeIs('reports.import.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <div class="sidebar-divider"></div>
+                <a href="{{ route('reports.import.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.import.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Importer</span>
                 </a>
-                <a href="{{ route('reports.export.equipment') }}" class="s-item {{ request()->routeIs('reports.export.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('reports.export.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.export.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Exporter</span>
                 </a>
             </div>
@@ -53,28 +53,28 @@
              SECTION : ÉQUIPEMENTS
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="equipements">
-            <button class="section-header group" data-section="equipements">
+            <button class="sidebar-section-header group" data-section="equipements">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-blue-500 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-blue-500 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
                     <span class="font-medium">Équipements</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
-                <a href="{{ route('equipment.index') }}" class="s-item {{ request()->routeIs('equipment.index') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+            <div class="sidebar-section-body">
+                <a href="{{ route('equipment.index') }}" class="sidebar-item {{ request()->routeIs('equipment.index') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Tous les équipements</span>
                 </a>
-                <a href="{{ route('equipment.import.form') }}" class="s-item {{ request()->routeIs('equipment.import.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('equipment.import.form') }}" class="sidebar-item {{ request()->routeIs('equipment.import.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Import</span>
                 </a>
-                <a href="{{ route('equipment.export') }}" class="s-item {{ request()->routeIs('equipment.export') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('equipment.export') }}" class="sidebar-item {{ request()->routeIs('equipment.export') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Export</span>
                 </a>
             </div>
@@ -84,28 +84,28 @@
              SECTION : STOCKS — CELER
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="celer">
-            <button class="section-header group" data-section="celer">
+            <button class="sidebar-section-header group" data-section="celer">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-cyan-500 group-hover:text-cyan-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-cyan-500 group-hover:text-cyan-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                     </svg>
                     <span class="font-medium">Stocks — CELER</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
-                <a href="{{ route('dashboard.celer-informatique') }}" class="s-item {{ request()->routeIs('dashboard.celer-informatique') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+            <div class="sidebar-section-body">
+                <a href="{{ route('dashboard.celer-informatique') }}" class="sidebar-item {{ request()->routeIs('dashboard.celer-informatique') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Informatique</span>
                 </a>
-                <a href="{{ route('dashboard.celer-reseau') }}" class="s-item {{ request()->routeIs('dashboard.celer-reseau') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('dashboard.celer-reseau') }}" class="sidebar-item {{ request()->routeIs('dashboard.celer-reseau') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Réseau</span>
                 </a>
-                <a href="{{ route('dashboard.celer-electronique') }}" class="s-item {{ request()->routeIs('dashboard.celer-electronique') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('dashboard.celer-electronique') }}" class="sidebar-item {{ request()->routeIs('dashboard.celer-electronique') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Électronique</span>
                 </a>
             </div>
@@ -115,28 +115,28 @@
              SECTION : STOCKS — DECELER
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="deceler">
-            <button class="section-header group" data-section="deceler">
+            <button class="sidebar-section-header group" data-section="deceler">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-emerald-500 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-emerald-500 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                     </svg>
                     <span class="font-medium">Stocks — DECELER</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
-                <a href="{{ route('dashboard.deceler-informatique') }}" class="s-item {{ request()->routeIs('dashboard.deceler-informatique') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+            <div class="sidebar-section-body">
+                <a href="{{ route('dashboard.deceler-informatique') }}" class="sidebar-item {{ request()->routeIs('dashboard.deceler-informatique') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Informatique</span>
                 </a>
-                <a href="{{ route('dashboard.deceler-reseau') }}" class="s-item {{ request()->routeIs('dashboard.deceler-reseau') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('dashboard.deceler-reseau') }}" class="sidebar-item {{ request()->routeIs('dashboard.deceler-reseau') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Réseau</span>
                 </a>
-                <a href="{{ route('dashboard.deceler-electronique') }}" class="s-item {{ request()->routeIs('dashboard.deceler-electronique') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('dashboard.deceler-electronique') }}" class="sidebar-item {{ request()->routeIs('dashboard.deceler-electronique') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Électronique</span>
                 </a>
             </div>
@@ -146,47 +146,47 @@
              SECTION : GESTION
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="gestion">
-            <button class="section-header group" data-section="gestion">
+            <button class="sidebar-section-header group" data-section="gestion">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-amber-500 group-hover:text-amber-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-amber-500 group-hover:text-amber-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                     </svg>
                     <span class="font-medium">Gestion</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
-                <a href="{{ route('parc.index') }}" class="s-item {{ request()->routeIs('parc.index') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+            <div class="sidebar-section-body">
+                <a href="{{ route('parc.index') }}" class="sidebar-item {{ request()->routeIs('parc.index') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Parc</span>
                 </a>
-                <a href="{{ route('parc.reaffectations.index') }}" class="s-item {{ request()->routeIs('parc.reaffectations.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('parc.reaffectations.index') }}" class="sidebar-item {{ request()->routeIs('parc.reaffectations.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Historique Réaffectations</span>
                 </a>
-                <a href="{{ route('maintenance.index') }}" class="s-item {{ request()->routeIs('maintenance.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('maintenance.index') }}" class="sidebar-item {{ request()->routeIs('maintenance.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Maintenances</span>
                 </a>
                 @if(isset($approval) && $approval)
-                    <a href="{{ route('approvals.attachments.show', $approval->id) }}" class="s-item {{ request()->routeIs('approvals.attachments.show') ? 's-active' : '' }}">
-                        <span class="s-dot"></span>
+                    <a href="{{ route('approvals.attachments.show', $approval->id) }}" class="sidebar-item {{ request()->routeIs('approvals.attachments.show') ? 'sidebar-active' : '' }}">
+                        <span class="sidebar-dot"></span>
                         <span>Pièces jointes Approbation</span>
                     </a>
                 @else
-                    <div class="s-item opacity-40 cursor-not-allowed">
-                        <span class="s-dot"></span>
+                    <div class="sidebar-item opacity-40 cursor-not-allowed">
+                        <span class="sidebar-dot"></span>
                         <span>Pièces jointes Approbation</span>
                     </div>
                 @endif
-                <a href="{{ route('hors-service.index') }}" class="s-item {{ request()->routeIs('hors-service.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('hors-service.index') }}" class="sidebar-item {{ request()->routeIs('hors-service.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Hors Service</span>
                 </a>
-                <a href="{{ route('perdu.index') }}" class="s-item {{ request()->routeIs('perdu.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('perdu.index') }}" class="sidebar-item {{ request()->routeIs('perdu.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Perdu</span>
                 </a>
             </div>
@@ -196,37 +196,37 @@
              SECTION : EOD SUIVI
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="eod">
-            <button class="section-header group" data-section="eod">
+            <button class="sidebar-section-header group" data-section="eod">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-orange-500 group-hover:text-orange-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-orange-500 group-hover:text-orange-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span class="font-medium">EOD Suivi</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
+            <div class="sidebar-section-body">
                 @php $user = auth()->user(); $hasChangeRole = $user && $user->role_change; @endphp
                 @if($hasChangeRole)
                     @if($user->role_change === 'N1')
-                        <a href="{{ route('eod.n1.index') }}" class="s-item {{ request()->routeIs('eod.n1.index') ? 's-active' : '' }}">
-                            <span class="s-dot"></span>
+                        <a href="{{ route('eod.n1.index') }}" class="sidebar-item {{ request()->routeIs('eod.n1.index') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
                             <span>Mes fiches EOD</span>
                         </a>
-                        <a href="{{ route('eod.n1.create') }}" class="s-item {{ request()->routeIs('eod.n1.create') ? 's-active' : '' }}">
-                            <span class="s-dot"></span>
+                        <a href="{{ route('eod.n1.create') }}" class="sidebar-item {{ request()->routeIs('eod.n1.create') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
                             <span>Nouvelle fiche EOD</span>
                         </a>
                     @elseif($user->role_change === 'N2')
-                        <a href="{{ route('eod.n2.index') }}" class="s-item {{ request()->routeIs('eod.n2.*') ? 's-active' : '' }}">
-                            <span class="s-dot"></span>
+                        <a href="{{ route('eod.n2.index') }}" class="sidebar-item {{ request()->routeIs('eod.n2.*') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
                             <span>Fiches à valider</span>
                         </a>
                     @elseif($user->role_change === 'N3')
-                        <a href="{{ route('eod.n3.index') }}" class="s-item {{ request()->routeIs('eod.n3.*') ? 's-active' : '' }}">
-                            <span class="s-dot"></span>
+                        <a href="{{ route('eod.n3.index') }}" class="sidebar-item {{ request()->routeIs('eod.n3.*') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
                             <span>Supervision EOD</span>
                         </a>
                     @endif
@@ -240,59 +240,59 @@
              SECTION : INFRASTRUCTURE IT
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="infrastructure">
-            <button class="section-header group" data-section="infrastructure">
+            <button class="sidebar-section-header group" data-section="infrastructure">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-rose-500 group-hover:text-rose-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-rose-500 group-hover:text-rose-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                     </svg>
                     <span class="font-medium">Infrastructure IT</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
-                <div class="s-group-label">Mots de Passe</div>
-                <a href="{{ route('passwords.index') }}" class="s-item {{ request()->routeIs('passwords.index') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+            <div class="sidebar-section-body">
+                <div class="sidebar-group-label">Mots de Passe</div>
+                <a href="{{ route('passwords.index') }}" class="sidebar-item {{ request()->routeIs('passwords.index') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Tous les mots de passe</span>
                 </a>
-                <a href="{{ route('passwords.create') }}" class="s-item {{ request()->routeIs('passwords.create') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('passwords.create') }}" class="sidebar-item {{ request()->routeIs('passwords.create') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Nouvelle fiche</span>
                 </a>
-                <div class="s-divider"></div>
-                <div class="s-group-label">Plan d'Adressage</div>
-                <a href="{{ route('network.index') }}" class="s-item {{ request()->routeIs('network.index') && !request('type') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <div class="sidebar-divider"></div>
+                <div class="sidebar-group-label">Plan d'Adressage</div>
+                <a href="{{ route('network.index') }}" class="sidebar-item {{ request()->routeIs('network.index') && !request('type') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Vue d'ensemble</span>
                 </a>
-                <a href="{{ route('network.index', ['type' => 'plan_adressage']) }}" class="s-item {{ request('type') === 'plan_adressage' ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('network.index', ['type' => 'plan_adressage']) }}" class="sidebar-item {{ request('type') === 'plan_adressage' ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Plans VLAN</span>
                 </a>
-                <a href="{{ route('network.index', ['type' => 'branchement_local']) }}" class="s-item {{ request('type') === 'branchement_local' ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('network.index', ['type' => 'branchement_local']) }}" class="sidebar-item {{ request('type') === 'branchement_local' ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Branchements locaux</span>
                 </a>
-                <a href="{{ route('network.create') }}" class="s-item {{ request()->routeIs('network.create') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('network.create') }}" class="sidebar-item {{ request()->routeIs('network.create') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Ajouter une entrée</span>
                 </a>
-                <div class="s-divider"></div>
-                <div class="s-group-label">Licences</div>
-                <a href="{{ route('licences.index') }}" class="s-item {{ request()->routeIs('licences.index') && !request('type') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <div class="sidebar-divider"></div>
+                <div class="sidebar-group-label">Licences</div>
+                <a href="{{ route('licences.index') }}" class="sidebar-item {{ request()->routeIs('licences.index') && !request('type') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Toutes les licences</span>
                 </a>
                 @foreach(['Fortinet' => '🛡', 'FAI' => '🌐', 'Certificat' => '🔐', 'Office365' => '📧'] as $type => $icon)
-                <a href="{{ route('licences.index', ['type' => $type]) }}" class="s-item {{ request('type') === $type ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('licences.index', ['type' => $type]) }}" class="sidebar-item {{ request('type') === $type ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>{{ $icon }} {{ $type }}</span>
                 </a>
                 @endforeach
-                <a href="{{ route('licences.create') }}" class="s-item {{ request()->routeIs('licences.create') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('licences.create') }}" class="sidebar-item {{ request()->routeIs('licences.create') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Nouvelle licence</span>
                 </a>
             </div>
@@ -302,45 +302,45 @@
              SECTION : CHANGE MANAGEMENT
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="change">
-            <button class="section-header group" data-section="change">
+            <button class="sidebar-section-header group" data-section="change">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-indigo-500 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-indigo-500 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>
                     <span class="font-medium">Change Management</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
+            <div class="sidebar-section-body">
                 @php $user = auth()->user(); $hasChangeRole = $user && $user->role_change; @endphp
                 @if($hasChangeRole)
                     @if($user->role_change === 'N1')
-                        <a href="{{ route('change.n1.index') }}" class="s-item {{ request()->routeIs('change.n1.*') ? 's-active' : '' }}">
-                            <span class="s-dot"></span>
+                        <a href="{{ route('change.n1.index') }}" class="sidebar-item {{ request()->routeIs('change.n1.*') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
                             <span>N+1 — Mes formulaires</span>
                         </a>
-                        <a href="{{ route('change.n1.create') }}" class="s-item {{ request()->routeIs('change.n1.create') ? 's-active' : '' }}">
-                            <span class="s-dot"></span>
+                        <a href="{{ route('change.n1.create') }}" class="sidebar-item {{ request()->routeIs('change.n1.create') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
                             <span>Nouveau formulaire</span>
                         </a>
                     @elseif($user->role_change === 'N2')
-                        <a href="{{ route('change.n2.index') }}" class="s-item {{ request()->routeIs('change.n2.*') ? 's-active' : '' }}">
-                            <span class="s-dot"></span>
+                        <a href="{{ route('change.n2.index') }}" class="sidebar-item {{ request()->routeIs('change.n2.*') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
                             <span>N+2 — Formulaires à traiter</span>
                         </a>
                     @elseif($user->role_change === 'N3')
-                        <a href="{{ route('change.n3.index') }}" class="s-item {{ request()->routeIs('change.n3.*') ? 's-active' : '' }}">
-                            <span class="s-dot"></span>
+                        <a href="{{ route('change.n3.index') }}" class="sidebar-item {{ request()->routeIs('change.n3.*') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
                             <span>N+3 — Validation finale</span>
                         </a>
                     @endif
-                    <div class="s-divider"></div>
+                    <div class="sidebar-divider"></div>
                     <form method="POST" action="{{ route('change.role.clear') }}" class="w-full">
                         @csrf
-                        <button type="submit" class="s-item w-full">
-                            <span class="s-dot"></span>
+                        <button type="submit" class="sidebar-item w-full">
+                            <span class="sidebar-dot"></span>
                             <span>Changer de rôle (session)</span>
                         </button>
                     </form>
@@ -351,8 +351,8 @@
                         </span>
                     </div>
                 @else
-                    <a href="{{ route('change.role') }}" class="s-item {{ request()->routeIs('change.role') ? 's-active' : '' }}">
-                        <span class="s-dot"></span>
+                    <a href="{{ route('change.role') }}" class="sidebar-item {{ request()->routeIs('change.role') ? 'sidebar-active' : '' }}">
+                        <span class="sidebar-dot"></span>
                         <span>Sélectionner un rôle</span>
                     </a>
                 @endif
@@ -363,28 +363,28 @@
              SECTION : CONTRÔLES IT
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="controls">
-            <button class="section-header group" data-section="controls">
+            <button class="sidebar-section-header group" data-section="controls">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-red-500 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-red-500 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
                     <span class="font-medium">Contrôles IT</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
-                <a href="{{ route('controls.dashboard') }}" class="s-item {{ request()->routeIs('controls.dashboard') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+            <div class="sidebar-section-body">
+                <a href="{{ route('controls.dashboard') }}" class="sidebar-item {{ request()->routeIs('controls.dashboard') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Dashboard Contrôles</span>
                 </a>
-                <a href="{{ route('controls.index') }}" class="s-item {{ request()->routeIs('controls.index') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('controls.index') }}" class="sidebar-item {{ request()->routeIs('controls.index') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Tous les contrôles</span>
                 </a>
-                <a href="{{ route('controls.tasks.index') }}" class="s-item {{ request()->routeIs('controls.tasks.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('controls.tasks.index') }}" class="sidebar-item {{ request()->routeIs('controls.tasks.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span class="flex-1">Mes tâches</span>
                     @php
                         $nbTaches = 0;
@@ -397,24 +397,24 @@
                         } catch (\Exception $e) {}
                     @endphp
                     @if($nbTaches > 0)
-                        <span class="s-badge">{{ $nbTaches }}</span>
+                        <span class="sidebar-badge">{{ $nbTaches }}</span>
                     @endif
                 </a>
-                <div class="s-divider"></div>
-                <div class="s-group-label">Planification</div>
-                <a href="{{ route('controls.index') }}" class="s-item {{ request()->routeIs('controls.index') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <div class="sidebar-divider"></div>
+                <div class="sidebar-group-label">Planification</div>
+                <a href="{{ route('controls.index') }}" class="sidebar-item {{ request()->routeIs('controls.index') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Toutes les planifications</span>
                 </a>
-                <a href="{{ route('controls.create') }}" class="s-item {{ request()->routeIs('controls.create') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('controls.create') }}" class="sidebar-item {{ request()->routeIs('controls.create') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Nouveau contrôle</span>
                 </a>
                 @if(auth()->user() && auth()->user()->role === 'super_admin')
-                    <div class="s-divider"></div>
-                    <div class="s-group-label">Configuration</div>
-                    <a href="{{ route('controls.templates.index') }}" class="s-item {{ request()->routeIs('controls.templates.*') ? 's-active' : '' }}">
-                        <span class="s-dot"></span>
+                    <div class="sidebar-divider"></div>
+                    <div class="sidebar-group-label">Configuration</div>
+                    <a href="{{ route('controls.templates.index') }}" class="sidebar-item {{ request()->routeIs('controls.templates.*') ? 'sidebar-active' : '' }}">
+                        <span class="sidebar-dot"></span>
                         <span>Templates de rapport</span>
                     </a>
                 @endif
@@ -425,45 +425,45 @@
              SECTION : CONFIGURATION
         ════════════════════════════════════════ --}}
         <div class="sidebar-section" data-section="configuration">
-            <button class="section-header group" data-section="configuration">
+            <button class="sidebar-section-header group" data-section="configuration">
                 <div class="flex items-center gap-3">
-                    <svg class="s-icon text-gray-500 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="sidebar-icon text-gray-500 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a2 2 0 11-6 0 2 2 0 016 0z"/>
                     </svg>
                     <span class="font-medium">Configuration</span>
                 </div>
-                <svg class="s-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div class="section-body">
+            <div class="sidebar-section-body">
                 @auth
-                <a href="{{ route('dashboard') }}" class="s-item {{ request()->routeIs('dashboard*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('dashboard') }}" class="sidebar-item {{ request()->routeIs('dashboard*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Dashboard</span>
                 </a>
-                <div class="s-divider"></div>
+                <div class="sidebar-divider"></div>
                 @endauth
-                <a href="{{ route('agencies.index') }}" class="s-item {{ request()->routeIs('agencies.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('agencies.index') }}" class="sidebar-item {{ request()->routeIs('agencies.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Agences</span>
                 </a>
-                <a href="{{ route('categories.index') }}" class="s-item {{ request()->routeIs('categories.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('categories.index') }}" class="sidebar-item {{ request()->routeIs('categories.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Catégories</span>
                 </a>
-                <a href="{{ route('suppliers.index') }}" class="s-item {{ request()->routeIs('suppliers.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('suppliers.index') }}" class="sidebar-item {{ request()->routeIs('suppliers.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Fournisseurs</span>
                 </a>
-                <a href="{{ route('users.index') }}" class="s-item {{ request()->routeIs('admin.users.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Administration</span>
                 </a>
-                <div class="s-divider"></div>
-                <a href="{{ route('audits.index') }}" class="s-item {{ request()->routeIs('audits.*') ? 's-active' : '' }}">
-                    <span class="s-dot"></span>
+                <div class="sidebar-divider"></div>
+                <a href="{{ route('audits.index') }}" class="sidebar-item {{ request()->routeIs('audits.*') ? 'sidebar-active' : '' }}">
+                    <span class="sidebar-dot"></span>
                     <span>Journal d'activité</span>
                 </a>
             </div>
@@ -491,18 +491,18 @@
 
 <style>
 /* ── Custom Scrollbar ── */
-.custom-scrollbar::-webkit-scrollbar {
+.sidebar-custom-scrollbar::-webkit-scrollbar {
     width: 4px;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
+.sidebar-custom-scrollbar::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
+.sidebar-custom-scrollbar::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 10px;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+.sidebar-custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #C8102E;
 }
 
@@ -513,7 +513,7 @@
 }
 
 /* ── Header cliquable de la section ── */
-.section-header {
+.sidebar-section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -528,26 +528,26 @@
     text-align: left;
     transition: all 0.2s ease;
 }
-.section-header:hover {
+.sidebar-section-header:hover {
     background: linear-gradient(90deg, #fef2f2 0%, #fff 100%);
 }
-.section-header.is-active {
+.sidebar-section-header.is-active {
     background: linear-gradient(90deg, #fee2e2 0%, #fff 100%);
     color: #C8102E;
     border-left: 3px solid #C8102E;
 }
-.section-header.is-active .s-icon {
+.sidebar-section-header.is-active .sidebar-icon {
     color: #C8102E !important;
 }
 
 /* ── Corps de la section (items) ── */
-.section-body {
+.sidebar-section-body {
     overflow: hidden;
     max-height: 0;
     transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: #fefefe;
 }
-.section-body.open {
+.sidebar-section-body.open {
     max-height: 800px;
 }
 
@@ -557,7 +557,7 @@
 }
 
 /* ── Items ── */
-.s-item {
+.sidebar-item {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -572,7 +572,7 @@
     width: 100%;
     position: relative;
 }
-.s-item::before {
+.sidebar-item::before {
     content: '';
     position: absolute;
     left: 0;
@@ -582,22 +582,22 @@
     background: #C8102E;
     transition: width 0.2s ease;
 }
-.s-item:hover::before,
-.s-active::before {
+.sidebar-item:hover::before,
+.sidebar-active::before {
     width: 3px;
 }
-.s-item:hover {
+.sidebar-item:hover {
     background: #fef2f2;
     color: #C8102E;
     padding-left: 42px;
 }
-.s-active {
+.sidebar-active {
     color: #C8102E !important;
     font-weight: 600;
     background: #fef2f2;
 }
 
-.s-dot {
+.sidebar-dot {
     width: 5px;
     height: 5px;
     border-radius: 50%;
@@ -606,13 +606,13 @@
     opacity: 0.4;
     transition: opacity 0.2s ease;
 }
-.s-item:hover .s-dot,
-.s-active .s-dot {
+.sidebar-item:hover .sidebar-dot,
+.sidebar-active .sidebar-dot {
     opacity: 1;
     transform: scale(1.2);
 }
 
-.s-group-label {
+.sidebar-group-label {
     font-size: 9.5px;
     font-weight: 700;
     color: #9ca3af;
@@ -621,14 +621,14 @@
     padding: 10px 18px 4px 42px;
 }
 
-.s-divider {
+.sidebar-divider {
     height: 1px;
     background: linear-gradient(90deg, #e5e7eb 0%, #e5e7eb 50%, transparent 100%);
     margin: 6px 18px;
     border: none;
 }
 
-.s-badge {
+.sidebar-badge {
     background: #C8102E;
     color: #fff;
     font-size: 9px;
@@ -639,25 +639,25 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-.s-icon {
+.sidebar-icon {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
     color: #9ca3af;
     transition: all 0.2s ease;
 }
-.section-header:hover .s-icon {
+.sidebar-section-header:hover .sidebar-icon {
     transform: scale(1.05);
 }
 
-.s-arrow {
+.sidebar-arrow {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
     color: #9ca3af;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.s-arrow.open {
+.sidebar-arrow.open {
     transform: rotate(180deg);
     color: #C8102E;
 }
@@ -697,10 +697,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /* ══════════════════════════════════════════════════════
-       LOGIQUE PRINCIPALE
-       – Déterminer la section active selon l'URL courante
-       – Masquer toutes les autres sections
-       – Ouvrir le corps de la section active
+       LOGIQUE PRINCIPALE - Utiliser uniquement les éléments du sidebar
     ══════════════════════════════════════════════════════ */
 
     var path = window.location.pathname;
@@ -730,11 +727,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (activeSection) break;
     }
 
-    document.querySelectorAll('.sidebar-section').forEach(function (section) {
+    // Ne cibler que les sections dans le sidebar
+    var sidebarSections = document.querySelectorAll('#sidebar .sidebar-section');
+    sidebarSections.forEach(function (section) {
         var key    = section.dataset.section;
-        var body   = section.querySelector('.section-body');
-        var arrow  = section.querySelector('.s-arrow');
-        var header = section.querySelector('.section-header');
+        var body   = section.querySelector('.sidebar-section-body');
+        var arrow  = section.querySelector('.sidebar-arrow');
+        var header = section.querySelector('.sidebar-section-header');
 
         if (activeSection && key !== activeSection) {
             section.classList.add('hidden-section');
@@ -749,18 +748,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /* ── Clic sur le header : afficher toutes les sections + replier ── */
-    document.querySelectorAll('.section-header').forEach(function (btn) {
+    document.querySelectorAll('#sidebar .sidebar-section-header').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
-            e.stopPropagation();
+            e.stopPropagation(); // Empêcher la propagation vers d'autres éléments
             var key     = btn.dataset.section;
-            var section = document.querySelector('.sidebar-section[data-section="' + key + '"]');
-            var body    = section ? section.querySelector('.section-body') : null;
-            var arrow   = btn.querySelector('.s-arrow');
+            var section = document.querySelector('#sidebar .sidebar-section[data-section="' + key + '"]');
+            if (!section) return;
+            
+            var body    = section.querySelector('.sidebar-section-body');
+            var arrow   = btn.querySelector('.sidebar-arrow');
 
-            var allSections = document.querySelectorAll('.sidebar-section');
-            var allBodies = document.querySelectorAll('.section-body');
-            var allArrows = document.querySelectorAll('.s-arrow');
-            var allHeaders = document.querySelectorAll('.section-header');
+            var allSections = document.querySelectorAll('#sidebar .sidebar-section');
+            var allBodies = document.querySelectorAll('#sidebar .sidebar-section-body');
+            var allArrows = document.querySelectorAll('#sidebar .sidebar-arrow');
+            var allHeaders = document.querySelectorAll('#sidebar .sidebar-section-header');
 
             var isAlreadyOpen = body && body.classList.contains('open');
 
