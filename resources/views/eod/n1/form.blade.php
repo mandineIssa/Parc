@@ -5,7 +5,8 @@
 @section('header', 'Suivi EOD - N+1')
 
 @section('content')
-<style>
+<style scoped>
+/* Styles isolés pour le formulaire EOD */
 :root {
     --navy: #1a3a6b;
     --blue: #2b5396;
@@ -44,14 +45,14 @@
     text-align: center;
 }
 
-.eod-table th.sub {
+.eod-table th.eod-sub {
     background: var(--bg-sub);
     color: var(--navy);
     font-size: 9px;
     font-weight: 700;
 }
 
-.eod-table th.group-header {
+.eod-table th.eod-group-header {
     background: var(--blue-light);
     color: #fff;
     font-size: 10px;
@@ -66,7 +67,7 @@
     background: #fff;
 }
 
-.eod-table td.label {
+.eod-table td.eod-label {
     font-weight: 700;
     background: var(--bg-row);
     color: var(--navy);
@@ -74,11 +75,11 @@
     white-space: nowrap;
 }
 
-.eod-table td.write-lg {
+.eod-table td.eod-write-lg {
     height: 40px;
 }
 
-.eod-table td.write-xl {
+.eod-table td.eod-write-xl {
     height: 55px;
 }
 
@@ -217,7 +218,7 @@
 }
 
 /* Boutons */
-.btn-remove {
+.eod-btn-remove {
     background: var(--red);
     color: #fff;
     border: none;
@@ -234,11 +235,11 @@
     justify-content: center;
 }
 
-.btn-remove:hover {
+.eod-btn-remove:hover {
     opacity: 0.8;
 }
 
-.btn-add {
+.eod-btn-add {
     background: var(--blue-light);
     color: #fff;
     border: none;
@@ -253,11 +254,11 @@
     transition: opacity 0.15s;
 }
 
-.btn-add:hover {
+.eod-btn-add:hover {
     opacity: 0.82;
 }
 
-.btn-add svg {
+.eod-btn-add svg {
     width: 16px;
     height: 16px;
 }
@@ -280,8 +281,8 @@
     color: var(--red);
 }
 
-/* Section */
-.section-card {
+/* Section EOD */
+.eod-section-card {
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -289,25 +290,25 @@
     margin-bottom: 20px;
 }
 
-.section-header {
+.eod-section-header {
     background: linear-gradient(to right, #f9fafb, #f3f4f6);
     padding: 12px 20px;
     border-bottom: 1px solid #e5e7eb;
 }
 
-.section-header h3 {
+.eod-section-header h3 {
     font-size: 14px;
     font-weight: 600;
     color: #1f2937;
     margin: 0;
 }
 
-.section-body {
+.eod-section-body {
     padding: 20px;
 }
 </style>
 
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8 eod-form-container">
     <!-- En-tête avec navigation -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
@@ -434,32 +435,32 @@
         </div>
 
         <!-- 1. SAUVEGARDE - NAFA-BD -->
-        <div class="section-card">
-            <div class="section-header">
+        <div class="eod-section-card">
+            <div class="eod-section-header">
                 <h3>1. Sauvegarde — FLEX-BD</h3>
             </div>
-            <div class="section-body">
+            <div class="eod-section-body">
                 <table class="eod-table">
                     <thead>
                         <tr>
                             <th rowspan="2" style="width:12%">Type</th>
-                            <th colspan="3" class="group-header">Avant traitement</th>
-                            <th colspan="3" class="group-header">Après traitement</th>
+                            <th colspan="3" class="eod-group-header">Avant traitement</th>
+                            <th colspan="3" class="eod-group-header">Après traitement</th>
                             <th rowspan="2" style="width:8%">Heure</th>
                             <th rowspan="2" style="width:20%">Observations</th>
                         </tr>
                         <tr>
-                            <th class="sub">INCR.</th>
-                            <th class="sub">DIFF.</th>
-                            <th class="sub">COMP.</th>
-                            <th class="sub">INCR.</th>
-                            <th class="sub">DIFF.</th>
-                            <th class="sub">COMP.</th>
+                            <th class="eod-sub">INCR.</th>
+                            <th class="eod-sub">DIFF.</th>
+                            <th class="eod-sub">COMP.</th>
+                            <th class="eod-sub">INCR.</th>
+                            <th class="eod-sub">DIFF.</th>
+                            <th class="eod-sub">COMP.</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="label">FLEX-BD</td>
+                            <td class="eod-label">FLEX-BD</td>
                             <td><input type="text" name="nafa_bd_avant_incremental" value="{{ old('nafa_bd_avant_incremental', $fiche->nafa_bd_avant_incremental ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="nafa_bd_avant_differentiel" value="{{ old('nafa_bd_avant_differentiel', $fiche->nafa_bd_avant_differentiel ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="nafa_bd_avant_complet" value="{{ old('nafa_bd_avant_complet', $fiche->nafa_bd_avant_complet ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
@@ -475,11 +476,11 @@
         </div>
 
         <!-- Sauvegarde générale -->
-        <div class="section-card">
-            <div class="section-header">
+        <div class="eod-section-card">
+            <div class="eod-section-header">
                 <h3>Sauvegarde générale</h3>
             </div>
-            <div class="section-body">
+            <div class="eod-section-body">
                 <table class="eod-table">
                     <thead>
                         <tr>
@@ -493,7 +494,7 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="label">Avant traitement</td>
+                            <td class="eod-label">Avant traitement</td>
                             <td><input type="text" name="sauvegarde_avant_incremental" value="{{ old('sauvegarde_avant_incremental', $fiche->sauvegarde_avant_incremental ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_avant_differentiel" value="{{ old('sauvegarde_avant_differentiel', $fiche->sauvegarde_avant_differentiel ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_avant_complet" value="{{ old('sauvegarde_avant_complet', $fiche->sauvegarde_avant_complet ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
@@ -501,7 +502,7 @@
                             <td><input type="text" name="sauvegarde_avant_observation" value="{{ old('sauvegarde_avant_observation', $fiche->sauvegarde_avant_observation ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                         </tr>
                         <tr>
-                            <td class="label">Après traitement</td>
+                            <td class="eod-label">Après traitement</td>
                             <td><input type="text" name="sauvegarde_apres_incremental" value="{{ old('sauvegarde_apres_incremental', $fiche->sauvegarde_apres_incremental ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_apres_differentiel" value="{{ old('sauvegarde_apres_differentiel', $fiche->sauvegarde_apres_differentiel ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_apres_complet" value="{{ old('sauvegarde_apres_complet', $fiche->sauvegarde_apres_complet ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
@@ -514,11 +515,11 @@
         </div>
 
         <!-- 2. TRAITEMENT - Batch -->
-        <div class="section-card">
-            <div class="section-header">
+        <div class="eod-section-card">
+            <div class="eod-section-header">
                 <h3>2. Traitement Batch</h3>
             </div>
-            <div class="section-body">
+            <div class="eod-section-body">
                 <input type="hidden" name="batch_data" id="batch_data_json">
                 
                 <div id="batch-container" class="space-y-4">
@@ -555,7 +556,7 @@
                                    {{ !$isEditable ? 'disabled' : '' }}
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
                             @if($isEditable && $index > 0)
-                            <button type="button" class="absolute -right-2 -top-2 btn-remove" onclick="this.closest('.batch-item').remove()">
+                            <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.batch-item').remove()">
                                 ×
                             </button>
                             @endif
@@ -565,7 +566,7 @@
                 </div>
                 
                 @if($isEditable)
-                <button type="button" onclick="addBatchRow()" class="btn-add mt-4">
+                <button type="button" onclick="addBatchRow()" class="eod-btn-add mt-4">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
@@ -576,11 +577,11 @@
         </div>
 
         <!-- 3. ÉMARGEMENT -->
-        <div class="section-card">
-            <div class="section-header">
+        <div class="eod-section-card">
+            <div class="eod-section-header">
                 <h3>3. Émargement</h3>
             </div>
-            <div class="section-body">
+            <div class="eod-section-body">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Émargement</label>
@@ -600,11 +601,11 @@
         </div>
 
         <!-- 4. INCIDENTS OBSERVÉS -->
-        <div class="section-card">
-            <div class="section-header">
+        <div class="eod-section-card">
+            <div class="eod-section-header">
                 <h3>4. Incidents Observés</h3>
             </div>
-            <div class="section-body">
+            <div class="eod-section-body">
                 <input type="hidden" name="incidents_data" id="incidents_data_json">
 
                 <div id="incidents-container" class="space-y-4">
@@ -651,7 +652,7 @@
                                 <option value="Non résolu" {{ ($incident['statut'] ?? '') == 'Non résolu' ? 'selected' : '' }}>Non résolu</option>
                             </select>
                             @if($isEditable && $index > 0)
-                            <button type="button" class="absolute -right-2 -top-2 btn-remove" onclick="this.closest('.incident-item').remove()">
+                            <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.incident-item').remove()">
                                 ×
                             </button>
                             @endif
@@ -661,7 +662,7 @@
                 </div>
                 
                 @if($isEditable)
-                <button type="button" onclick="addIncidentRow()" class="btn-add mt-4">
+                <button type="button" onclick="addIncidentRow()" class="eod-btn-add mt-4">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
@@ -770,7 +771,7 @@ function addBatchRow() {
         <div class="relative">
             <label class="block text-sm font-medium text-gray-600 mb-1">Observation</label>
             <input type="text" data-batch="observation" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-            <button type="button" class="absolute -right-2 -top-2 btn-remove" onclick="this.closest('.batch-item').remove()">×</button>
+            <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.batch-item').remove()">×</button>
         </div>
     `;
     container.appendChild(div);
@@ -805,7 +806,7 @@ function addIncidentRow() {
                 <option value="En cours">En cours</option>
                 <option value="Non résolu">Non résolu</option>
             </select>
-            <button type="button" class="absolute -right-2 -top-2 btn-remove" onclick="this.closest('.incident-item').remove()">×</button>
+            <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.incident-item').remove()">×</button>
         </div>
     `;
     container.appendChild(div);
