@@ -50,6 +50,8 @@
                                 <option value="">{{ __('Sélectionnez un rôle') }}</option>
                                 <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>Utilisateur</option>
                                 <option value="agent_it" {{ old('role') === 'agent_it' ? 'selected' : '' }}>Agent IT</option>
+                                <option value="eod_n3" {{ old('role') === 'eod_n3' ? 'selected' : '' }}>Signataire EOD N+3 (/eod/n3)</option>
+                                <option value="eod_controller" {{ old('role') === 'eod_controller' ? 'selected' : '' }}>Contrôleur EOD batch (/eod/controller)</option>
                                 @if(auth()->user()->isSuperAdmin())
                                     <option value="super_admin" {{ old('role') === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
                                 @endif
@@ -59,20 +61,31 @@
                             @enderror
                         </div>
 
-                        <!-- Rôle Change Management (NOUVEAU) -->
+                        <!-- Rôle Change / EOD (N1–N3 + Controller batch) -->
                         <div>
-                            <label for="role_change" class="block font-medium text-gray-700">Rôle Change Management</label>
+                            <label for="role_change" class="block font-medium text-gray-700">Rôle Change / EOD</label>
                             <select id="role_change" name="role_change" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">{{ __('Aucun') }}</option>
-                                <option value="N1" {{ old('role_change') === 'N1' ? 'selected' : '' }}>N+1 - Demandeur</option>
-                                <option value="N2" {{ old('role_change') === 'N2' ? 'selected' : '' }}>N+2 - Technicien</option>
-                                <option value="N3" {{ old('role_change') === 'N3' ? 'selected' : '' }}>N+3 - Validateur</option>
+                                <option value="N1" {{ old('role_change') === 'N1' ? 'selected' : '' }}>N+1 - Demandeur (Change)</option>
+                                <option value="N2" {{ old('role_change') === 'N2' ? 'selected' : '' }}>N+2 - Technicien (Change)</option>
+                                <option value="N3" {{ old('role_change') === 'N3' ? 'selected' : '' }}>N+3 - Validateur (Change + signature EOD /eod/n3)</option>
+                                <option value="CONTROLLER" {{ old('role_change') === 'CONTROLLER' ? 'selected' : '' }}>Controller — validation batch EOD (/eod/controller)</option>
                             </select>
-                            <p class="mt-1 text-xs text-gray-500">Rôle pour l'application Change Management</p>
+                            <p class="mt-1 text-xs text-gray-500">La <strong>signature N+3</strong> des fiches EOD se fait avec le rôle <strong>N+3</strong> (pas « Controller »). Le rôle Controller correspond au valideur batch sur <code class="text-xs">/eod/controller</code>.</p>
                             @error('role_change')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                    </div>
+
+                    <div class="rounded-lg border border-indigo-100 bg-indigo-50/50 p-4">
+                        <label class="inline-flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="eod_signature_only_ui" value="1" class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" {{ old('eod_signature_only_ui') ? 'checked' : '' }}>
+                            <span>
+                                <span class="font-medium text-gray-800">Interface limitée au module EOD</span>
+                                <span class="block text-xs text-gray-600 mt-1">Si coché avec <strong>N+3</strong> : menu réduit aux pages de signature <code class="text-xs">/eod/n3</code>. Avec <strong>Controller</strong> : uniquement <code class="text-xs">/eod/controller</code>. Rôle principal conseillé : Utilisateur.</span>
+                            </span>
+                        </label>
                     </div>
 
                     <!-- Département -->

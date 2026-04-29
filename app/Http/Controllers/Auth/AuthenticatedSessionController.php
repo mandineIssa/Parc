@@ -28,7 +28,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = $request->user();
+        $default = $user->eodPostLoginRoute()
+            ? route($user->eodPostLoginRoute(), absolute: false)
+            : route('dashboard', absolute: false);
+
+        return redirect()->intended($default);
     }
 
     /**

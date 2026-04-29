@@ -56,13 +56,15 @@ class UserController extends Controller
             'prenom' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['user', 'agent_it', 'super_admin'])],
-            'role_change' => ['nullable', Rule::in(['N1', 'N2', 'N3'])],
+            'role' => ['required', Rule::in(['user', 'agent_it', 'super_admin', 'eod_n3', 'eod_controller'])],
+            'role_change' => ['nullable', Rule::in(['N1', 'N2', 'N3', 'CONTROLLER'])],
+            'eod_signature_only_ui' => ['sometimes', 'boolean'],
             'departement' => ['nullable', 'string', 'max:255'],
             'fonction' => ['nullable', 'string', 'max:255'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['eod_signature_only_ui'] = $request->boolean('eod_signature_only_ui');
 
         User::create($validated);
 
@@ -90,8 +92,9 @@ public function update(Request $request, User $user)
         'name' => ['required', 'string', 'max:255'],
         'prenom' => ['required', 'string', 'max:255'],
         'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-        'role' => ['required', Rule::in(['user', 'agent_it', 'super_admin'])],
-        'role_change' => ['nullable', Rule::in(['N1', 'N2', 'N3'])],
+        'role' => ['required', Rule::in(['user', 'agent_it', 'super_admin', 'eod_n3', 'eod_controller'])],
+        'role_change' => ['nullable', Rule::in(['N1', 'N2', 'N3', 'CONTROLLER'])],
+        'eod_signature_only_ui' => ['sometimes', 'boolean'],
         'departement' => ['nullable', 'string', 'max:255'],
         'fonction' => ['nullable', 'string', 'max:255'],
     ]);
@@ -113,6 +116,7 @@ public function update(Request $request, User $user)
             'email' => $validated['email'],
             'role' => $validated['role'],
             'role_change' => $validated['role_change'] ?? null, // Force la mise à jour
+            'eod_signature_only_ui' => $request->boolean('eod_signature_only_ui'),
             'departement' => $validated['departement'] ?? null,
             'fonction' => $validated['fonction'] ?? null,
             'updated_at' => now(),

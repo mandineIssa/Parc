@@ -1,7 +1,7 @@
 {{-- resources/views/eod/n2/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'EOD - Validation N+2')
+@section('title', 'EOD - N+2')
 @section('header', 'Suivi EOD - N+2')
 
 @section('content')
@@ -9,10 +9,14 @@
     <!-- En-tête avec bouton rafraîchir -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Fiches EOD à valider</h1>
-            <p class="text-gray-600 mt-2">Validez ou rejetez les fiches de suivi de fin de journée</p>
+            <h1 class="text-3xl font-bold text-gray-800">Mes fiches EOD &amp; validations</h1>
+            <p class="text-gray-600 mt-2">Créez une fiche, soumettez-la à N+3 et au Controller. Les fiches « ancien flux » (en attente N+2) restent visibles pour validation.</p>
         </div>
-        <div class="flex gap-3 mt-4 md:mt-0">
+        <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+            <a href="{{ route('eod.n2.create') }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Nouvelle fiche EOD
+            </a>
             <a href="{{ route('eod.n2.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -36,14 +40,14 @@
 
     <!-- Filtres rapides -->
     <div class="flex flex-wrap gap-2 mb-6">
-        <a href="{{ route('eod.n2.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ !request()->has('filter') ? 'bg-indigo-100 text-indigo-700' : '' }}">
+        <a href="{{ route('eod.n2.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ !request()->has('filter') ? 'bg-red-50 text-[#C8102E]' : '' }}">
             Tous
         </a>
         <a href="{{ route('eod.n2.index', ['filter' => 'pending']) }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ request()->get('filter') === 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}">
             En attente
         </a>
-        <a href="{{ route('eod.n2.index', ['filter' => 'validated']) }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ request()->get('filter') === 'validated' ? 'bg-green-100 text-green-700' : '' }}">
-            Validés
+        <a href="{{ route('eod.n2.index', ['filter' => 'closed']) }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ request()->get('filter') === 'closed' ? 'bg-green-100 text-green-700' : '' }}">
+            Clôturés / validés
         </a>
         <a href="{{ route('eod.n2.index', ['filter' => 'rejected']) }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ request()->get('filter') === 'rejected' ? 'bg-red-100 text-red-700' : '' }}">
             Rejetés
@@ -72,7 +76,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">En attente</p>
-                    <p class="text-3xl font-bold mt-2">{{ $fiches->where('status', 'PENDING_N2')->count() }}</p>
+                    <p class="text-3xl font-bold mt-2">{{ $fiches->whereIn('status', ['DRAFT', 'PENDING_N2', 'PENDING_N3_CONTROLLER', 'PENDING_CONTROLLER'])->count() }}</p>
                 </div>
                 <div class="bg-white/20 p-3 rounded-full">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +91,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Validés</p>
-                    <p class="text-3xl font-bold mt-2">{{ $fiches->where('status', 'VALIDATED')->count() }}</p>
+                    <p class="text-3xl font-bold mt-2">{{ $fiches->whereIn('status', ['CLOSED', 'VALIDATED'])->count() }}</p>
                 </div>
                 <div class="bg-white/20 p-3 rounded-full">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +127,7 @@
             </div>
             <h3 class="text-xl font-medium text-gray-900 mb-2">Aucune fiche à valider</h3>
             <p class="text-gray-500 mb-6">Les nouvelles fiches apparaîtront ici</p>
-            <a href="{{ route('dashboard') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+            <a href="{{ route('dashboard') }}" class="inline-flex items-center px-4 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
@@ -148,7 +152,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($fiches as $fiche)
                         <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location='{{ route('eod.n2.edit', $fiche) }}'">
-                            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-indigo-600">{{ $fiche->reference }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-[#C8102E]">{{ $fiche->reference }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->date_traitement->format('d/m/Y') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($fiche->statut_global === 'Succès')
@@ -163,6 +167,9 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     @if($fiche->status === 'PENDING_N2') bg-yellow-100 text-yellow-800
+                                    @elseif($fiche->status === 'PENDING_N3_CONTROLLER') bg-amber-100 text-amber-900
+                                    @elseif($fiche->status === 'PENDING_CONTROLLER') bg-red-50 text-[#4a4a4a]
+                                    @elseif($fiche->status === 'CLOSED') bg-green-100 text-green-800
                                     @elseif($fiche->status === 'VALIDATED') bg-green-100 text-green-800
                                     @elseif($fiche->status === 'REJECTED') bg-red-100 text-red-800
                                     @else bg-gray-100 text-gray-800
@@ -174,7 +181,7 @@
                                 {{ $fiche->created_at->format('d/m/Y') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('eod.n2.edit', $fiche) }}" class="text-indigo-600 hover:text-indigo-900" onclick="event.stopPropagation();">
+                                <a href="{{ route('eod.n2.edit', $fiche) }}" class="text-[#C8102E] hover:text-[#7a0c22]" onclick="event.stopPropagation();">
                                     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>

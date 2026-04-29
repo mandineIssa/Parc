@@ -346,7 +346,7 @@
             
             <div class="flex gap-4">
                 <button type="button" onclick="saveDraft()" class="btn-cofina-outline px-6 py-3">
-                    💾 Sauvegarder brouillon
+                    💾 Save
                 </button>
                 <button type="button" onclick="nextStep()" class="btn-cofina px-6 py-3">
                     Étape suivante
@@ -1524,7 +1524,7 @@ function startThreeStepFlow() {
 
                 <button type="button" onclick="saveDraft()" class="btn-cofina-outline px-6 py-3">
 
-                    💾 Sauvegarder brouillon
+                    💾 Save
 
                 </button>
 

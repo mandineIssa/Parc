@@ -9,11 +9,11 @@
     <!-- En-tête avec bouton rafraîchir -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Mes formulaires de changement</h1>
+            <h1 class="text-3xl font-bold text-[#C8102E]">Mes formulaires de changement</h1>
             <p class="text-gray-600 mt-2">Gérez vos demandes et suivez leur progression</p>
         </div>
         <div class="flex gap-3 mt-4 md:mt-0">
-            <a href="{{ route('change.n1.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
+            <a href="{{ route('change.n1.create') }}" class="bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -72,12 +72,12 @@
             </div>
         </div>
 
-        <!-- Validés N+2 -->
+        <!-- À clôturer (retour N+2 final) -->
         <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium opacity-90">Validés N+2</p>
-                    <p class="text-3xl font-bold mt-2">{{ $tickets->where('status', 'VALIDATED_N2')->count() }}</p>
+                    <p class="text-sm font-medium opacity-90">À clôturer (N+1)</p>
+                    <p class="text-3xl font-bold mt-2">{{ $tickets->where('status', 'PENDING_N1_REVIEW')->count() }}</p>
                 </div>
                 <div class="bg-white/20 p-3 rounded-full">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,7 +161,7 @@
             </div>
             <h3 class="text-xl font-medium text-gray-900 mb-2">Aucun formulaire</h3>
             <p class="text-gray-500 mb-6">Créez votre première demande de changement</p>
-            <a href="{{ route('change.n1.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+            <a href="{{ route('change.n1.create') }}" class="inline-flex items-center px-4 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -182,14 +182,13 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Incident</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($tickets as $ticket)
                         <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location='{{ route('change.n1.edit', $ticket) }}'">
-                            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-indigo-600">{{ $ticket->ticket_id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-[#C8102E]">{{ $ticket->ticket_id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $ticket->ticket_number ?? '—' }}
                             </td>
@@ -211,9 +210,12 @@
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     @if($ticket->status === 'DRAFT') bg-gray-100 text-gray-800
                                     @elseif($ticket->status === 'PENDING_N2') bg-yellow-100 text-yellow-800
-                                    @elseif($ticket->status === 'VALIDATED_N2') bg-green-100 text-green-800
+                                    @elseif($ticket->status === 'PENDING_N3') bg-blue-100 text-blue-800
+                                    @elseif($ticket->status === 'AT_N2_AFTER_N3') bg-teal-100 text-teal-800
+                                    @elseif($ticket->status === 'PENDING_N1_REVIEW') bg-amber-100 text-amber-800
                                     @elseif($ticket->status === 'REJECTED') bg-red-100 text-red-800
-                                    @else bg-purple-100 text-purple-800
+                                    @elseif($ticket->status === 'CLOSED') bg-purple-100 text-purple-800
+                                    @else bg-gray-100 text-gray-800
                                     @endif">
                                     {{ $ticket->status_label }}
                                 </span>
@@ -221,22 +223,20 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $ticket->created_at->format('d/m/Y') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($ticket->incident_num)
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                        {{ $ticket->incident_num }}
-                                    </span>
-                                @else
-                                    <span class="text-gray-400 text-xs">—</span>
-                                @endif
-                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('change.n1.edit', $ticket) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" onclick="event.stopPropagation();">
+                                <a href="{{ route('change.n1.edit', $ticket) }}" class="text-[#C8102E] hover:text-[#7a0c22] mr-3" onclick="event.stopPropagation();" title="Voir">
                                     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
                                 </a>
+                                @if($ticket->status === 'CLOSED')
+                                    <a href="{{ route('change.ticket.pdf', $ticket) }}" target="_blank" rel="noopener" class="text-gray-700 hover:text-gray-900" onclick="event.stopPropagation();" title="PDF">
+                                        <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                        </svg>
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                         @endforeach

@@ -13,7 +13,7 @@
             <p class="text-gray-600 mt-2">Gérez vos fiches de traitement de fin de journée</p>
         </div>
         <div class="flex gap-3 mt-4 md:mt-0">
-            <a href="{{ route('eod.n1.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
+            <a href="{{ route('eod.n1.create') }}" class="bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -113,7 +113,7 @@
             </div>
             <h3 class="text-xl font-medium text-gray-900 mb-2">Aucune fiche de suivi</h3>
             <p class="text-gray-500 mb-6">Créez votre première fiche de suivi EOD</p>
-            <a href="{{ route('eod.n1.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+            <a href="{{ route('eod.n1.create') }}" class="inline-flex items-center px-4 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -138,7 +138,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($fiches as $fiche)
                         <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location='{{ route('eod.n1.edit', $fiche) }}'">
-                            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-indigo-600">{{ $fiche->reference }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-[#C8102E]">{{ $fiche->reference }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->date_traitement->format('d/m/Y') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->heure_lancement }} - {{ $fiche->heure_fin ?: '...' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -162,7 +162,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('eod.n1.edit', $fiche) }}" class="text-indigo-600 hover:text-indigo-900" onclick="event.stopPropagation();">
+                                <a href="{{ route('eod.n1.edit', $fiche) }}" class="text-[#C8102E] hover:text-[#7a0c22]" onclick="event.stopPropagation();">
                                     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>

@@ -379,7 +379,12 @@
                 <th style="width:50%">Responsable Batch</th>
             </tr>
             <tr class="fill-row-lg">
-                <td>{{ $fiche->emargement ?: '' }}</td>
+                <td>
+                    {{ $fiche->emargement ?: '' }}
+                    @if(!empty($emargementSigDataUri))
+                        <div style="margin-top:4px;"><img src="{{ $emargementSigDataUri }}" style="max-height:52px" alt="" /></div>
+                    @endif
+                </td>
                 <td>{{ $fiche->responsable_batch ?: '' }}</td>
             </tr>
         </table>
@@ -429,50 +434,85 @@
         </table>
     </div>
 
-    {{-- ── SECTION 5 : VALIDATION ── --}}
+    {{-- ── SECTION 5 : VÉRIFICATION / VALIDATION (papier : Head IT = N+3, Direction Audit = Controller) ── --}}
+    @php
+        $n3DatePdf = $fiche->n3_validation_date ?: ($fiche->n3_validated_at ? $fiche->n3_validated_at->format('d/m/Y H:i') : '');
+        $n3NamePdf = trim(($fiche->n3Validator?->prenom ?? '') . ' ' . ($fiche->n3Validator?->name ?? ''));
+        $ctrlDatePdf = $fiche->controller_validation_date ?: ($fiche->controller_validated_at ? $fiche->controller_validated_at->format('d/m/Y H:i') : '');
+        $ctrlNamePdf = trim(($fiche->controllerValidator?->prenom ?? '') . ' ' . ($fiche->controllerValidator?->name ?? ''));
+    @endphp
     <div class="section">
         <div class="section-head"><span class="num">5</span>V&eacute;rification / Validation</div>
         <div class="sig-grid">
             <div class="sig-row">
-
                 <div class="sig-cell">
                     <div class="sig-card">
-                        <div class="sig-card-head">Head IT</div>
+                        <div class="sig-card-head">&Eacute;margement Head IT (N+3)</div>
                         <table>
                             <tr class="fill-row-lg">
                                 <td class="row-label" style="width:30%">Date</td>
-                                <td>{{ $fiche->validation_head_it_date ?: '' }}</td>
+                                <td>{{ $n3DatePdf !== '' ? $n3DatePdf : ($fiche->validation_head_it_date ?: '') }}</td>
                             </tr>
                             <tr class="fill-row-lg">
-                                <td class="row-label">Visa</td>
-                                <td>{{ $fiche->validation_head_it_visa ?: '' }}</td>
+                                <td class="row-label">Nom / Visa</td>
+                                <td>{{ $n3NamePdf !== '' ? $n3NamePdf : ($fiche->validation_head_it_visa ?: '') }}</td>
                             </tr>
+                            @if(!empty($n3SigDataUri))
+                            <tr class="fill-row-lg">
+                                <td class="row-label">Signature</td>
+                                <td><img src="{{ $n3SigDataUri }}" style="max-height:44px" alt="" /></td>
+                            </tr>
+                            @elseif(!empty($fiche->validation_head_it_visa) && $n3NamePdf === '')
+                            <tr class="fill-row-lg">
+                                <td class="row-label">Visa (ancien flux)</td>
+                                <td>{{ $fiche->validation_head_it_visa }}</td>
+                            </tr>
+                            @endif
                         </table>
                     </div>
                 </div>
-
                 <div class="sig-cell">
                     <div class="sig-card">
-                        <div class="sig-card-head">Direction Audit</div>
+                        <div class="sig-card-head">&Eacute;margement Direction Audit (Controller)</div>
                         <table>
                             <tr class="fill-row-lg">
                                 <td class="row-label" style="width:30%">Date</td>
-                                <td>{{ $fiche->validation_audit_date ?: '' }}</td>
+                                <td>{{ $ctrlDatePdf !== '' ? $ctrlDatePdf : ($fiche->validation_audit_date ?: '') }}</td>
                             </tr>
                             <tr class="fill-row-lg">
-                                <td class="row-label">Visa</td>
-                                <td>{{ $fiche->validation_audit_visa ?: '' }}</td>
+                                <td class="row-label">Nom / Visa</td>
+                                <td>{{ $ctrlNamePdf !== '' ? $ctrlNamePdf : ($fiche->controller_validation_visa ?: $fiche->validation_audit_visa ?: '') }}</td>
                             </tr>
+                            @if(!empty($controllerSigDataUri))
+                            <tr class="fill-row-lg">
+                                <td class="row-label">Signature</td>
+                                <td><img src="{{ $controllerSigDataUri }}" style="max-height:44px" alt="" /></td>
+                            </tr>
+                            @elseif($ctrlNamePdf === '' && !empty($fiche->validation_audit_visa))
+                            <tr class="fill-row-lg">
+                                <td class="row-label">Visa (ancien flux)</td>
+                                <td>{{ $fiche->validation_audit_visa }}</td>
+                            </tr>
+                            @endif
                         </table>
                     </div>
                 </div>
-
             </div>
         </div>
 
         @if(!empty($fiche->validation_note))
         <div style="margin:0 8px 8px;padding:6px 10px;background:#fff7ed;border:1px solid #fdba74;border-left:3px solid #C8102E;border-radius:3px;font-size:7.5px;color:#7c2d12;">
-            <strong>Note :</strong> {{ $fiche->validation_note }}
+            <strong>Note validation N+2 (historique) :</strong> {{ $fiche->validation_note }}
+        </div>
+        @endif
+        @if(!empty($fiche->n3_validation_note) || !empty($fiche->controller_validation_note))
+        <div style="margin:0 8px 8px;padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;font-size:7.5px;color:#334155;">
+            @if(!empty($fiche->n3_validation_note))
+                <strong>Note N+3 :</strong> {{ $fiche->n3_validation_note }}<br>
+            @endif
+            @if(!empty($fiche->controller_validation_note))
+                <strong>Note Controller :</strong> {{ $fiche->controller_validation_note }}
+            @endif
         </div>
         @endif
     </div>

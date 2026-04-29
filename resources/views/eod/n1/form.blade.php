@@ -8,22 +8,26 @@
 <style scoped>
 /* Styles isolés pour le formulaire EOD */
 :root {
-    --navy: #1a3a6b;
-    --blue: #2b5396;
-    --blue-light: #3d6bb5;
-    --bg: #f0f2f5;
-    --bg-row: #eef4fb;
-    --bg-sub: #d6e4f0;
-    --border: #b0bed0;
-    --border-light: #c5d5e8;
-    --green: #22a752;
-    --green-dark: #16a34a;
-    --red: #dc2626;
-    --orange: #f39c12;
+    /* Charte graphique COFINA (PDF EOD) */
+    --cofina-red: #C8102E;
+    --cofina-red-dark: #a00d24;
+    --cofina-grey: #4a4a4a;
+    --navy: #4a4a4a;
+    --blue: #C8102E;
+    --blue-light: #a00d24;
+    --bg: #f3f4f6;
+    --bg-row: #f0f0f0;
+    --bg-sub: #e5e5e5;
+    --border: #d1d5db;
+    --border-light: #e5e7eb;
+    --green: #16a34a;
+    --green-dark: #15803d;
+    --red: #b91c1c;
+    --orange: #ca8a04;
     --text-dark: #1a1a1a;
     --text-mid: #333;
-    --text-light: #555;
-    --text-gray: #888;
+    --text-light: #4a4a4a;
+    --text-gray: #6b7280;
 }
 
 /* Style tableau professionnel */
@@ -102,7 +106,7 @@
 
 /* En-tête COFINA */
 .cofina-header {
-    border: 2px solid var(--navy);
+    border: 2px solid var(--cofina-red);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 20px;
@@ -114,7 +118,7 @@
 }
 
 .cofina-header .logo {
-    background: var(--navy);
+    background: var(--cofina-red);
     color: #fff;
     padding: 12px 20px;
     display: flex;
@@ -133,13 +137,13 @@
     justify-content: center;
     align-items: center;
     padding: 12px 20px;
-    border-left: 2px solid var(--navy);
+    border-left: 2px solid var(--cofina-red);
 }
 
 .cofina-header .title h2 {
     font-size: 15px;
     font-weight: 800;
-    color: var(--navy);
+    color: var(--cofina-red);
     text-transform: uppercase;
     letter-spacing: 1px;
     margin: 0;
@@ -153,25 +157,25 @@
 }
 
 .cofina-header .role-badge {
-    background: var(--blue-light);
+    background: var(--cofina-grey);
     color: #fff;
     padding: 12px 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     min-width: 68px;
-    border-left: 2px solid var(--navy);
+    border-left: 2px solid var(--cofina-red);
     font-weight: 900;
     font-size: 13px;
 }
 
 .cofina-header .info-grid {
-    border-top: 2px solid var(--navy);
+    border-top: 2px solid var(--cofina-red);
     padding: 10px 16px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4px 30px;
-    background: #f7faff;
+    background: #fafafa;
     font-size: 11px;
 }
 
@@ -193,7 +197,7 @@
     padding: 6px 16px;
     font-size: 11px;
     color: var(--text-mid);
-    background: #f7faff;
+    background: #fafafa;
     font-style: italic;
 }
 
@@ -291,15 +295,15 @@
 }
 
 .eod-section-header {
-    background: linear-gradient(to right, #f9fafb, #f3f4f6);
+    background: linear-gradient(to right, #C8102E, #4a4a4a);
     padding: 12px 20px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: none;
 }
 
 .eod-section-header h3 {
     font-size: 14px;
     font-weight: 600;
-    color: #1f2937;
+    color: #ffffff;
     margin: 0;
 }
 
@@ -312,7 +316,7 @@
     <!-- En-tête avec navigation -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">
+            <h1 class="text-3xl font-bold text-[#C8102E]">
                 {{ isset($fiche) ? 'Fiche du ' . $fiche->date_traitement->format('d/m/Y') : 'Nouvelle fiche de suivi EOD' }}
             </h1>
             @if(isset($fiche))
@@ -334,6 +338,21 @@
         </div>
     @endif
 
+    @if(isset($fiche) && $fiche->status === 'PENDING_N3_CONTROLLER')
+        <div class="mb-6 bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 rounded-lg text-sm">
+            Cette fiche est en attente des signatures <strong>N+3</strong> et <strong>Controller</strong>. Vous ne pouvez plus la modifier.
+        </div>
+    @endif
+
+    @if(isset($fiche) && in_array($fiche->status, ['CLOSED', 'VALIDATED'], true))
+        <div class="mb-6 flex flex-wrap gap-3 justify-end">
+            <a href="{{ route('eod.n2.pdf', $fiche) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white text-sm font-semibold rounded-lg">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Télécharger le PDF
+            </a>
+        </div>
+    @endif
+
     @if(isset($fiche) && $fiche->status === 'REJECTED')
         <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
             ⚠️ Cette fiche a été rejetée par N+2.
@@ -349,16 +368,21 @@
     @endif
 
     @php
+        $eodRoutePrefix = $eodRoutePrefix ?? 'eod.n1';
         $isEditable = !isset($fiche) || $fiche->status === 'DRAFT' || $fiche->status === 'REJECTED';
-        $isReadOnly = isset($fiche) && $fiche->status === 'PENDING_N2';
-        $isValidated = isset($fiche) && $fiche->status === 'VALIDATED';
+        $isReadOnly = isset($fiche) && $fiche->status === 'PENDING_N3_CONTROLLER';
+        $isValidated = isset($fiche) && in_array($fiche->status, ['CLOSED', 'VALIDATED'], true);
         $user = auth()->user();
+        $responsableBatchDisplay = isset($fiche)
+            ? ($fiche->responsable_batch ?? '')
+            : trim(($user->prenom ?? '') . ' ' . ($user->name ?? ''));
     @endphp
 
     <!-- Formulaire principal -->
     <form method="POST" 
-          action="{{ isset($fiche) ? route('eod.n1.update', $fiche) : route('eod.n1.store') }}" 
+          action="{{ isset($fiche) ? route($eodRoutePrefix . '.update', $fiche) : route($eodRoutePrefix . '.store') }}" 
           id="eod-form"
+          enctype="multipart/form-data"
           class="space-y-6">
         @csrf
         @if(isset($fiche))
@@ -373,7 +397,7 @@
                     <h2>Fiche de Suivi — Traitement de Fin de Journée</h2>
                     <p>Oracle FLEXCUBE Core Banking · Document interne</p>
                 </div>
-                <div class="role-badge">{{ $user->name }} {{ $user->prenom }}</div>
+                <div class="role-badge">{{ trim(($user->prenom ?? '') . ' ' . ($user->name ?? '')) }}</div>
             </div>
             <div class="info-grid">
                 <div class="info-row">
@@ -384,7 +408,7 @@
                     <span class="info-label">Heure de lancement EOD :</span>
                     <span>
                         <input type="text" name="heure_lancement" 
-                               value="{{ old('heure_lancement', $fiche->heure_lancement ?? '22h00') }}"
+                               value="{{ old('heure_lancement', $fiche->heure_lancement ?? now()->format('H:i')) }}"
                                {{ !$isEditable ? 'disabled' : '' }}
                                style="border: none; background: transparent; width: auto; font-size: 11px; color: var(--text-dark); outline: none; padding: 0;">
                     </span>
@@ -397,7 +421,7 @@
                     <span class="info-label">Heure de fin EOD :</span>
                     <span>
                         <input type="text" name="heure_fin" 
-                               value="{{ old('heure_fin', $fiche->heure_fin ?? '') }}"
+                               value="{{ old('heure_fin', $fiche->heure_fin ?? now()->format('H:i')) }}"
                                {{ !$isEditable ? 'disabled' : '' }}
                                style="border: none; background: transparent; width: auto; font-size: 11px; color: var(--text-dark); outline: none; padding: 0;" 
                                placeholder="—">
@@ -407,7 +431,7 @@
                     <span class="info-label">Date du traitement :</span>
                     <span>
                         <input type="date" name="date_traitement" 
-                               value="{{ old('date_traitement', isset($fiche) && $fiche->date_traitement ? $fiche->date_traitement->format('Y-m-d') : date('Y-m-d')) }}"
+                               value="{{ old('date_traitement', isset($fiche) && $fiche->date_traitement ? $fiche->date_traitement->format('Y-m-d') : now()->format('Y-m-d')) }}"
                                {{ !$isEditable ? 'disabled' : '' }}
                                style="border: none; background: transparent; width: auto; font-size: 11px; color: var(--text-dark); outline: none; padding: 0;">
                     </span>
@@ -522,39 +546,45 @@
             <div class="eod-section-body">
                 <input type="hidden" name="batch_data" id="batch_data_json">
                 
+                @php
+                    $batchData = isset($batchData) ? $batchData : [];
+                    $batchData = collect($batchData)->filter(function ($batch) {
+                        return trim((string) ($batch['batch'] ?? '')) !== ''
+                            || trim((string) ($batch['debut'] ?? '')) !== ''
+                            || trim((string) ($batch['fin'] ?? '')) !== ''
+                            || trim((string) ($batch['observation'] ?? '')) !== '';
+                    })->values()->all();
+                @endphp
                 <div id="batch-container" class="space-y-4">
-                    @php
-                        $batchData = isset($batchData) ? $batchData : [['batch' => '', 'debut' => '', 'fin' => '', 'observation' => '']];
-                    @endphp
-                    @foreach($batchData as $index => $batch)
+                    @forelse($batchData as $index => $batch)
                     <div class="batch-item grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg relative">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Batch</label>
                             <input type="text" data-batch="batch"
                                    value="{{ $batch['batch'] ?? '' }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure début</label>
                             <input type="text" data-batch="debut"
                                    value="{{ $batch['debut'] ?? '' }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure fin</label>
                             <input type="text" data-batch="fin"
                                    value="{{ $batch['fin'] ?? '' }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
                         <div class="relative">
                             <label class="block text-sm font-medium text-gray-600 mb-1">Observation</label>
                             <input type="text" data-batch="observation"
                                    value="{{ $batch['observation'] ?? '' }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                             @if($isEditable && $index > 0)
                             <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.batch-item').remove()">
                                 ×
@@ -562,7 +592,8 @@
                             @endif
                         </div>
                     </div>
-                    @endforeach
+                    @empty
+                    @endforelse
                 </div>
                 
                 @if($isEditable)
@@ -572,6 +603,7 @@
                     </svg>
                     Ajouter un batch
                 </button>
+                <p class="text-xs text-gray-500 mt-2">Cliquez sur "Ajouter un batch" uniquement si nécessaire.</p>
                 @endif
             </div>
         </div>
@@ -581,22 +613,39 @@
             <div class="eod-section-header">
                 <h3>3. Émargement</h3>
             </div>
-            <div class="eod-section-body">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="eod-section-body space-y-4">
+                <p class="text-xs text-gray-500">Note libre, signature manuscrite (canvas) et/ou photo importée. Le responsable batch est celui du compte connecté (mis à jour à l’enregistrement).</p>
+                <input type="hidden" name="emargement" value="{{ old('emargement', isset($fiche) ? ($fiche->emargement ?? '') : '') }}">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Responsable batch</label>
+                    <input type="text" readonly
+                           value="{{ $responsableBatchDisplay }}"
+                           class="w-full rounded-lg border-gray-200 bg-gray-50 text-gray-800 shadow-sm max-w-xl">
+                </div>
+                @if($isEditable)
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Émargement</label>
-                        <textarea name="emargement" rows="3"
-                                  {{ !$isEditable ? 'disabled' : '' }}
-                                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">{{ old('emargement', $fiche->emargement ?? '') }}</textarea>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Signature (canvas)</label>
+                        <div class="border border-gray-300 rounded-lg bg-white overflow-hidden">
+                            <canvas id="emargement-canvas" width="440" height="160" class="w-full touch-none cursor-crosshair" style="max-height:160px;"></canvas>
+                        </div>
+                        <input type="hidden" name="emargement_signature_canvas" id="emargement_signature_canvas" value="">
+                        <div class="flex gap-2 mt-2">
+                            <button type="button" id="emargement-clear" class="px-3 py-1.5 text-xs bg-gray-200 rounded-lg">Effacer</button>
+                        </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Responsable Batch</label>
-                        <input type="text" name="responsable_batch" 
-                               value="{{ old('responsable_batch', $fiche->responsable_batch ?? '') }}"
-                               {{ !$isEditable ? 'disabled' : '' }}
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ou importer une photo / scan</label>
+                        <input type="file" name="emargement_signature_file" accept="image/*" capture="environment"
+                               class="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-red-50 file:text-[#C8102E]">
                     </div>
                 </div>
+                @elseif(isset($fiche) && $fiche->emargement_signature_path)
+                <div>
+                    <p class="text-sm font-medium text-gray-700 mb-1">Signature enregistrée</p>
+                    <img src="{{ asset('storage/'.$fiche->emargement_signature_path) }}" alt="Signature émargement" class="max-h-32 rounded border border-gray-200">
+                </div>
+                @endif
             </div>
         </div>
 
@@ -608,44 +657,51 @@
             <div class="eod-section-body">
                 <input type="hidden" name="incidents_data" id="incidents_data_json">
 
+                @php
+                    $incidentsData = isset($incidentsData) ? $incidentsData : [];
+                    $incidentsData = collect($incidentsData)->filter(function ($incident) {
+                        return trim((string) ($incident['heure'] ?? '')) !== ''
+                            || trim((string) ($incident['incident'] ?? '')) !== ''
+                            || trim((string) ($incident['impact'] ?? '')) !== ''
+                            || trim((string) ($incident['action'] ?? '')) !== ''
+                            || trim((string) ($incident['statut'] ?? '')) !== '';
+                    })->values()->all();
+                @endphp
                 <div id="incidents-container" class="space-y-4">
-                    @php
-                        $incidentsData = isset($incidentsData) ? $incidentsData : [['heure' => '', 'incident' => '', 'impact' => '', 'action' => '', 'statut' => '']];
-                    @endphp
-                    @foreach($incidentsData as $index => $incident)
+                    @forelse($incidentsData as $index => $incident)
                     <div class="incident-item grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg relative">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure</label>
                             <input type="text" data-incident="heure"
                                    value="{{ $incident['heure'] ?? '' }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Incident</label>
                             <input type="text" data-incident="incident"
                                    value="{{ $incident['incident'] ?? '' }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Impact</label>
                             <input type="text" data-incident="impact"
                                    value="{{ $incident['impact'] ?? '' }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Action corrective</label>
                             <input type="text" data-incident="action"
                                    value="{{ $incident['action'] ?? '' }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
                         <div class="relative">
                             <label class="block text-sm font-medium text-gray-600 mb-1">Statut</label>
                             <select data-incident="statut" {{ !$isEditable ? 'disabled' : '' }}
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-100' : '' }}">
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                                 <option value="">Sélectionner</option>
                                 <option value="Résolu" {{ ($incident['statut'] ?? '') == 'Résolu' ? 'selected' : '' }}>Résolu</option>
                                 <option value="En cours" {{ ($incident['statut'] ?? '') == 'En cours' ? 'selected' : '' }}>En cours</option>
@@ -658,7 +714,8 @@
                             @endif
                         </div>
                     </div>
-                    @endforeach
+                    @empty
+                    @endforelse
                 </div>
                 
                 @if($isEditable)
@@ -668,6 +725,42 @@
                     </svg>
                     Ajouter un incident
                 </button>
+                <p class="text-xs text-gray-500 mt-2">Cliquez sur "Ajouter un incident" uniquement si nécessaire.</p>
+                @endif
+            </div>
+        </div>
+
+        <!-- 5. PIÈCES JOINTES -->
+        <div class="eod-section-card">
+            <div class="eod-section-header">
+                <h3>5. Pièces jointes</h3>
+            </div>
+            <div class="eod-section-body space-y-4">
+                @php
+                    $existingAttachments = is_array($fiche->attachments ?? null) ? $fiche->attachments : [];
+                @endphp
+                @if(count($existingAttachments) > 0)
+                    <div class="space-y-2">
+                        @foreach($existingAttachments as $att)
+                            <a href="{{ asset('storage/' . ($att['path'] ?? '')) }}" target="_blank" class="block p-3 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-sm">
+                                <span class="font-medium text-gray-800">{{ $att['name'] ?? 'Fichier joint' }}</span>
+                                @if(!empty($att['uploaded_at']))
+                                    <span class="text-gray-500"> — {{ $att['uploaded_at'] }}</span>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-gray-500">Aucune pièce jointe pour le moment.</p>
+                @endif
+
+                @if($isEditable)
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ajouter des fichiers</label>
+                        <input type="file" name="eod_attachments_files[]" multiple
+                               class="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-red-50 file:text-[#C8102E]">
+                        <p class="text-xs text-gray-500 mt-1">Formats: PDF, Word, Excel, CSV, TXT, JPG, PNG (max 10 Mo par fichier).</p>
+                    </div>
                 @endif
             </div>
         </div>
@@ -682,27 +775,27 @@
             </a>
             
             @if($isEditable)
-                <button type="submit" id="btn-save" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center">
+                <button type="submit" id="btn-save" class="px-6 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors inline-flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                     </svg>
-                    Sauvegarder brouillon
+                    Save
                 </button>
             @endif
             
             @if($isEditable && isset($fiche))
-                <button type="button" onclick="submitToN2()" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center">
+                <button type="button" onclick="submitToN3Controller()" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                     </svg>
-                    Soumettre à N+2
+                    Soumettre à N+3 et Controller
                 </button>
             @endif
         </div>
     </form>
 
     @if(isset($fiche))
-    <form id="submit-n2-form" method="POST" action="{{ route('eod.n1.submit', $fiche) }}" style="display:none;">
+    <form id="submit-n3-form" method="POST" action="{{ route($eodRoutePrefix . '.submit', $fiche) }}" style="display:none;">
         @csrf
     </form>
     @endif
@@ -747,7 +840,56 @@ function serializeFormData() {
 
 document.getElementById('eod-form').addEventListener('submit', function(e) {
     serializeFormData();
+    flushEmargementCanvas();
 });
+
+(function initEmargementCanvas() {
+    const canvas = document.getElementById('emargement-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    function pos(ev) {
+        const r = canvas.getBoundingClientRect();
+        const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
+        const y = (ev.touches ? ev.touches[0].clientY : ev.clientY) - r.top;
+        return { x, y };
+    }
+    function start(ev) { drawing = true; ctx.beginPath(); const p = pos(ev); ctx.moveTo(p.x, p.y); ev.preventDefault(); }
+    function move(ev) {
+        if (!drawing) return;
+        const p = pos(ev);
+        ctx.strokeStyle = '#111';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        ev.preventDefault();
+    }
+    function end() { drawing = false; }
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    canvas.addEventListener('touchend', end);
+    document.getElementById('emargement-clear')?.addEventListener('click', function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('emargement_signature_canvas').value = '';
+    });
+})();
+
+function flushEmargementCanvas() {
+    const canvas = document.getElementById('emargement-canvas');
+    const hid = document.getElementById('emargement_signature_canvas');
+    if (canvas && hid && canvas.getContext) {
+        const blank = document.createElement('canvas');
+        blank.width = canvas.width;
+        blank.height = canvas.height;
+        if (canvas.toDataURL() !== blank.toDataURL()) {
+            hid.value = canvas.toDataURL('image/png');
+        }
+    }
+}
 
 // ==================== AJOUT DE LIGNES ====================
 
@@ -758,19 +900,19 @@ function addBatchRow() {
     div.innerHTML = `
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Batch</label>
-            <input type="text" data-batch="batch" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <input type="text" data-batch="batch" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Heure début</label>
-            <input type="text" data-batch="debut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <input type="text" data-batch="debut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Heure fin</label>
-            <input type="text" data-batch="fin" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <input type="text" data-batch="fin" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div class="relative">
             <label class="block text-sm font-medium text-gray-600 mb-1">Observation</label>
-            <input type="text" data-batch="observation" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <input type="text" data-batch="observation" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
             <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.batch-item').remove()">×</button>
         </div>
     `;
@@ -784,23 +926,23 @@ function addIncidentRow() {
     div.innerHTML = `
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Heure</label>
-            <input type="text" data-incident="heure" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <input type="text" data-incident="heure" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Incident</label>
-            <input type="text" data-incident="incident" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <input type="text" data-incident="incident" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Impact</label>
-            <input type="text" data-incident="impact" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <input type="text" data-incident="impact" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Action corrective</label>
-            <input type="text" data-incident="action" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <input type="text" data-incident="action" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div class="relative">
             <label class="block text-sm font-medium text-gray-600 mb-1">Statut</label>
-            <select data-incident="statut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <select data-incident="statut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
                 <option value="">Sélectionner</option>
                 <option value="Résolu">Résolu</option>
                 <option value="En cours">En cours</option>
@@ -812,13 +954,18 @@ function addIncidentRow() {
     container.appendChild(div);
 }
 
-// ==================== SOUMISSION À N+2 ====================
+// ==================== SOUMISSION N+3 + CONTROLLER ====================
 
-function submitToN2() {
+function submitToN3Controller() {
+    serializeFormData();
+    flushEmargementCanvas();
+    const doSubmit = function() {
+        document.getElementById('submit-n3-form').submit();
+    };
     if (typeof Swal !== 'undefined') {
         Swal.fire({
-            title: 'Soumettre à N+2 ?',
-            text: 'La fiche sera transmise pour validation. Vous ne pourrez plus la modifier.',
+            title: 'Soumettre à N+3 et Controller ?',
+            text: 'La fiche sera transmise pour les deux signatures. Vous ne pourrez plus la modifier tant qu’elle n’est pas renvoyée en rejet.',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#16a34a',
@@ -826,14 +973,10 @@ function submitToN2() {
             confirmButtonText: 'Oui, soumettre',
             cancelButtonText: 'Annuler'
         }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('submit-n2-form').submit();
-            }
+            if (result.isConfirmed) doSubmit();
         });
     } else {
-        if (confirm('Soumettre cette fiche à N+2 pour validation ?')) {
-            document.getElementById('submit-n2-form').submit();
-        }
+        if (confirm('Soumettre cette fiche à N+3 et au Controller ?')) doSubmit();
     }
 }
 </script>

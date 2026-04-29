@@ -7,22 +7,26 @@
 @section('content')
 <style>
 :root {
-    --navy: #1a3a6b;
-    --blue: #2b5396;
-    --blue-light: #3d6bb5;
-    --bg: #f0f2f5;
-    --bg-row: #eef4fb;
-    --bg-sub: #d6e4f0;
-    --border: #b0bed0;
-    --border-light: #c5d5e8;
-    --green: #22a752;
-    --green-dark: #16a34a;
-    --red: #dc2626;
-    --orange: #f39c12;
+    /* Charte graphique COFINA (PDF EOD) */
+    --cofina-red: #C8102E;
+    --cofina-red-dark: #a00d24;
+    --cofina-grey: #4a4a4a;
+    --navy: #4a4a4a;
+    --blue: #C8102E;
+    --blue-light: #a00d24;
+    --bg: #f3f4f6;
+    --bg-row: #f0f0f0;
+    --bg-sub: #e5e5e5;
+    --border: #d1d5db;
+    --border-light: #e5e7eb;
+    --green: #16a34a;
+    --green-dark: #15803d;
+    --red: #b91c1c;
+    --orange: #ca8a04;
     --text-dark: #1a1a1a;
     --text-mid: #333;
-    --text-light: #555;
-    --text-gray: #888;
+    --text-light: #4a4a4a;
+    --text-gray: #6b7280;
 }
 
 /* Style tableau professionnel */
@@ -77,7 +81,7 @@
 
 /* En-tête COFINA */
 .cofina-header {
-    border: 2px solid var(--navy);
+    border: 2px solid var(--cofina-red);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 20px;
@@ -89,7 +93,7 @@
 }
 
 .cofina-header .logo {
-    background: var(--navy);
+    background: var(--cofina-red);
     color: #fff;
     padding: 12px 20px;
     display: flex;
@@ -108,13 +112,13 @@
     justify-content: center;
     align-items: center;
     padding: 12px 20px;
-    border-left: 2px solid var(--navy);
+    border-left: 2px solid var(--cofina-red);
 }
 
 .cofina-header .title h2 {
     font-size: 15px;
     font-weight: 800;
-    color: var(--navy);
+    color: var(--cofina-red);
     text-transform: uppercase;
     letter-spacing: 1px;
     margin: 0;
@@ -128,26 +132,26 @@
 }
 
 .cofina-header .role-badge {
-    background: var(--green-dark);
+    background: var(--cofina-grey);
     color: #fff;
     padding: 12px 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     min-width: 120px;
-    border-left: 2px solid var(--navy);
+    border-left: 2px solid var(--cofina-red);
     font-weight: 600;
     font-size: 13px;
     white-space: nowrap;
 }
 
 .cofina-header .info-grid {
-    border-top: 2px solid var(--navy);
+    border-top: 2px solid var(--cofina-red);
     padding: 10px 16px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4px 30px;
-    background: #f7faff;
+    background: #fafafa;
     font-size: 11px;
 }
 
@@ -169,7 +173,7 @@
     padding: 6px 16px;
     font-size: 11px;
     color: var(--text-mid);
-    background: #f7faff;
+    background: #fafafa;
     font-style: italic;
 }
 
@@ -247,15 +251,15 @@
 }
 
 .section-header {
-    background: linear-gradient(to right, #f9fafb, #f3f4f6);
+    background: linear-gradient(to right, #C8102E, #4a4a4a);
     padding: 12px 20px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: none;
 }
 
 .section-header h3 {
     font-size: 14px;
     font-weight: 600;
-    color: #1f2937;
+    color: #ffffff;
     margin: 0;
 }
 
@@ -398,7 +402,7 @@
     <!-- En-tête -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Validation - Fiche du {{ $fiche->date_traitement->format('d/m/Y') }}</h1>
+            <h1 class="text-3xl font-bold text-[#C8102E]">Validation - Fiche du {{ $fiche->date_traitement->format('d/m/Y') }}</h1>
             <p class="text-gray-600 mt-2">
                 {{ $fiche->reference }} · 
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $fiche->status_class }}">
@@ -408,7 +412,7 @@
         </div>
         @if($fiche->status === 'VALIDATED')
         <a href="{{ route('eod.n2.pdf', $fiche) }}" target="_blank"
-           class="mt-4 md:mt-0 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center">
+           class="mt-4 md:mt-0 px-6 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors inline-flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
@@ -482,6 +486,20 @@
             <div>
                 <p class="text-amber-800 font-medium">En attente de validation N+2</p>
                 <p class="text-sm text-amber-700">Soumis par {{ $fiche->creator?->name ?? 'N+1' }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($fiche->status === 'PENDING_CONTROLLER')
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 text-[#C8102E] mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <p class="text-gray-900 font-medium">Validation N+2 effectuée</p>
+                <p class="text-sm text-[#4a4a4a]">En attente de validation et signature du Controller avant PDF final.</p>
             </div>
         </div>
     </div>
@@ -664,6 +682,32 @@
         </div>
     </div>
 
+    <!-- 5. PIÈCES JOINTES -->
+    <div class="section-card readonly">
+        <div class="section-header">
+            <h3>5. Pièces jointes</h3>
+        </div>
+        <div class="section-body">
+            @php
+                $existingAttachments = is_array($fiche->attachments ?? null) ? $fiche->attachments : [];
+            @endphp
+            @if(count($existingAttachments) > 0)
+                <div class="space-y-2">
+                    @foreach($existingAttachments as $att)
+                        <a href="{{ asset('storage/' . ($att['path'] ?? '')) }}" target="_blank" class="block p-3 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-sm">
+                            <span class="font-medium text-gray-800">{{ $att['name'] ?? 'Fichier joint' }}</span>
+                            @if(!empty($att['uploaded_at']))
+                                <span class="text-gray-500"> — {{ $att['uploaded_at'] }}</span>
+                            @endif
+                        </a>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-gray-500 text-center py-4 italic">Aucune pièce jointe</p>
+            @endif
+        </div>
+    </div>
+
     <!-- 5. VÉRIFICATION / VALIDATION -->
     @if($fiche->status === 'PENDING_N2')
     <div class="validation-block">
@@ -771,11 +815,18 @@
                             <p class="text-sm">Visa: {{ $fiche->validation_audit_visa ?: '—' }}</p>
                         </div>
                         @endif
+                        @if($fiche->controller_validation_date || $fiche->controller_validation_visa)
+                        <div class="bg-white p-3 rounded border border-green-200">
+                            <h4 class="font-semibold text-green-800 mb-2">Controller</h4>
+                            <p class="text-sm">Date: {{ $fiche->controller_validation_date ?: '—' }}</p>
+                            <p class="text-sm">Visa: {{ $fiche->controller_validation_visa ?: '—' }}</p>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
             <a href="{{ route('eod.n2.pdf', $fiche) }}" target="_blank"
-               class="flex-shrink-0 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center shadow-md">
+               class="flex-shrink-0 px-6 py-3 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors inline-flex items-center shadow-md">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>

@@ -9,8 +9,8 @@
     <!-- En-tête avec bouton rafraîchir -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Validation finale</h1>
-            <p class="text-gray-600 mt-2">Examinez et clôturez les tickets approuvés par N+2</p>
+            <h1 class="text-3xl font-bold text-[#C8102E]">Contrôle N+3</h1>
+            <p class="text-gray-600 mt-2">Contrôlez les demandes soumises par le N+2, commentez puis approuvez pour retour terrain</p>
         </div>
         <div class="flex gap-3 mt-4 md:mt-0">
             <a href="{{ route('change.n3.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
@@ -36,19 +36,19 @@
 
     <!-- Filtres rapides -->
     <div class="flex flex-wrap gap-2 mb-6">
-        <a href="{{ route('change.n3.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ !request()->has('filter') ? 'bg-indigo-100 text-indigo-700' : '' }}">
+        <a href="{{ route('change.n3.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ !request()->has('filter') ? 'bg-red-50 text-[#C8102E]' : '' }}">
             Tous
         </a>
         <a href="{{ route('change.n3.index', ['filter' => 'pending']) }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ request()->get('filter') === 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}">
-            À clôturer
+            À contrôler
         </a>
-        <a href="{{ route('change.n3.index', ['filter' => 'closed']) }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ request()->get('filter') === 'closed' ? 'bg-purple-100 text-purple-700' : '' }}">
+        <a href="{{ route('change.n3.index', ['filter' => 'closed']) }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium {{ request()->get('filter') === 'closed' ? 'bg-red-50 text-[#C8102E]' : '' }}">
             Clôturés
         </a>
     </div>
 
     <!-- Cartes de statistiques -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <!-- Total formulaires -->
         <div class="bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
@@ -64,11 +64,11 @@
             </div>
         </div>
 
-        <!-- À clôturer -->
+        <!-- À contrôler -->
         <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium opacity-90">À clôturer</p>
+                    <p class="text-sm font-medium opacity-90">À contrôler</p>
                     <p class="text-3xl font-bold mt-2">{{ $tickets->where('status', 'PENDING_N3')->count() }}</p>
                 </div>
                 <div class="bg-white/20 p-3 rounded-full">
@@ -80,7 +80,7 @@
         </div>
 
         <!-- Clôturés -->
-        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Clôturés</p>
@@ -94,20 +94,6 @@
             </div>
         </div>
 
-        <!-- Avec incident -->
-        <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium opacity-90">Avec incident</p>
-                    <p class="text-3xl font-bold mt-2">{{ $tickets->whereNotNull('incident_num')->count() }}</p>
-                </div>
-                <div class="bg-white/20 p-3 rounded-full">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.346 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Liste des formulaires -->
@@ -119,8 +105,8 @@
                 </svg>
             </div>
             <h3 class="text-xl font-medium text-gray-900 mb-2">Aucun formulaire à traiter</h3>
-            <p class="text-gray-500 mb-6">Les tickets validés par N+2 apparaîtront ici</p>
-            <a href="{{ route('dashboard') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+            <p class="text-gray-500 mb-6">Les demandes transmises par le N+2 apparaîtront ici</p>
+            <a href="{{ route('dashboard') }}" class="inline-flex items-center px-4 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
@@ -137,7 +123,6 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N° Ticket</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Demandeur</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Incident</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -146,7 +131,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($tickets as $ticket)
                         <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location='{{ route('change.n3.edit', $ticket) }}'">
-                            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-indigo-600">{{ $ticket->ticket_id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-[#C8102E]">{{ $ticket->ticket_id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $ticket->ticket_number ?? '—' }}
                             </td>
@@ -155,18 +140,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $ticket->prenom }} {{ $ticket->nom }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($ticket->incident_num)
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                        {{ $ticket->incident_num }}
-                                    </span>
-                                @else
-                                    <span class="text-gray-400 text-xs">—</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     @if($ticket->status === 'PENDING_N3') bg-yellow-100 text-yellow-800
-                                    @elseif($ticket->status === 'CLOSED') bg-purple-100 text-purple-800
+                                    @elseif($ticket->status === 'CLOSED') bg-red-50 text-[#C8102E] ring-1 ring-red-200
                                     @else bg-gray-100 text-gray-800
                                     @endif">
                                     {{ $ticket->status_label }}
@@ -176,12 +152,19 @@
                                 {{ $ticket->created_at->format('d/m/Y') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('change.n3.edit', $ticket) }}" class="text-indigo-600 hover:text-indigo-900" onclick="event.stopPropagation();">
+                                <a href="{{ route('change.n3.edit', $ticket) }}" class="text-[#C8102E] hover:text-[#7a0c22] mr-2" onclick="event.stopPropagation();" title="Voir">
                                     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
                                 </a>
+                                @if($ticket->status === 'CLOSED')
+                                    <a href="{{ route('change.ticket.pdf', $ticket) }}" target="_blank" rel="noopener" class="text-gray-700 hover:text-gray-900" onclick="event.stopPropagation();" title="PDF">
+                                        <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                        </svg>
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                         @endforeach

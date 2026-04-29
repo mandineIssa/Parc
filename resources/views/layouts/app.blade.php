@@ -109,13 +109,20 @@
                                 @yield('header', 'Dashboard')
                             </h1>
                             
+                            <!-- Badge rôle principal EOD dédié (sans role_change) -->
+                            @if(auth()->check() && in_array(auth()->user()->role, ['eod_n3', 'eod_controller'], true))
+                                <span class="role-change-badge role-change-{{ auth()->user()->role === 'eod_n3' ? 'N3' : 'CONTROLLER' }}">
+                                    {{ auth()->user()->principal_role_label }}
+                                </span>
+                            @endif
                             <!-- Badge de rôle Change Management -->
                             @if(auth()->check() && auth()->user()->role_change)
                                 @php
                                     $changeRoleLabels = [
                                         'N1' => 'N+1 - Demandeur',
                                         'N2' => 'N+2 - Technicien',
-                                        'N3' => 'N+3 - Validateur'
+                                        'N3' => 'N+3 - Validateur',
+                                        'CONTROLLER' => 'Controller EOD',
                                     ];
                                 @endphp
                                 <span class="role-change-badge role-change-{{ auth()->user()->role_change }}">
@@ -138,12 +145,16 @@
                                 $roleColors = [
                                     'super_admin' => 'danger',
                                     'agent_it' => 'warning',
-                                    'user' => 'primary'
+                                    'user' => 'primary',
+                                    'eod_n3' => 'purple',
+                                    'eod_controller' => 'indigo',
                                 ];
                                 $roleNames = [
                                     'super_admin' => 'Super Admin',
                                     'agent_it' => 'Agent IT',
-                                    'user' => 'Utilisateur'
+                                    'user' => 'Utilisateur',
+                                    'eod_n3' => 'Signataire EOD N+3',
+                                    'eod_controller' => 'Contrôleur EOD',
                                 ];
                                 $color = $roleColors[auth()->user()->role] ?? 'secondary';
                                 $name = $roleNames[auth()->user()->role] ?? auth()->user()->role;
@@ -339,6 +350,42 @@
                 timerProgressBar: true,
             });
         @endif
+    </script>
+
+    {{-- Valeurs par défaut navigateur : date / heure / datetime-local vides → date et heure locales --}}
+    <script>
+        (function () {
+            var denyNames = { date_debut: 1, date_fin: 1, date_from: 1, date_to: 1 };
+            function pad(n) { return String(n).padStart(2, '0'); }
+            function fill() {
+                var now = new Date();
+                var ymd = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+                var hi = pad(now.getHours()) + ':' + pad(now.getMinutes());
+                var dtl = ymd + 'T' + hi;
+                document.querySelectorAll('input[type="date"]').forEach(function (el) {
+                    if (el.disabled || el.readOnly) return;
+                    if (denyNames[el.name]) return;
+                    if (el.closest('.no-default-datetime')) return;
+                    if (el.value) return;
+                    el.value = ymd;
+                });
+                document.querySelectorAll('input[type="time"]').forEach(function (el) {
+                    if (el.disabled || el.readOnly) return;
+                    if (el.closest('.no-default-datetime')) return;
+                    if (el.value) return;
+                    el.value = hi;
+                });
+                document.querySelectorAll('input[type="datetime-local"]').forEach(function (el) {
+                    if (el.disabled || el.readOnly) return;
+                    if (denyNames[el.name]) return;
+                    if (el.closest('.no-default-datetime')) return;
+                    if (el.value) return;
+                    el.value = dtl;
+                });
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fill);
+            else fill();
+        })();
     </script>
     
     @stack('scripts')

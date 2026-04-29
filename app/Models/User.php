@@ -16,8 +16,9 @@ class User extends Authenticatable
         'prenom',
         'email',
         'password',
-        'role',              // Rôle principal (user, agent_it, super_admin)
-        'role_change',        // NOUVEAU: Rôle Change Management (N1, N2, N3, null)
+        'role',              // user, agent_it, super_admin, eod_n3, eod_controller
+        'role_change',        // Rôle Change / EOD (N1, N2, N3, CONTROLLER, null)
+        'eod_signature_only_ui',
         'departement',
         'fonction',
         'email_verified_at',
@@ -31,7 +32,134 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'eod_signature_only_ui' => 'boolean',
     ];
+
+    /**
+     * Accès aux écrans EOD N+3 (/eod/n3) : rôle principal eod_n3 ou ancien role_change N3.
+     */
+    public function canAccessEodAsN3(): bool
+    {
+        if ($this->role === 'super_admin') {
+            return true;
+        }
+
+        return $this->role === 'eod_n3' || $this->role_change === 'N3';
+    }
+
+    /**
+     * Accès aux écrans Controller EOD (/eod/controller) : rôle principal eod_controller ou role_change CONTROLLER.
+     */
+    public function canAccessEodAsController(): bool
+    {
+        if ($this->role === 'super_admin') {
+            return true;
+        }
+
+        return $this->role === 'eod_controller' || $this->role_change === 'CONTROLLER';
+    }
+
+    /**
+     * Menu latéral réduit : compte dédié EOD (rôle principal) ou case à cocher + role_change N3/CONTROLLER.
+     */
+    public function usesEodSignatureOnlySidebar(): bool
+    {
+        if (in_array($this->role, ['eod_n3', 'eod_controller'], true)) {
+            return true;
+        }
+
+        return (bool) $this->eod_signature_only_ui
+            && in_array($this->role_change, ['N3', 'CONTROLLER'], true);
+    }
+
+    /**
+     * Liens N+3 dans le menu EOD réduit (exclut les comptes Controller dédiés).
+     */
+    public function eodSidebarShowsN3Section(): bool
+    {
+        if ($this->role === 'eod_controller') {
+            return false;
+        }
+        if ($this->role === 'eod_n3') {
+            return true;
+        }
+        if ($this->role === 'super_admin') {
+            return $this->canAccessEodAsN3();
+        }
+        if ($this->usesEodSignatureOnlySidebar()
+            && $this->role_change === 'N3'
+            && $this->role !== 'eod_controller') {
+            return true;
+        }
+
+        return $this->canAccessEodAsN3() && $this->role !== 'eod_controller';
+    }
+
+    /**
+     * Liens Controller dans le menu EOD réduit (exclut les comptes N+3 dédiés).
+     */
+    public function eodSidebarShowsControllerSection(): bool
+    {
+        if ($this->role === 'eod_n3') {
+            return false;
+        }
+        if ($this->role === 'eod_controller') {
+            return true;
+        }
+        if ($this->role === 'super_admin') {
+            return $this->canAccessEodAsController();
+        }
+        if ($this->usesEodSignatureOnlySidebar()
+            && $this->role_change === 'CONTROLLER'
+            && $this->role !== 'eod_n3') {
+            return true;
+        }
+
+        return $this->canAccessEodAsController() && $this->role !== 'eod_n3';
+    }
+
+    /**
+     * Compte EOD « signature seule » : pas d’accès au tableau de bord principal, redirection après login.
+     */
+    public function shouldBypassMainDashboard(): bool
+    {
+        return $this->usesEodSignatureOnlySidebar();
+    }
+
+    /**
+     * Route Laravel à ouvrir après authentification (profils EOD restreints).
+     */
+    public function eodPostLoginRoute(): ?string
+    {
+        if (! $this->usesEodSignatureOnlySidebar()) {
+            return null;
+        }
+
+        return 'eod.n3.pending';
+    }
+
+    /**
+     * Accès Controller EOD sans accès N+3 (liste d’attente différente sur /eod/n3/fiches-en-attente).
+     */
+    public function isEodControllerOnly(): bool
+    {
+        return $this->canAccessEodAsController() && ! $this->canAccessEodAsN3();
+    }
+
+    /**
+     * Libellé affichage du rôle principal (dont profils EOD dédiés).
+     */
+    public function getPrincipalRoleLabelAttribute(): string
+    {
+        return match ($this->role) {
+            'super_admin' => 'Super Admin',
+            'agent_it' => 'Agent IT',
+            'user' => 'Utilisateur',
+            'eod_n3' => 'Signataire EOD N+3',
+            'eod_controller' => 'Contrôleur EOD (batch)',
+            default => (string) $this->role,
+        };
+    }
     
     /**
      * Relation: Équipements associés à l'utilisateur
@@ -110,6 +238,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Vérifier si l'utilisateur est Controller EOD
+     */
+    public function isController()
+    {
+        return $this->role_change === 'CONTROLLER';
+    }
+
+    /**
      * Obtenir le libellé du rôle Change Management
      */
     public function getChangeRoleLabelAttribute()
@@ -118,6 +254,7 @@ class User extends Authenticatable
             'N1' => 'N+1 - Demandeur',
             'N2' => 'N+2 - Technicien',
             'N3' => 'N+3 - Validateur',
+            'CONTROLLER' => 'Controller - Validation Batch EOD',
             default => 'Aucun rôle Change Management'
         };
     }
@@ -131,6 +268,7 @@ class User extends Authenticatable
             'N1' => 'blue',
             'N2' => 'green',
             'N3' => 'purple',
+            'CONTROLLER' => 'indigo',
             default => 'gray'
         };
     }

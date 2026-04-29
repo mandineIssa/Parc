@@ -3,6 +3,10 @@
 
     <nav class="flex-1 overflow-y-auto py-4 sidebar-custom-scrollbar" id="sidebar-nav">
 
+        @if(auth()->check() && auth()->user()->usesEodSignatureOnlySidebar())
+            @include('layouts.partials.sidebar-eod-signature-only')
+        @else
+
         {{-- ════════════════════════════════════════
              SECTION : RAPPORTS
         ════════════════════════════════════════ --}}
@@ -208,9 +212,16 @@
                 </svg>
             </button>
             <div class="sidebar-section-body">
-                @php $user = auth()->user(); $hasChangeRole = $user && $user->role_change; @endphp
-                @if($hasChangeRole)
-                    @if($user->role_change === 'N1')
+                @php
+                    $user = auth()->user();
+                    $eodN3 = $user && $user->canAccessEodAsN3();
+                    $eodCtrl = $user && $user->canAccessEodAsController();
+                    $eodN1 = $user && $user->role_change === 'N1';
+                    $eodN2 = $user && $user->role_change === 'N2';
+                    $eodAny = $eodN1 || $eodN2 || $eodN3 || $eodCtrl;
+                @endphp
+                @if($eodAny)
+                    @if($eodN1)
                         <a href="{{ route('eod.n1.index') }}" class="sidebar-item {{ request()->routeIs('eod.n1.index') ? 'sidebar-active' : '' }}">
                             <span class="sidebar-dot"></span>
                             <span>Mes fiches EOD</span>
@@ -219,19 +230,35 @@
                             <span class="sidebar-dot"></span>
                             <span>Nouvelle fiche EOD</span>
                         </a>
-                    @elseif($user->role_change === 'N2')
-                        <a href="{{ route('eod.n2.index') }}" class="sidebar-item {{ request()->routeIs('eod.n2.*') ? 'sidebar-active' : '' }}">
+                    @endif
+                    @if($eodN2)
+                        <a href="{{ route('eod.n2.index') }}" class="sidebar-item {{ request()->routeIs('eod.n2.index') ? 'sidebar-active' : '' }}">
                             <span class="sidebar-dot"></span>
-                            <span>Fiches à valider</span>
+                            <span>Mes fiches EOD</span>
                         </a>
-                    @elseif($user->role_change === 'N3')
-                        <a href="{{ route('eod.n3.index') }}" class="sidebar-item {{ request()->routeIs('eod.n3.*') ? 'sidebar-active' : '' }}">
+                        <a href="{{ route('eod.n2.create') }}" class="sidebar-item {{ request()->routeIs('eod.n2.create') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
+                            <span>Nouvelle fiche EOD</span>
+                        </a>
+                    @endif
+                    @if($eodN3)
+                        <a href="{{ route('eod.n3.pending') }}" class="sidebar-item {{ request()->routeIs('eod.n3.pending') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
+                            <span>Fiches à signer (N+3)</span>
+                        </a>
+                        <a href="{{ route('eod.n3.index') }}" class="sidebar-item {{ request()->routeIs('eod.n3.index') ? 'sidebar-active' : '' }}">
                             <span class="sidebar-dot"></span>
                             <span>Supervision EOD</span>
                         </a>
                     @endif
+                    @if($eodCtrl)
+                        <a href="{{ route('eod.controller.index') }}" class="sidebar-item {{ request()->routeIs('eod.controller.*') ? 'sidebar-active' : '' }}">
+                            <span class="sidebar-dot"></span>
+                            <span>Validation Controller</span>
+                        </a>
+                    @endif
                 @else
-                    <div class="px-4 py-2 text-xs text-gray-400 italic">Sélectionnez un rôle Change Management</div>
+                    <div class="px-4 py-2 text-xs text-gray-400 italic">Profil sans accès EOD (rôle principal Signataire N+3 ou Contrôleur EOD, ou rôle Change N1–N3 / Controller)</div>
                 @endif
             </div>
         </div>
@@ -335,6 +362,8 @@
                             <span class="sidebar-dot"></span>
                             <span>N+3 — Validation finale</span>
                         </a>
+                    @elseif($user->role_change === 'CONTROLLER')
+                        <p class="px-4 py-2 text-xs text-gray-500">Profil <strong>Controller EOD</strong> : utilisez la section « EOD Suivi » pour valider les batchs.</p>
                     @endif
                     <div class="sidebar-divider"></div>
                     <form method="POST" action="{{ route('change.role.clear') }}" class="w-full">
@@ -346,8 +375,8 @@
                     </form>
                     <div class="px-4 py-2 mt-1">
                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
-                              style="background:{{ $user->role_change === 'N1' ? 'rgba(59,130,246,0.1)' : ($user->role_change === 'N2' ? 'rgba(16,185,129,0.1)' : 'rgba(139,92,246,0.1)') }};color:{{ $user->role_change === 'N1' ? '#3b82f6' : ($user->role_change === 'N2' ? '#10b981' : '#8b5cf6') }}">
-                            Rôle actuel : {{ $user->role_change === 'N1' ? 'N+1' : ($user->role_change === 'N2' ? 'N+2' : 'N+3') }}
+                             style="background:{{ $user->role_change === 'N1' ? 'rgba(59,130,246,0.1)' : ($user->role_change === 'N2' ? 'rgba(16,185,129,0.1)' : ($user->role_change === 'N3' ? 'rgba(139,92,246,0.1)' : 'rgba(99,102,241,0.1)')) }};color:{{ $user->role_change === 'N1' ? '#3b82f6' : ($user->role_change === 'N2' ? '#10b981' : ($user->role_change === 'N3' ? '#8b5cf6' : '#4f46e5')) }}">
+                            Rôle actuel : {{ $user->role_change === 'N1' ? 'N+1' : ($user->role_change === 'N2' ? 'N+2' : ($user->role_change === 'N3' ? 'N+3' : 'CONTROLLER')) }}
                         </span>
                     </div>
                 @else
@@ -421,6 +450,94 @@
             </div>
         </div>
 
+        {{-- ════════════════════════════════════════════════════════
+     SECTION SIDEBAR — INCIDENTS
+     Insérer dans sidebar.blade.php après la section EOD
+     ════════════════════════════════════════════════════════ --}}
+<div class="sidebar-section" data-section="incidents">
+    <button class="sidebar-section-header group" data-section="incidents">
+        <div class="flex items-center gap-3">
+            <svg class="sidebar-icon text-red-500 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span class="font-medium">Incidents</span>
+            {{-- Badge incidents actifs pour N2 / N3 --}}
+            @php
+                $nbIncidentsSidebar = 0;
+                try {
+                    $userSidebar = auth()->user();
+                    if ($userSidebar && $userSidebar->isN2()) {
+                        $nbIncidentsSidebar = \App\Models\IncidentFiche::where('statut','en_cours_n2')->count();
+                    } elseif ($userSidebar && $userSidebar->isN3()) {
+                        $nbIncidentsSidebar = \App\Models\IncidentFiche::where('statut','en_cours_n3')->count();
+                    }
+                } catch (\Exception $e) {}
+            @endphp
+            @if($nbIncidentsSidebar > 0)
+                <span class="sidebar-badge ml-auto">{{ $nbIncidentsSidebar }}</span>
+            @endif
+        </div>
+        <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+    <div class="sidebar-section-body">
+
+        {{-- Vue d'ensemble : accessible à tous --}}
+        <a href="{{ route('incidents.index') }}"
+           class="sidebar-item {{ request()->routeIs('incidents.index') ? 'sidebar-active' : '' }}">
+            <span class="sidebar-dot"></span>
+            <span>Toutes les fiches</span>
+        </a>
+
+        {{-- Créer : N1 uniquement --}}
+        @if(auth()->user()?->isN1() || auth()->user()?->isSuperAdmin())
+        <a href="{{ route('incidents.create') }}"
+           class="sidebar-item {{ request()->routeIs('incidents.create') ? 'sidebar-active' : '' }}">
+            <span class="sidebar-dot"></span>
+            <span>Nouvelle fiche incident</span>
+        </a>
+        @endif
+
+        {{-- Indicateur contextuel par rôle --}}
+        @php $userSb = auth()->user(); @endphp
+        @if($userSb?->isN1())
+            <div class="px-4 py-1.5">
+                <span class="text-[11px] text-blue-600 font-semibold">Rôle : N+1 Helpdesk</span>
+            </div>
+        @elseif($userSb?->isN2())
+            <div class="px-4 py-1.5">
+                <span class="text-[11px] text-orange-600 font-semibold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-orange-500 {{ $nbIncidentsSidebar > 0 ? 'animate-pulse' : '' }}"></span>
+                    Rôle : N+2 Support
+                    @if($nbIncidentsSidebar > 0)
+                    — {{ $nbIncidentsSidebar }} en attente
+                    @endif
+                </span>
+            </div>
+        @elseif($userSb?->isN3())
+            <div class="px-4 py-1.5">
+                <span class="text-[11px] text-purple-600 font-semibold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500 {{ $nbIncidentsSidebar > 0 ? 'animate-pulse' : '' }}"></span>
+                    Rôle : N+3 Validateur
+                    @if($nbIncidentsSidebar > 0)
+                    — {{ $nbIncidentsSidebar }} en attente
+                    @endif
+                </span>
+            </div>
+        @endif
+
+    </div>
+</div>
+
+{{--
+══════════════════════════════════════════════════════
+ÉTAPE JS — Ajouter dans le tableau sectionMap du sidebar :
+
+{ section: 'incidents', patterns: ['incidents'] },
+══════════════════════════════════════════════════════
+--}}
+
         {{-- ════════════════════════════════════════
              SECTION : CONFIGURATION
         ════════════════════════════════════════ --}}
@@ -468,6 +585,8 @@
                 </a>
             </div>
         </div>
+
+        @endif
 
     </nav>
 
@@ -713,6 +832,7 @@ document.addEventListener('DOMContentLoaded', function () {
         { section: 'change',         patterns: ['change'] },
         { section: 'controls',       patterns: ['controls'] },
         { section: 'configuration',  patterns: ['dashboard', 'agencies', 'categories', 'suppliers', 'users', 'audits'] },
+        { section: 'incidents', patterns: ['incidents'] },
     ];
 
     var activeSection = null;

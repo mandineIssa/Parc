@@ -9,7 +9,7 @@
     <!-- En-tête avec navigation -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">
+            <h1 class="text-3xl font-bold text-[#C8102E]">
                 {{ isset($ticket) ? ($ticket->titre ?: 'Modifier le formulaire') : 'Nouveau formulaire de changement' }}
             </h1>
             @if(isset($ticket))
@@ -18,23 +18,18 @@
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                         @if($ticket->status === 'DRAFT') bg-gray-100 text-gray-800
                         @elseif($ticket->status === 'PENDING_N2') bg-yellow-100 text-yellow-800
-                        @elseif($ticket->status === 'VALIDATED_N2') bg-green-100 text-green-800
+                        @elseif($ticket->status === 'PENDING_N3') bg-blue-100 text-blue-800
+                        @elseif($ticket->status === 'AT_N2_AFTER_N3') bg-teal-100 text-teal-800
+                        @elseif($ticket->status === 'PENDING_N1_REVIEW') bg-amber-100 text-amber-800
                         @elseif($ticket->status === 'REJECTED') bg-red-100 text-red-800
-                        @else bg-purple-100 text-purple-800
+                        @elseif($ticket->status === 'CLOSED') bg-red-50 text-[#C8102E] ring-1 ring-red-200
+                        @else bg-gray-100 text-gray-800
                         @endif">
                         {{ $ticket->status_label }}
                     </span>
                 </p>
             @else
                 <p class="text-gray-600 mt-2">Créez une nouvelle demande de changement</p>
-            @endif
-        </div>
-        <div class="flex gap-3 mt-4 md:mt-0">
-            @if(isset($ticket) && $ticket->incident_num)
-                <div class="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-2">
-                    <div class="text-xs text-indigo-600 font-semibold">RAPPORT INCIDENT</div>
-                    <div class="text-lg font-bold text-indigo-700">{{ $ticket->incident_num }}</div>
-                </div>
             @endif
         </div>
     </div>
@@ -54,25 +49,35 @@
         </div>
     @endif
     
-    @if(isset($ticket) && $ticket->status === 'VALIDATED_N2')
-        <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
-            ✅ Formulaire validé par N+2. Vous pouvez maintenant compléter le rapport d'incident et le transmettre à N+3.
-            <p class="text-sm text-green-600 mt-1">Les informations générales, la problématique et l'analyse d'impact ne sont plus modifiables.</p>
+    @if(isset($ticket) && $ticket->status === 'PENDING_N1_REVIEW')
+        <div class="mb-6 bg-amber-50 border border-amber-300 text-amber-900 px-4 py-3 rounded-lg">
+            <strong>Action requise (N+1)</strong> — Le N+2 a terminé le traitement. Vous pouvez <strong>clôturer</strong> la demande ou la <strong>renvoyer au N+2</strong> pour complément.
         </div>
     @endif
-    
+
     @if(isset($ticket) && $ticket->status === 'CLOSED')
-        <div class="mb-6 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg">
-            🔒 Ce ticket est clôturé. <strong>{{ $ticket->close_note ?? '' }}</strong>
+        <div class="mb-6 bg-red-50 border border-[#C8102E]/40 text-gray-900 px-4 py-3 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <span class="font-medium text-[#C8102E]">Ce ticket est clôturé.</span>
+                @if($ticket->close_note)
+                    <p class="text-sm mt-1 text-[#4a4a4a]">{{ $ticket->close_note }}</p>
+                @endif
+            </div>
+            <a href="{{ route('change.ticket.pdf', $ticket) }}" target="_blank" rel="noopener"
+               class="inline-flex items-center justify-center px-4 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white text-sm font-semibold rounded-lg whitespace-nowrap shrink-0">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Télécharger la fiche PDF
+            </a>
         </div>
     @endif
 
     <!-- Déterminer les modes d'édition -->
     @php
         $isEditable = !isset($ticket) || $ticket->status === 'DRAFT' || $ticket->status === 'REJECTED';
-        $isReadOnly = isset($ticket) && in_array($ticket->status, ['PENDING_N2', 'PENDING_N3', 'CLOSED']);
-        $canEditIncident = isset($ticket) && $ticket->status === 'VALIDATED_N2';
-        $isMainSectionsReadOnly = isset($ticket) && ($ticket->status === 'VALIDATED_N2' || $ticket->status === 'PENDING_N2' || $ticket->status === 'PENDING_N3' || $ticket->status === 'CLOSED');
+        $isReadOnly = isset($ticket) && in_array($ticket->status, ['PENDING_N2', 'PENDING_N3', 'AT_N2_AFTER_N3', 'PENDING_N1_REVIEW', 'CLOSED'], true);
+        $isMainSectionsReadOnly = isset($ticket) && in_array($ticket->status, ['PENDING_N2', 'PENDING_N3', 'AT_N2_AFTER_N3', 'PENDING_N1_REVIEW', 'CLOSED'], true);
     @endphp
 
     <!-- Formulaire -->
@@ -85,10 +90,10 @@
 
         <!-- SECTION 1 - Informations générales -->
         <div class="form-card {{ $isMainSectionsReadOnly ? 'bg-gray-50' : 'bg-white' }} rounded-xl shadow-md overflow-hidden">
-            <div class="bg-gradient-to-r {{ $isMainSectionsReadOnly ? 'from-gray-100 to-gray-200' : 'from-gray-50 to-gray-100' }} px-6 py-4 border-b border-gray-200">
+            <div class="bg-gradient-to-r {{ $isMainSectionsReadOnly ? 'from-gray-100 to-gray-200' : 'from-[#C8102E] to-[#4a4a4a]' }} px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold {{ $isMainSectionsReadOnly ? 'text-gray-600' : 'text-gray-800' }}">1. Informations générales</h2>
-                    <span class="text-sm text-gray-500">§1</span>
+                    <h2 class="text-lg font-semibold {{ $isMainSectionsReadOnly ? 'text-gray-600' : 'text-white' }}">1. Informations générales</h2>
+                    <span class="text-sm {{ $isMainSectionsReadOnly ? 'text-gray-500' : 'text-red-100' }}">§1</span>
                 </div>
             </div>
             <div class="p-6">
@@ -100,7 +105,7 @@
                         </label>
                         <input type="text" name="titre" value="{{ old('titre', $ticket->titre ?? '') }}" 
                                {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
                                placeholder="Ex: Correction paramètre taux change FCUB">
                         @error('titre') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
@@ -112,10 +117,10 @@
                         </label>
                         <input type="text" name="ticket_number" value="{{ old('ticket_number', $ticket->ticket_number ?? '') }}"
                                {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
                                placeholder="Ex: TICKET-2024-001">
                         @error('ticket_number') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
-                        <p class="text-xs text-gray-500 mt-1">ID unique système: <span class="font-mono text-indigo-600">{{ $ticket->ticket_id ?? 'Généré automatiquement' }}</span></p>
+                        <p class="text-xs text-gray-500 mt-1">ID unique système: <span class="font-mono text-[#C8102E]">{{ $ticket->ticket_id ?? 'Généré automatiquement' }}</span></p>
                     </div>
                     
                     <!-- Type -->
@@ -124,7 +129,7 @@
                             Type <span class="text-red-500">*</span>
                         </label>
                         <select name="type" {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
                             @foreach($typeOpts as $opt)
                                 <option value="{{ $opt }}" {{ (old('type', $ticket->type ?? 'Standard') == $opt) ? 'selected' : '' }}>
                                     {{ $opt }}
@@ -140,7 +145,7 @@
                             Environnement <span class="text-red-500">*</span>
                         </label>
                         <select name="environnement" {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
                             @foreach($envOpts as $opt)
                                 <option value="{{ $opt }}" {{ (old('environnement', $ticket->environnement ?? 'Flexcube') == $opt) ? 'selected' : '' }}>
                                     {{ $opt }}
@@ -209,9 +214,9 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Date prévue d'exécution
                         </label>
-                        <input type="date" name="date_execution" value="{{ old('date_execution', isset($ticket) && $ticket->date_execution ? $ticket->date_execution->format('Y-m-d') : '') }}"
+                        <input type="date" name="date_execution" value="{{ old('date_execution', isset($ticket) && $ticket->date_execution ? $ticket->date_execution->format('Y-m-d') : now()->format('Y-m-d')) }}"
                                {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
                         @error('date_execution') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -220,10 +225,10 @@
 
         <!-- SECTION 2 - Problématique -->
         <div class="form-card {{ $isMainSectionsReadOnly ? 'bg-gray-50' : 'bg-white' }} rounded-xl shadow-md overflow-hidden">
-            <div class="bg-gradient-to-r {{ $isMainSectionsReadOnly ? 'from-gray-100 to-gray-200' : 'from-gray-50 to-gray-100' }} px-6 py-4 border-b border-gray-200">
+            <div class="bg-gradient-to-r {{ $isMainSectionsReadOnly ? 'from-gray-100 to-gray-200' : 'from-[#C8102E] to-[#4a4a4a]' }} px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold {{ $isMainSectionsReadOnly ? 'text-gray-600' : 'text-gray-800' }}">2. Problématique</h2>
-                    <span class="text-sm text-gray-500">§2</span>
+                    <h2 class="text-lg font-semibold {{ $isMainSectionsReadOnly ? 'text-gray-600' : 'text-white' }}">2. Problématique</h2>
+                    <span class="text-sm {{ $isMainSectionsReadOnly ? 'text-gray-500' : 'text-red-100' }}">§2</span>
                 </div>
             </div>
             <div class="p-6">
@@ -232,7 +237,7 @@
                 </label>
                 <textarea name="problematique" rows="4" 
                           {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                          class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
+                          class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
                           placeholder="Décrire clairement la situation actuelle, le dysfonctionnement ou la nécessité du changement...">{{ old('problematique', $ticket->problematique ?? '') }}</textarea>
                 @error('problematique') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -240,10 +245,10 @@
 
         <!-- SECTION 3 - Analyse de l'impact -->
         <div class="form-card {{ $isMainSectionsReadOnly ? 'bg-gray-50' : 'bg-white' }} rounded-xl shadow-md overflow-hidden">
-            <div class="bg-gradient-to-r {{ $isMainSectionsReadOnly ? 'from-gray-100 to-gray-200' : 'from-gray-50 to-gray-100' }} px-6 py-4 border-b border-gray-200">
+            <div class="bg-gradient-to-r {{ $isMainSectionsReadOnly ? 'from-gray-100 to-gray-200' : 'from-[#C8102E] to-[#4a4a4a]' }} px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold {{ $isMainSectionsReadOnly ? 'text-gray-600' : 'text-gray-800' }}">3. Analyse de l'impact</h2>
-                    <span class="text-sm text-gray-500">§3</span>
+                    <h2 class="text-lg font-semibold {{ $isMainSectionsReadOnly ? 'text-gray-600' : 'text-white' }}">3. Analyse de l'impact</h2>
+                    <span class="text-sm {{ $isMainSectionsReadOnly ? 'text-gray-500' : 'text-red-100' }}">§3</span>
                 </div>
             </div>
             <div class="p-6">
@@ -251,7 +256,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Impact sur les opérations</label>
                         <select name="impact_ops" {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
                             <option value="">Sélectionner...</option>
                             @foreach($impactLvls as $lvl)
                                 <option value="{{ $lvl }}" {{ (old('impact_ops', $ticket->impact_ops ?? '') == $lvl) ? 'selected' : '' }}>
@@ -264,7 +269,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Impact sur les utilisateurs</label>
                         <select name="impact_users" {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
                             <option value="">Sélectionner...</option>
                             @foreach($impactLvls as $lvl)
                                 <option value="{{ $lvl }}" {{ (old('impact_users', $ticket->impact_users ?? '') == $lvl) ? 'selected' : '' }}>
@@ -277,7 +282,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Impact sur la production</label>
                         <select name="impact_prod" {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}">
                             <option value="">Sélectionner...</option>
                             @foreach($impactLvls as $lvl)
                                 <option value="{{ $lvl }}" {{ (old('impact_prod', $ticket->impact_prod ?? '') == $lvl) ? 'selected' : '' }}>
@@ -291,7 +296,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Risques en cas de non-exécution</label>
                         <textarea name="risques" rows="2" 
                                   {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
+                                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
                                   placeholder="Décrire les risques...">{{ old('risques', $ticket->risques ?? '') }}</textarea>
                     </div>
                     
@@ -299,103 +304,19 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Plan de retour arrière (Rollback)</label>
                         <textarea name="rollback" rows="2" 
                                   {{ $isMainSectionsReadOnly ? 'disabled' : '' }}
-                                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
+                                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ $isMainSectionsReadOnly ? 'bg-gray-100' : '' }}"
                                   placeholder="Procédure de rollback...">{{ old('rollback', $ticket->rollback ?? '') }}</textarea>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- RAPPORT INCIDENT - visible uniquement après validation N+2 -->
-        @if(isset($ticket) && $ticket->incident_num)
-        <div class="form-card {{ $canEditIncident ? 'bg-white' : 'bg-gray-50' }} rounded-xl shadow-md overflow-hidden border-2 {{ $canEditIncident ? 'border-green-300' : 'border-gray-200' }}">
-            <div class="bg-gradient-to-r {{ $canEditIncident ? 'from-green-500 to-green-600' : 'from-gray-100 to-gray-200' }} px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold {{ $canEditIncident ? 'text-white' : 'text-gray-700' }}">
-                        Rapport d'incident #{{ $ticket->incident_num }}
-                    </h2>
-                    @if($canEditIncident)
-                        <span class="px-3 py-1 bg-white text-green-700 rounded-full text-xs font-semibold">
-                            À compléter
-                        </span>
-                    @endif
-                </div>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Description de l'incident 
-                            @if($canEditIncident)<span class="text-red-500">*</span>@endif
-                        </label>
-                        <textarea name="incident_description" rows="4" 
-                                  {{ !$canEditIncident ? 'disabled' : '' }}
-                                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 {{ !$canEditIncident ? 'bg-gray-100' : '' }}"
-                                  placeholder="{{ $canEditIncident ? 'Décrire les détails de l\'incident survenu...' : '' }}">{{ old('incident_description', $ticket->incident_description ?? '') }}</textarea>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Actions correctives
-                            @if($canEditIncident)<span class="text-red-500">*</span>@endif
-                        </label>
-                        <textarea name="incident_actions" rows="3" 
-                                  {{ !$canEditIncident ? 'disabled' : '' }}
-                                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 {{ !$canEditIncident ? 'bg-gray-100' : '' }}"
-                                  placeholder="{{ $canEditIncident ? 'Actions prises pour résoudre l\'incident...' : '' }}">{{ old('incident_actions', $ticket->incident_actions ?? '') }}</textarea>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Date de résolution
-                                @if($canEditIncident)<span class="text-red-500">*</span>@endif
-                            </label>
-                            <input type="datetime-local" name="incident_resolved_at" 
-                                   value="{{ old('incident_resolved_at', isset($ticket) && $ticket->incident_resolved_at ? $ticket->incident_resolved_at->format('Y-m-d\TH:i') : '') }}"
-                                   {{ !$canEditIncident ? 'disabled' : '' }}
-                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 {{ !$canEditIncident ? 'bg-gray-100' : '' }}">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Impact résiduel
-                            </label>
-                            <select name="incident_impact_residuel" {{ !$canEditIncident ? 'disabled' : '' }}
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 {{ !$canEditIncident ? 'bg-gray-100' : '' }}">
-                                <option value="">Sélectionner...</option>
-                                <option value="Faible" {{ (old('incident_impact_residuel', $ticket->incident_impact_residuel ?? '') == 'Faible') ? 'selected' : '' }}>Faible</option>
-                                <option value="Moyen" {{ (old('incident_impact_residuel', $ticket->incident_impact_residuel ?? '') == 'Moyen') ? 'selected' : '' }}>Moyen</option>
-                                <option value="Élevé" {{ (old('incident_impact_residuel', $ticket->incident_impact_residuel ?? '') == 'Élevé') ? 'selected' : '' }}>Élevé</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    @if($canEditIncident)
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                            <div class="flex">
-                                <svg class="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <div>
-                                    <p class="text-sm text-blue-700">
-                                        Veuillez documenter l'incident survenu. Ces informations seront essentielles pour le suivi et l'analyse.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-        @endif
-
         <!-- File Upload avec bouton Ajouter -->
         <div class="form-card bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+            <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-gray-800">Fichiers joints</h2>
-                    <span class="text-sm text-gray-500">§6</span>
+                    <h2 class="text-lg font-semibold text-white">Fichiers joints</h2>
+                    <span class="text-sm text-red-100">§6</span>
                 </div>
             </div>
             <div class="p-6">
@@ -403,10 +324,10 @@
                     <label class="block text-sm font-medium text-gray-700">
                         Documents justificatifs
                     </label>
-                    @if($isEditable || $canEditIncident)
+                    @if($isEditable)
                         <button type="button" 
                                 onclick="addFileField()"
-                                class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center transition-colors">
+                                class="text-sm text-[#C8102E] hover:text-[#4a4a4a] font-medium flex items-center transition-colors">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
@@ -419,7 +340,7 @@
                 @if(isset($ticket) && $ticket->files)
                     <div class="mb-4 space-y-2" id="uploaded-files-container">
                         @foreach($ticket->files as $index => $file)
-                            <div class="flex items-center justify-between bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-indigo-200 transition-colors">
+                            <div class="flex items-center justify-between bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-red-200 transition-colors">
                                 <div class="flex items-center">
                                     <svg class="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -432,14 +353,14 @@
                                 <div class="flex items-center">
                                     <a href="{{ route('change.file.download', ['ticketId' => $ticket->id, 'fileIndex' => $index]) }}" 
                                        target="_blank"
-                                       class="text-indigo-600 hover:text-indigo-800 p-2 transition-colors"
+                                       class="text-[#C8102E] hover:text-[#4a4a4a] p-2 transition-colors"
                                        title="Ouvrir le fichier">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
                                     </a>
-                                    @if($isEditable || $canEditIncident)
+                                    @if($isEditable)
                                         <button type="button" class="text-red-600 hover:text-red-800 p-1 ml-1"
                                                 onclick="if(confirm('Supprimer ce fichier ?')) document.getElementById('delete-file-{{ $index }}').submit();">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -476,12 +397,12 @@
         </div>
 
         <!-- SECTIONS 4, 5, 7 — readonly for N+1 -->
-        @if(isset($ticket) && ($ticket->recommandation || $ticket->requete || $ticket->resultat))
+        @if(isset($ticket) && ($ticket->recommandation || $ticket->requete || $ticket->resultat || $ticket->n2_progress_entries || $ticket->n3_progress_entries || in_array($ticket->status, ['PENDING_N3', 'AT_N2_AFTER_N3', 'PENDING_N1_REVIEW', 'CLOSED'], true)))
             <div class="form-card-readonly bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200">
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-gray-700">4. Recommandation (N+2)</h2>
-                        <span class="text-sm text-gray-500">§4</span>
+                        <span class="text-sm {{ $isMainSectionsReadOnly ? 'text-gray-500' : 'text-red-100' }}">§4</span>
                     </div>
                 </div>
                 <div class="p-6">
@@ -495,7 +416,7 @@
                                 <label class="block text-sm font-medium text-gray-600 mb-2">Fiches de test</label>
                                 <div class="space-y-2">
                                     @foreach($ticket->recomm_files as $index => $file)
-                                        <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 hover:border-indigo-200 transition-colors">
+                                        <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 hover:border-red-200 transition-colors">
                                             <div class="flex items-center">
                                                 <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -504,7 +425,7 @@
                                             </div>
                                             <a href="{{ route('change.file.download', ['ticketId' => $ticket->id, 'fileIndex' => $index, 'type' => 'recomm_files']) }}" 
                                                target="_blank"
-                                               class="text-indigo-600 hover:text-indigo-800 p-1"
+                                               class="text-[#C8102E] hover:text-[#4a4a4a] p-1"
                                                title="Ouvrir le fichier">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -524,7 +445,7 @@
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-gray-700">5. Requête à exécuter (N+2)</h2>
-                        <span class="text-sm text-gray-500">§5</span>
+                        <span class="text-sm {{ $isMainSectionsReadOnly ? 'text-gray-500' : 'text-red-100' }}">§5</span>
                     </div>
                 </div>
                 <div class="p-6">
@@ -537,7 +458,7 @@
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-gray-700">7. Exécution & Résultat (N+2)</h2>
-                        <span class="text-sm text-gray-500">§7</span>
+                        <span class="text-sm {{ $isMainSectionsReadOnly ? 'text-gray-500' : 'text-red-100' }}">§7</span>
                     </div>
                 </div>
                 <div class="p-6">
@@ -563,7 +484,7 @@
                                 <label class="block text-sm font-medium text-gray-600 mb-2">Screenshots / Logs</label>
                                 <div class="space-y-2">
                                     @foreach($ticket->exec_files as $index => $file)
-                                        <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 hover:border-indigo-200 transition-colors">
+                                        <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 hover:border-red-200 transition-colors">
                                             <div class="flex items-center">
                                                 <svg class="w-4 h-4 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -572,7 +493,7 @@
                                             </div>
                                             <a href="{{ route('change.file.download', ['ticketId' => $ticket->id, 'fileIndex' => $index, 'type' => 'exec_files']) }}" 
                                                target="_blank"
-                                               class="text-indigo-600 hover:text-indigo-800 p-1"
+                                               class="text-[#C8102E] hover:text-[#4a4a4a] p-1"
                                                title="Ouvrir le fichier">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -587,13 +508,49 @@
                     </div>
                 </div>
             </div>
+
+            @if($ticket->n2_progress_entries && count($ticket->n2_progress_entries) > 0)
+            <div class="form-card-readonly bg-slate-50 rounded-xl shadow-sm overflow-hidden border border-gray-200">
+                <div class="bg-slate-100 px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-700">Notes complémentaires (N+2)</h2>
+                </div>
+                <div class="p-6 space-y-2">
+                    @foreach($ticket->n2_progress_entries as $entry)
+                        @if(is_array($entry) && !empty($entry['text']))
+                            <div class="bg-white p-3 rounded-lg border border-gray-200 text-sm">
+                                <span class="text-xs text-gray-500">{{ $entry['at'] ?? '' }}</span>
+                                <p class="mt-1 whitespace-pre-wrap text-gray-800">{{ $entry['text'] }}</p>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            @if($ticket->n3_progress_entries && count($ticket->n3_progress_entries) > 0)
+            <div class="form-card-readonly bg-red-50/50 rounded-xl shadow-sm overflow-hidden border border-red-100">
+                <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-red-200">
+                    <h2 class="text-lg font-semibold text-white">Commentaires de contrôle (N+3)</h2>
+                </div>
+                <div class="p-6 space-y-2">
+                    @foreach($ticket->n3_progress_entries as $entry)
+                        @if(is_array($entry) && !empty($entry['text']))
+                            <div class="bg-white p-3 rounded-lg border border-gray-200 text-sm">
+                                <span class="text-xs text-gray-500">{{ $entry['at'] ?? '' }}</span>
+                                <p class="mt-1 whitespace-pre-wrap text-gray-800">{{ $entry['text'] }}</p>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+            @endif
         @endif
 
         <!-- TIMELINE -->
         @if(isset($ticket) && $ticket->history)
             <div class="form-card bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-800">HISTORIQUE</h2>
+                <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-white">HISTORIQUE</h2>
                 </div>
                 <div class="p-6">
                     <div class="space-y-4">
@@ -601,9 +558,9 @@
                             <div class="flex">
                                 <div class="flex-shrink-0 mr-4">
                                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2"
-                                         style="background: {{ $h['role'] === 'N1' ? 'rgba(59,130,246,0.1)' : ($h['role'] === 'N2' ? 'rgba(16,185,129,0.1)' : 'rgba(139,92,246,0.1)') }}; 
-                                                border-color: {{ $h['role'] === 'N1' ? '#3b82f6' : ($h['role'] === 'N2' ? '#10b981' : '#8b5cf6') }};
-                                                color: {{ $h['role'] === 'N1' ? '#3b82f6' : ($h['role'] === 'N2' ? '#10b981' : '#8b5cf6') }};">
+                                         style="background: {{ $h['role'] === 'N1' ? 'rgba(200,16,46,0.08)' : ($h['role'] === 'N2' ? 'rgba(74,74,74,0.08)' : 'rgba(200,16,46,0.12)') }}; 
+                                                border-color: {{ $h['role'] === 'N1' ? '#C8102E' : ($h['role'] === 'N2' ? '#4a4a4a' : '#a00d24') }};
+                                                color: {{ $h['role'] === 'N1' ? '#C8102E' : ($h['role'] === 'N2' ? '#4a4a4a' : '#a00d24') }};">
                                         {{ $h['role'] }}
                                     </div>
                                 </div>
@@ -637,7 +594,7 @@
             </a>
             
             @if($isEditable)
-                <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center">
+                <button type="submit" class="px-6 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors inline-flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
                     </svg>
@@ -659,19 +616,31 @@
                     Soumettre à N+2
                 </button>
             @endif
-            
-            @if($canEditIncident)
-                <button type="button" 
-                        onclick="submitToN3()"
-                        class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    Transmettre à N+3
-                </button>
-            @endif
         </div>
     </form>
+
+    @if(isset($ticket) && $ticket->status === 'PENDING_N1_REVIEW')
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl shadow-md border border-green-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Clôturer la demande</h3>
+                <p class="text-sm text-gray-600 mb-4">La demande est résolue côté métier.</p>
+                <form method="POST" action="{{ route('change.n1.close', $ticket) }}" class="space-y-3" onsubmit="return confirm('Clôturer définitivement cette demande ?');">
+                    @csrf
+                    <textarea name="note" rows="2" class="w-full rounded-lg border-gray-300 shadow-sm" placeholder="Commentaire de clôture (optionnel)"></textarea>
+                    <button type="submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg">Clôturer</button>
+                </form>
+            </div>
+            <div class="bg-white rounded-xl shadow-md border border-amber-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Renvoyer au N+2</h3>
+                <p class="text-sm text-gray-600 mb-4">Des compléments sont nécessaires côté technique.</p>
+                <form method="POST" action="{{ route('change.n1.return-n2', $ticket) }}" class="space-y-3" onsubmit="return confirm('Renvoyer cette demande au N+2 ?');">
+                    @csrf
+                    <textarea name="note" rows="3" required minlength="3" class="w-full rounded-lg border-gray-300 shadow-sm" placeholder="Précisez ce qui manque ou doit être corrigé…"></textarea>
+                    <button type="submit" class="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg">Renvoyer au N+2</button>
+                </form>
+            </div>
+        </div>
+    @endif
 
     <!-- Bouton de retour au dashboard -->
     <div class="mt-8">
@@ -845,16 +814,6 @@ function submitToN2() {
     }
 }
 
-function submitToN3() {
-    if(confirm('Transmettre ce formulaire à N+3 pour clôture ?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ isset($ticket) ? route('change.n1.submit-n3', $ticket) : '' }}';
-        form.innerHTML = '@csrf';
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
 </script>
 @endpush
 @endsection

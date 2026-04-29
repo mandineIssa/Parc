@@ -140,6 +140,11 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+
+        if ($user->shouldBypassMainDashboard()) {
+            return redirect()->route($user->eodPostLoginRoute() ?? 'eod.n3.pending');
+        }
+
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         // Déterminer ce que l'utilisateur peut voir

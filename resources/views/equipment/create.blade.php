@@ -4929,7 +4929,7 @@
     </div>
 </div>
 
-<script>
+<script>  
     // Données de mapping Type -> Catégories -> Sous-catégories
 const categoriesData = {
     'Réseau': {

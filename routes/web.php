@@ -934,7 +934,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{ticket}', [ChangeTicketController::class, 'n1Edit'])->name('edit');
         Route::put('/{ticket}', [ChangeTicketController::class, 'n1Update'])->name('update');
         Route::post('/{ticket}/submit-n2', [ChangeTicketController::class, 'n1SubmitToN2'])->name('submit-n2');
-        Route::post('/{ticket}/submit-n3', [ChangeTicketController::class, 'n1SubmitToN3'])->name('submit-n3');
+        Route::post('/{ticket}/close', [ChangeTicketController::class, 'n1Close'])->name('close');
+        Route::post('/{ticket}/return-n2', [ChangeTicketController::class, 'n1ReturnToN2'])->name('return-n2');
         Route::delete('/{ticket}/file/{fileIndex}', [ChangeTicketController::class, 'deleteFile'])->name('delete-file');
         Route::delete('/{ticket}/file/{fileIndex}/{type}', [ChangeTicketController::class, 'deleteFile'])->name('delete-file-type');
     });
@@ -944,7 +945,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [ChangeTicketController::class, 'n2Index'])->name('index');
         Route::get('/{ticket}', [ChangeTicketController::class, 'n2Edit'])->name('edit');
         Route::put('/{ticket}', [ChangeTicketController::class, 'n2Update'])->name('update');
-        Route::post('/{ticket}/validate', [ChangeTicketController::class, 'n2Validate'])->name('validate');
+        Route::post('/{ticket}/submit-n3', [ChangeTicketController::class, 'n2SubmitToN3'])->name('submit-n3');
+        Route::post('/{ticket}/submit-n1', [ChangeTicketController::class, 'n2SubmitToN1'])->name('submit-n1');
         Route::post('/{ticket}/reject', [ChangeTicketController::class, 'n2Reject'])->name('reject');
     });
 
@@ -952,8 +954,11 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('change/n3')->name('change.n3.')->group(function () {
         Route::get('/', [ChangeTicketController::class, 'n3Index'])->name('index');
         Route::get('/{ticket}', [ChangeTicketController::class, 'n3Edit'])->name('edit');
-        Route::post('/{ticket}/close', [ChangeTicketController::class, 'n3Close'])->name('close');
+        Route::post('/{ticket}/approve-n2', [ChangeTicketController::class, 'n3ApproveReturnToN2'])->name('approve-n2');
     });
+
+    Route::get('/change/ticket/{ticket}/pdf', [ChangeTicketController::class, 'downloadClosedPdf'])
+        ->name('change.ticket.pdf');
 
     // File download
     Route::get('/change/ticket/{ticketId}/file/{fileIndex}', [ChangeTicketController::class, 'downloadFile'])
@@ -973,24 +978,37 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [EodSuiviController::class, 'n1Store'])->name('store');
         Route::get('/{fiche}', [EodSuiviController::class, 'n1Edit'])->name('edit');
         Route::put('/{fiche}', [EodSuiviController::class, 'n1Update'])->name('update');
-        Route::post('/{fiche}/submit', [EodSuiviController::class, 'n1SubmitToN2'])->name('submit');
+        Route::post('/{fiche}/submit', [EodSuiviController::class, 'n1SubmitToN3Controller'])->name('submit');
     });
 
-    // N+2 Routes
+    // N+2 Routes (création + fiches perso ; validation N+2 réservée à l’ancien flux PENDING_N2)
     Route::prefix('eod/n2')->name('eod.n2.')->group(function () {
         Route::get('/', [EodSuiviController::class, 'n2Index'])->name('index');
+        Route::get('/create', [EodSuiviController::class, 'n2Create'])->name('create');
+        Route::post('/', [EodSuiviController::class, 'n2Store'])->name('store');
+        Route::get('/{fiche}/pdf', [EodSuiviController::class, 'generatePdf'])->name('pdf');
         Route::get('/{fiche}', [EodSuiviController::class, 'n2Edit'])->name('edit');
+        Route::put('/{fiche}', [EodSuiviController::class, 'n2Update'])->name('update');
+        Route::post('/{fiche}/submit', [EodSuiviController::class, 'n2SubmitToN3Controller'])->name('submit');
         Route::post('/{fiche}/validate', [EodSuiviController::class, 'n2Validate'])->name('validate');
         Route::post('/{fiche}/reject', [EodSuiviController::class, 'n2Reject'])->name('reject');
-        Route::get('/{fiche}/pdf', [EodSuiviController::class, 'generatePdf'])->name('pdf');
+    });
+
+    // CONTROLLER Routes (validation et signature batch EOD)
+    Route::prefix('eod/controller')->name('eod.controller.')->group(function () {
+        Route::get('/', [EodSuiviController::class, 'controllerIndex'])->name('index');
+        Route::get('/{fiche}', [EodSuiviController::class, 'controllerEdit'])->name('edit');
+        Route::post('/{fiche}/sign', [EodSuiviController::class, 'controllerSign'])->name('sign');
     });
 
     // N+3 Routes (NOUVEAU)
     Route::prefix('eod/n3')->name('eod.n3.')->group(function () {
         Route::get('/', [EodSuiviController::class, 'n3Index'])->name('index');
+        Route::get('/fiches-en-attente', [EodSuiviController::class, 'n3PendingList'])->name('pending');
         Route::get('/statistiques', [EodSuiviController::class, 'n3Statistiques'])->name('statistiques');
-        Route::get('/{fiche}', [EodSuiviController::class, 'n3Show'])->name('show');
         Route::get('/export/{format}', [EodSuiviController::class, 'n3Export'])->name('export');
+        Route::post('/{fiche}/sign', [EodSuiviController::class, 'n3Sign'])->name('sign');
+        Route::get('/{fiche}', [EodSuiviController::class, 'n3Show'])->name('show');
     });
 });
 
@@ -1093,6 +1111,33 @@ Route::middleware(['auth'])->prefix('controls')->name('controls.')->group(functi
         Route::delete('/{template}', [ControlTemplateController::class, 'destroy'])->name('destroy');
         Route::get('/{template}/details', [ControlTemplateController::class, 'details'])->name('details');
     });
+});
+
+
+
+
+
+// ══════════════════════════════════════════════════════════════
+// ROUTES — MODULE INCIDENTS
+// À ajouter dans routes/web.php dans le groupe auth middleware
+// ══════════════════════════════════════════════════════════════
+
+use App\Http\Controllers\IncidentFicheController;
+
+
+// routes/web.php
+
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('incidents', IncidentFicheController::class);
+    
+    Route::post('/incidents/{incident}/traiter-n1', [IncidentFicheController::class, 'traiterN1'])->name('incidents.traiter-n1');
+    Route::post('/incidents/{incident}/traiter-n2', [IncidentFicheController::class, 'traiterN2'])->name('incidents.traiter-n2');
+    Route::post('/incidents/{incident}/traiter-n3', [IncidentFicheController::class, 'traiterN3'])->name('incidents.traiter-n3');
+    Route::post('/incidents/{incident}/upload-pdf', [IncidentFicheController::class, 'uploadPdf'])->name('incidents.upload-pdf');
+    Route::get('/incidents/{incident}/generer-pdf', [IncidentFicheController::class, 'genererPdf'])->name('incidents.generer-pdf');
+     Route::get('/incidents/{incident}/view-pdf', [IncidentFicheController::class, 'viewPdf'])->name('incidents.view-pdf');
 });
 
 if (app()->environment('local')) {

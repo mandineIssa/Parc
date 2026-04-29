@@ -47,7 +47,15 @@
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $user->prenom }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($user->isSuperAdmin())
+                                    @if($user->role === 'eod_n3')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-violet-100 text-violet-900">
+                                            {{ $user->principal_role_label }}
+                                        </span>
+                                    @elseif($user->role === 'eod_controller')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-900">
+                                            {{ $user->principal_role_label }}
+                                        </span>
+                                    @elseif($user->isSuperAdmin())
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                                             Super Admin
                                         </span>
@@ -67,9 +75,13 @@
                                             @if($user->role_change === 'N1') bg-blue-100 text-blue-800
                                             @elseif($user->role_change === 'N2') bg-green-100 text-green-800
                                             @elseif($user->role_change === 'N3') bg-purple-100 text-purple-800
+                                            @elseif($user->role_change === 'CONTROLLER') bg-indigo-100 text-indigo-800
                                             @endif">
                                             {{ $user->change_role_label }}
                                         </span>
+                                        @if($user->eod_signature_only_ui ?? false)
+                                            <span class="ml-1 text-[10px] text-gray-500" title="Menu EOD uniquement">EOD↓</span>
+                                        @endif
                                     @else
                                         <span class="text-gray-400 text-xs">-</span>
                                     @endif

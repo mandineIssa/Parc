@@ -4,10 +4,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChangeTicket;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ChangeTicketController extends Controller
 {
@@ -16,8 +17,9 @@ class ChangeTicketController extends Controller
         'DRAFT' => 'Brouillon',
         'PENDING_N2' => 'En attente N+2',
         'REJECTED' => 'Rejeté',
-        'VALIDATED_N2' => 'Validé N+2 – En attente envoi N+3',
         'PENDING_N3' => 'En attente N+3',
+        'AT_N2_AFTER_N3' => 'Retour N+2 (après N+3)',
+        'PENDING_N1_REVIEW' => 'À clôturer (N+1)',
         'CLOSED' => 'Clôturé',
     ];
 
@@ -38,7 +40,14 @@ class ChangeTicketController extends Controller
     public function redirectToRolePage()
     {
         $user = Auth::user();
-        
+
+        if ($user->role === 'eod_n3') {
+            return redirect()->route('eod.n3.index');
+        }
+        if ($user->role === 'eod_controller') {
+            return redirect()->route('eod.controller.index');
+        }
+
         // Vérifier si l'utilisateur a un rôle Change Management
         if ($user->role_change) {
             // Sauvegarder le rôle en session pour compatibilité avec le code existant
@@ -49,6 +58,7 @@ class ChangeTicketController extends Controller
                 'N1' => redirect()->route('change.n1.index'),
                 'N2' => redirect()->route('change.n2.index'),
                 'N3' => redirect()->route('change.n3.index'),
+                'CONTROLLER' => redirect()->route('eod.controller.index'),
                 default => redirect()->route('change.role')->with('error', 'Rôle non reconnu'),
             };
         }
@@ -178,7 +188,8 @@ class ChangeTicketController extends Controller
         $data['history'] = [[
             'role' => 'N1',
             'action' => 'Création du formulaire',
-            'at' => now()->format('d/m/Y H:i:s')
+            'at' => now()->format('d/m/Y H:i:s'),
+            ...$this->historyUserMeta(),
         ]];
 
         if ($request->hasFile('files')) {
@@ -262,7 +273,8 @@ class ChangeTicketController extends Controller
             'role' => 'N1',
             'action' => 'Formulaire soumis à N+2',
             'note' => $request->note,
-            'at' => now()->format('d/m/Y H:i:s')
+            'at' => now()->format('d/m/Y H:i:s'),
+            ...$this->historyUserMeta(),
         ]]);
         $ticket->updated_by = Auth::id();
         $ticket->save();
@@ -276,28 +288,93 @@ class ChangeTicketController extends Controller
     }
 
     /**
-     * Transmettre le formulaire à N+3
+     * N+1 — Clôturer la demande (après retour N+2 final)
      */
-    public function n1SubmitToN3(Request $request, ChangeTicket $ticket)
+    public function n1Close(Request $request, ChangeTicket $ticket)
     {
         $this->authorizeRole('N1');
         $this->authorizeOwner($ticket);
-        
-        $ticket->status = 'PENDING_N3';
+
+        if ($ticket->status !== 'PENDING_N1_REVIEW') {
+            return back()->with('error', 'Ce ticket ne peut pas être clôturé à ce stade.');
+        }
+
+        $request->validate(['note' => 'nullable|string']);
+
+        $ticket->status = 'CLOSED';
+        $ticket->close_note = $request->note;
+        $ticket->closed_at = now();
         $ticket->history = array_merge($ticket->history ?? [], [[
             'role' => 'N1',
-            'action' => 'Formulaire transmis à N+3 pour validation finale',
-            'at' => now()->format('d/m/Y H:i:s')
+            'action' => 'Demande clôturée par N+1',
+            'note' => $request->note,
+            'at' => now()->format('d/m/Y H:i:s'),
+            ...$this->historyUserMeta(),
         ]]);
         $ticket->updated_by = Auth::id();
         $ticket->save();
 
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Formulaire transmis à N+3']);
-        }
-        
         return redirect()->route('change.n1.index')
-            ->with('success', 'Formulaire transmis à N+3 pour clôture.');
+            ->with('success', 'Demande clôturée. Vous pouvez télécharger la fiche PDF depuis le détail du ticket.');
+    }
+
+    /**
+     * PDF de la fiche changement (uniquement après clôture)
+     */
+    public function downloadClosedPdf(ChangeTicket $ticket)
+    {
+        $this->authorizeClosedPdf($ticket);
+
+        $user = Auth::user();
+        $data = [
+            'ticket' => $ticket->load(['creator', 'updater']),
+            'historyForPdf' => $this->enrichHistoryForPdf($ticket),
+            'dateGeneration' => now()->format('d/m/Y H:i:s'),
+            'generateurPrenom' => $user->prenom ?? '',
+            'generateurNom' => $user->name ?? '',
+        ];
+
+        $pdf = Pdf::loadView('change.pdf.fiche', $data);
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'defaultFont' => 'sans-serif',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => false,
+        ]);
+
+        $safeId = preg_replace('/[^A-Za-z0-9_-]+/', '_', $ticket->ticket_id);
+        $filename = 'Fiche_changement_' . $safeId . '_' . date('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * N+1 — Renvoyer au N+2 pour complément / correction
+     */
+    public function n1ReturnToN2(Request $request, ChangeTicket $ticket)
+    {
+        $this->authorizeRole('N1');
+        $this->authorizeOwner($ticket);
+
+        if ($ticket->status !== 'PENDING_N1_REVIEW') {
+            return back()->with('error', 'Action non disponible pour ce statut.');
+        }
+
+        $request->validate(['note' => 'required|string|min:3']);
+
+        $ticket->status = 'AT_N2_AFTER_N3';
+        $ticket->history = array_merge($ticket->history ?? [], [[
+            'role' => 'N1',
+            'action' => 'Renvoi au N+2 pour traitement complémentaire',
+            'note' => $request->note,
+            'at' => now()->format('d/m/Y H:i:s'),
+            ...$this->historyUserMeta(),
+        ]]);
+        $ticket->updated_by = Auth::id();
+        $ticket->save();
+
+        return redirect()->route('change.n1.index')
+            ->with('success', 'La demande a été renvoyée au N+2.');
     }
 
     // ==================== N+2 Functions ====================
@@ -315,17 +392,21 @@ class ChangeTicketController extends Controller
         }
         
         // Construction de la requête de base
-        $query = ChangeTicket::whereIn('status', ['PENDING_N2', 'VALIDATED_N2', 'PENDING_N3', 'CLOSED', 'REJECTED'])
+        $query = ChangeTicket::whereIn('status', [
+            'PENDING_N2', 'AT_N2_AFTER_N3', 'PENDING_N3', 'PENDING_N1_REVIEW', 'CLOSED', 'REJECTED',
+        ])
             ->orderBy('created_at', 'desc');
-        
-        // Appliquer le filtre si présent
+
         if ($request->has('filter')) {
             switch ($request->filter) {
                 case 'pending':
                     $query->where('status', 'PENDING_N2');
                     break;
-                case 'validated':
-                    $query->where('status', 'VALIDATED_N2');
+                case 'return_n2':
+                    $query->where('status', 'AT_N2_AFTER_N3');
+                    break;
+                case 'n3':
+                    $query->where('status', 'PENDING_N3');
                     break;
                 case 'rejected':
                     $query->where('status', 'REJECTED');
@@ -351,11 +432,11 @@ class ChangeTicketController extends Controller
     {
         $this->authorizeRole('N2');
         
-        if (!in_array($ticket->status, ['PENDING_N2', 'VALIDATED_N2', 'PENDING_N3', 'CLOSED', 'REJECTED'])) {
+        if (!in_array($ticket->status, ['PENDING_N2', 'AT_N2_AFTER_N3', 'PENDING_N3', 'PENDING_N1_REVIEW', 'CLOSED', 'REJECTED'], true)) {
             abort(404);
         }
-        
-        $tickets = ChangeTicket::whereIn('status', ['PENDING_N2', 'VALIDATED_N2', 'PENDING_N3', 'CLOSED', 'REJECTED'])
+
+        $tickets = ChangeTicket::whereIn('status', ['PENDING_N2', 'AT_N2_AFTER_N3', 'PENDING_N3', 'PENDING_N1_REVIEW', 'CLOSED', 'REJECTED'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
             
@@ -371,7 +452,11 @@ class ChangeTicketController extends Controller
     public function n2Update(Request $request, ChangeTicket $ticket)
     {
         $this->authorizeRole('N2');
-        
+
+        if (!in_array($ticket->status, ['PENDING_N2', 'AT_N2_AFTER_N3'], true)) {
+            return back()->with('error', 'Ce ticket ne peut pas être modifié à ce stade.');
+        }
+
         $data = $request->validate([
             'recommandation' => 'nullable|string',
             'requete' => 'nullable|string',
@@ -384,10 +469,16 @@ class ChangeTicketController extends Controller
         $data['updated_by'] = Auth::id();
 
         if ($request->hasFile('recomm_files')) {
-            $data['recomm_files'] = $this->uploadFiles($request->file('recomm_files'));
+            $data['recomm_files'] = array_merge(
+                $ticket->recomm_files ?? [],
+                $this->uploadFiles($request->file('recomm_files'))
+            );
         }
         if ($request->hasFile('exec_files')) {
-            $data['exec_files'] = $this->uploadFiles($request->file('exec_files'));
+            $data['exec_files'] = array_merge(
+                $ticket->exec_files ?? [],
+                $this->uploadFiles($request->file('exec_files'))
+            );
         }
 
         $ticket->update($data);
@@ -396,43 +487,85 @@ class ChangeTicketController extends Controller
     }
 
     /**
-     * Valider le formulaire et ouvrir un incident
+     * N+2 — Soumettre au N+3
      */
-    public function n2Validate(Request $request, ChangeTicket $ticket)
+    public function n2SubmitToN3(Request $request, ChangeTicket $ticket)
     {
         $this->authorizeRole('N2');
-        
-        $incidentNum = 'INC-' . random_int(100000, 999999);
-        
-        $ticket->status = 'VALIDATED_N2';
-        $ticket->incident_num = $incidentNum;
-        $ticket->incident_opened_at = now();
+
+        if ($ticket->status !== 'PENDING_N2') {
+            return back()->with('error', 'Seule une demande en attente N+2 peut être envoyée au N+3.');
+        }
+
+        $hasBody = strlen(trim((string) $ticket->recommandation)) >= 3
+            || strlen(trim((string) $ticket->requete)) >= 3;
+
+        if (!$hasBody) {
+            return back()->with('error', 'Renseignez au moins une recommandation technique ou une requête à exécuter (quelques caractères minimum).');
+        }
+
+        $ticket->status = 'PENDING_N3';
         $ticket->history = array_merge($ticket->history ?? [], [[
             'role' => 'N2',
-            'action' => "Formulaire validé — Rapport incident ouvert : {$incidentNum}",
-            'at' => now()->format('d/m/Y H:i:s')
+            'action' => 'Demande soumise au N+3 pour contrôle',
+            'at' => now()->format('d/m/Y H:i:s'),
+            ...$this->historyUserMeta(),
         ]]);
         $ticket->updated_by = Auth::id();
         $ticket->save();
 
         if ($request->ajax()) {
-            return response()->json([
-                'success' => true, 
-                'message' => "Validation effectuée. Rapport d'incident ouvert : {$incidentNum}"
-            ]);
+            return response()->json(['success' => true, 'message' => 'Demande transmise au N+3.']);
         }
-        
+
         return redirect()->route('change.n2.index')
-            ->with('success', "Validation effectuée. Rapport d'incident ouvert : {$incidentNum}");
+            ->with('success', 'Demande transmise au N+3.');
     }
 
     /**
-     * Rejeter le formulaire
+     * N+2 — Après validation N+3 : envoyer au N+1
+     */
+    public function n2SubmitToN1(Request $request, ChangeTicket $ticket)
+    {
+        $this->authorizeRole('N2');
+
+        if ($ticket->status !== 'AT_N2_AFTER_N3') {
+            return back()->with('error', 'Seules les demandes en retour N+2 (après N+3) peuvent être envoyées au N+1.');
+        }
+
+        $hasResult = strlen(trim((string) $ticket->resultat)) >= 2
+            || strlen(trim((string) $ticket->ecarts)) >= 2;
+
+        if (!$hasResult) {
+            return back()->with('error', 'Documentez le résultat ou les écarts avant l\'envoi au N+1.');
+        }
+
+        $ticket->status = 'PENDING_N1_REVIEW';
+        $ticket->history = array_merge($ticket->history ?? [], [[
+            'role' => 'N2',
+            'action' => 'Traitement terminé — demande transmise au N+1 pour clôture',
+            'note' => $request->input('note'),
+            'at' => now()->format('d/m/Y H:i:s'),
+            ...$this->historyUserMeta(),
+        ]]);
+        $ticket->updated_by = Auth::id();
+        $ticket->save();
+
+        return redirect()->route('change.n2.index')
+            ->with('success', 'La demande a été envoyée au demandeur (N+1).');
+    }
+
+    /**
+     * Rejeter le formulaire (première revue N+2 uniquement)
      */
     public function n2Reject(Request $request, ChangeTicket $ticket)
     {
         $this->authorizeRole('N2');
-        
+
+        if ($ticket->status !== 'PENDING_N2') {
+            return back()->with('error', 'Le rejet n\'est possible qu\'en première revue N+2.');
+        }
+
         $request->validate(['note' => 'required|string']);
 
         $ticket->status = 'REJECTED';
@@ -441,7 +574,8 @@ class ChangeTicketController extends Controller
             'role' => 'N2',
             'action' => 'Formulaire rejeté',
             'note' => $request->note,
-            'at' => now()->format('d/m/Y H:i:s')
+            'at' => now()->format('d/m/Y H:i:s'),
+            ...$this->historyUserMeta(),
         ]]);
         $ticket->updated_by = Auth::id();
         $ticket->save();
@@ -511,32 +645,38 @@ class ChangeTicketController extends Controller
     }
 
     /**
-     * Clôturer le ticket
+     * N+3 — Approuver et renvoyer au N+2 pour finalisation
      */
-    public function n3Close(Request $request, ChangeTicket $ticket)
+    public function n3ApproveReturnToN2(Request $request, ChangeTicket $ticket)
     {
         $this->authorizeRole('N3');
-        
-        $request->validate(['note' => 'required|string']);
 
-        $ticket->status = 'CLOSED';
-        $ticket->close_note = $request->note;
-        $ticket->closed_at = now();
+        if ($ticket->status !== 'PENDING_N3') {
+            return back()->with('error', 'Cette demande n\'est pas en attente de validation N+3.');
+        }
+
+        $request->validate(['note' => 'nullable|string']);
+
+        if ($request->filled('note') && strlen(trim($request->note)) >= 2) {
+            $this->appendJsonProgressNote($ticket, 'n3_progress_entries', $request->note, 'N3');
+        }
+
+        $ticket->status = 'AT_N2_AFTER_N3';
         $ticket->history = array_merge($ticket->history ?? [], [[
             'role' => 'N3',
-            'action' => 'Ticket clôturé',
-            'note' => $request->note,
-            'at' => now()->format('d/m/Y H:i:s')
+            'action' => 'Contrôle validé — retour au N+2 pour traitement / finalisation',
+            'at' => now()->format('d/m/Y H:i:s'),
+            ...$this->historyUserMeta(),
         ]]);
         $ticket->updated_by = Auth::id();
         $ticket->save();
 
         if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Ticket clôturé avec succès.']);
+            return response()->json(['success' => true, 'message' => 'Demande renvoyée au N+2.']);
         }
-        
+
         return redirect()->route('change.n3.index')
-            ->with('success', 'Ticket clôturé avec succès.');
+            ->with('success', 'Demande approuvée et renvoyée au N+2.');
     }
 
     // ==================== File Functions ====================
@@ -614,6 +754,25 @@ class ChangeTicketController extends Controller
     }
 
     /**
+     * PDF : demandeur, N+2, N+3 ou super admin, ticket clôturé uniquement
+     */
+    private function authorizeClosedPdf(ChangeTicket $ticket): void
+    {
+        if ($ticket->status !== 'CLOSED') {
+            abort(404);
+        }
+
+        $user = Auth::user();
+        $isOwner = (int) $ticket->created_by === (int) Auth::id();
+        $isChangeActor = in_array($user->role_change, ['N2', 'N3'], true);
+        $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+
+        if (!$isOwner && !$isChangeActor && !$isSuper) {
+            abort(403, 'Non autorisé à télécharger cette fiche.');
+        }
+    }
+
+    /**
      * Uploader des fichiers
      */
     private function uploadFiles($files)
@@ -630,5 +789,114 @@ class ChangeTicketController extends Controller
             ];
         }
         return $uploaded;
+    }
+
+    private function appendJsonProgressNote(ChangeTicket $ticket, string $column, string $text, string $roleLabel): void
+    {
+        $text = trim($text);
+        if ($text === '') {
+            return;
+        }
+        $u = Auth::user();
+        $entries = $ticket->{$column} ?? [];
+        $entries[] = [
+            'text' => $text,
+            'role' => $roleLabel,
+            'user_id' => Auth::id(),
+            'user_prenom' => $u->prenom ?? '',
+            'user_nom' => $u->name ?? '',
+            'at' => now()->format('d/m/Y H:i:s'),
+        ];
+        $ticket->{$column} = $entries;
+    }
+
+    /**
+     * Prénom / nom / id du compte applicatif (PDF, historique).
+     */
+    private function historyUserMeta(): array
+    {
+        $u = Auth::user();
+
+        return [
+            'user_id' => $u->id,
+            'user_prenom' => $u->prenom ?? '',
+            'user_nom' => $u->name ?? '',
+        ];
+    }
+
+    /**
+     * Historique avec libellé « Intervenant » résolu pour le PDF (nom complet depuis users si possible).
+     */
+    private function enrichHistoryForPdf(ChangeTicket $ticket): array
+    {
+        $history = $ticket->history ?? [];
+        if (! is_array($history)) {
+            return [];
+        }
+
+        $ids = [];
+        foreach ($history as $h) {
+            if (! empty($h['user_id'])) {
+                $ids[] = (int) $h['user_id'];
+            }
+        }
+        foreach ($history as $h) {
+            if (empty($h['user_id']) && ($h['role'] ?? '') === 'N1' && $ticket->created_by) {
+                $ids[] = (int) $ticket->created_by;
+            }
+        }
+        $ids = array_values(array_unique(array_filter($ids)));
+        $users = $ids !== []
+            ? User::whereIn('id', $ids)->get()->keyBy('id')
+            : collect();
+
+        $out = [];
+        foreach ($history as $h) {
+            if (! is_array($h)) {
+                continue;
+            }
+            $out[] = array_merge($h, [
+                'intervenant_display' => $this->historyRowIntervenantLabel($h, $ticket, $users),
+            ]);
+        }
+
+        return $out;
+    }
+
+    private function historyRowIntervenantLabel(array $h, ChangeTicket $ticket, $users): string
+    {
+        $uid = isset($h['user_id']) ? (int) $h['user_id'] : null;
+        if ($uid && $users->has($uid)) {
+            $fromUser = $this->userDisplayName($users->get($uid));
+            if ($fromUser !== '') {
+                return $fromUser;
+            }
+        }
+
+        $fromMeta = trim(($h['user_prenom'] ?? '') . ' ' . ($h['user_nom'] ?? ''));
+        if ($fromMeta !== '') {
+            return $fromMeta;
+        }
+
+        if (! $uid && ($h['role'] ?? '') === 'N1' && $ticket->created_by && $users->has((int) $ticket->created_by)) {
+            $fromCreator = $this->userDisplayName($users->get((int) $ticket->created_by));
+            if ($fromCreator !== '') {
+                return $fromCreator;
+            }
+        }
+
+        return (string) ($h['role'] ?? '');
+    }
+
+    private function userDisplayName(?User $user): string
+    {
+        if (! $user) {
+            return '';
+        }
+        $p = trim((string) ($user->prenom ?? ''));
+        $n = trim((string) ($user->name ?? ''));
+        $full = trim($p . ' ' . $n);
+
+        return $full !== '' ? $full : trim((string) ($user->email ?? ''));
     }
 }

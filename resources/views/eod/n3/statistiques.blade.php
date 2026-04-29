@@ -27,14 +27,14 @@
         <form method="GET" action="{{ route('eod.n3.statistiques') }}" class="flex flex-wrap items-end gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Date début</label>
-                <input type="date" name="date_debut" value="{{ $dateDebut }}" class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="date" name="date_debut" value="{{ $dateDebut }}" class="rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Date fin</label>
-                <input type="date" name="date_fin" value="{{ $dateFin }}" class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="date" name="date_fin" value="{{ $dateFin }}" class="rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
             </div>
             <div>
-                <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors">
+                <button type="submit" class="px-6 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors">
                     Filtrer
                 </button>
             </div>
@@ -199,7 +199,7 @@
                 </div>
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                     <p class="text-sm text-gray-500 uppercase">Moyenne mensuelle</p>
-                    <p class="text-3xl font-bold text-indigo-600">{{ $parMois->count() > 0 ? round($totalPeriod / $parMois->count(), 1) : 0 }}</p>
+                    <p class="text-3xl font-bold text-[#C8102E]">{{ $parMois->count() > 0 ? round($totalPeriod / $parMois->count(), 1) : 0 }}</p>
                 </div>
             </div>
         </div>
@@ -207,7 +207,7 @@
 
     <!-- Bouton d'export -->
     <div class="flex justify-end">
-        <a href="{{ route('eod.n3.export', 'csv') }}?date_debut={{ $dateDebut }}&date_fin={{ $dateFin }}" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center">
+        <a href="{{ route('eod.n3.export', 'csv') }}?date_debut={{ $dateDebut }}&date_fin={{ $dateFin }}" class="px-6 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors inline-flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>

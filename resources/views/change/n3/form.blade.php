@@ -9,7 +9,7 @@
     <!-- En-tête avec navigation -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">{{ $ticket->titre }}</h1>
+            <h1 class="text-3xl font-bold text-[#C8102E]">{{ $ticket->titre }}</h1>
             <p class="text-gray-600 mt-2">
                 {{ $ticket->ticket_id }} · 
                 @if($ticket->ticket_number)
@@ -17,20 +17,12 @@
                 @endif
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                     @if($ticket->status === 'PENDING_N3') bg-yellow-100 text-yellow-800
-                    @elseif($ticket->status === 'CLOSED') bg-purple-100 text-purple-800
+                    @elseif($ticket->status === 'CLOSED') bg-red-50 text-[#C8102E] ring-1 ring-red-200
                     @else bg-gray-100 text-gray-800
                     @endif">
                     {{ $ticket->status_label }}
                 </span>
             </p>
-        </div>
-        <div class="flex gap-3 mt-4 md:mt-0">
-            @if($ticket->incident_num)
-                <div class="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-2">
-                    <div class="text-xs text-indigo-600 font-semibold">RAPPORT INCIDENT</div>
-                    <div class="text-lg font-bold text-indigo-700">{{ $ticket->incident_num }}</div>
-                </div>
-            @endif
         </div>
     </div>
 
@@ -48,14 +40,14 @@
 
     <!-- SECTION 1 - Informations générales améliorée -->
     <div class="form-card-readonly bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-6">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-700">1. Informations générales</h2>
+        <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-white">1. Informations générales</h2>
         </div>
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-2">ID Système</label>
-                    <div class="bg-white p-3 rounded-lg border border-gray-200 font-mono text-sm text-indigo-600">{{ $ticket->ticket_id }}</div>
+                    <div class="bg-white p-3 rounded-lg border border-gray-200 font-mono text-sm text-[#C8102E]">{{ $ticket->ticket_id }}</div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-2">N° Ticket</label>
@@ -91,8 +83,8 @@
 
     <!-- SECTION 2 - Problématique -->
     <div class="form-card-readonly bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-6">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-700">2. Problématique</h2>
+        <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-white">2. Problématique</h2>
         </div>
         <div class="p-6">
             <label class="block text-sm font-medium text-gray-600 mb-2">Description</label>
@@ -102,8 +94,8 @@
 
     <!-- SECTION 3 - Analyse de l'impact -->
     <div class="form-card-readonly bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-6">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-700">3. Analyse de l'impact</h2>
+        <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-white">3. Analyse de l'impact</h2>
         </div>
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -134,14 +126,14 @@
     <!-- FICHIERS UPLOADÉS PAR N+1 -->
     @if($ticket->files && count($ticket->files) > 0)
     <div class="form-card-readonly bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-6">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-700">Fichiers joints (N+1)</h2>
+        <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-white">Fichiers joints (N+1)</h2>
             <span class="ml-2 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">{{ count($ticket->files) }} fichier(s)</span>
         </div>
         <div class="p-6">
             <div class="space-y-2">
                 @foreach($ticket->files as $index => $file)
-                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 hover:border-indigo-200 transition-colors">
+                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 hover:border-red-200 transition-colors">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -153,7 +145,7 @@
                         </div>
                         <a href="{{ route('change.file.download', ['ticketId' => $ticket->id, 'fileIndex' => $index]) }}" 
                            target="_blank"
-                           class="text-indigo-600 hover:text-indigo-800 p-2 transition-colors"
+                           class="text-[#C8102E] hover:text-[#a00d24] p-2 transition-colors"
                            title="Ouvrir le fichier">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -169,8 +161,8 @@
 
     <!-- SECTION 4 - Recommandation (N+2) -->
     <div class="form-card-readonly bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-6">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-700">4. Recommandation (N+2)</h2>
+        <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-white">4. Recommandation (N+2)</h2>
         </div>
         <div class="p-6">
             <label class="block text-sm font-medium text-gray-600 mb-2">Recommandation</label>
@@ -180,7 +172,7 @@
                 <label class="block text-sm font-medium text-gray-600 mb-2">Fiches de test</label>
                 <div class="space-y-2">
                     @foreach($ticket->recomm_files as $index => $file)
-                        <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 hover:border-indigo-200 transition-colors">
+                        <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 hover:border-red-200 transition-colors">
                             <div class="flex items-center">
                                 <svg class="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -192,7 +184,7 @@
                             </div>
                             <a href="{{ route('change.file.download', ['ticketId' => $ticket->id, 'fileIndex' => $index, 'type' => 'recomm_files']) }}" 
                                target="_blank"
-                               class="text-indigo-600 hover:text-indigo-800 p-2 transition-colors"
+                               class="text-[#C8102E] hover:text-[#a00d24] p-2 transition-colors"
                                title="Ouvrir le fichier">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -208,8 +200,8 @@
 
     <!-- SECTION 5 - Requête à exécuter (N+2) -->
     <div class="form-card-readonly bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-6">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-700">5. Requête à exécuter (N+2)</h2>
+        <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-white">5. Requête à exécuter (N+2)</h2>
         </div>
         <div class="p-6">
             <label class="block text-sm font-medium text-gray-600 mb-2">Script / SQL</label>
@@ -219,8 +211,8 @@
 
     <!-- SECTION 7 - Exécution & Résultat (N+2) -->
     <div class="form-card-readonly bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-6">
-        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-700">7. Exécution & Résultat (N+2)</h2>
+        <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-white">7. Exécution & Résultat (N+2)</h2>
         </div>
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -246,7 +238,7 @@
                         <label class="block text-sm font-medium text-gray-600 mb-2">Screenshots / Logs</label>
                         <div class="space-y-2">
                             @foreach($ticket->exec_files as $index => $file)
-                                <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 hover:border-indigo-200 transition-colors">
+                                <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 hover:border-red-200 transition-colors">
                                     <div class="flex items-center">
                                         <svg class="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -258,7 +250,7 @@
                                     </div>
                                     <a href="{{ route('change.file.download', ['ticketId' => $ticket->id, 'fileIndex' => $index, 'type' => 'exec_files']) }}" 
                                        target="_blank"
-                                       class="text-indigo-600 hover:text-indigo-800 p-2 transition-colors"
+                                       class="text-[#C8102E] hover:text-[#a00d24] p-2 transition-colors"
                                        title="Ouvrir le fichier">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -274,114 +266,84 @@
         </div>
     </div>
 
-    <!-- RAPPORT D'INCIDENT (si présent) -->
-    @if($ticket->incident_num && ($ticket->incident_description || $ticket->incident_actions))
-    <div class="form-card-readonly bg-indigo-50 rounded-xl shadow-sm overflow-hidden border border-indigo-200 mb-6">
-        <div class="bg-indigo-100 px-6 py-4 border-b border-indigo-200">
-            <h2 class="text-lg font-semibold text-indigo-800">Rapport d'incident #{{ $ticket->incident_num }}</h2>
+    @if($ticket->n2_progress_entries && count($ticket->n2_progress_entries) > 0)
+    <div class="form-card-readonly bg-slate-50 rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-6">
+        <div class="bg-slate-100 px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-white">Notes complémentaires (N+2)</h2>
         </div>
-        <div class="p-6">
-            <div class="space-y-4">
-                @if($ticket->incident_description)
-                <div>
-                    <label class="block text-sm font-medium text-indigo-700 mb-2">Description de l'incident</label>
-                    <div class="bg-white p-3 rounded-lg border border-indigo-200 text-gray-800">{{ $ticket->incident_description }}</div>
-                </div>
-                @endif
-                
-                @if($ticket->incident_actions)
-                <div>
-                    <label class="block text-sm font-medium text-indigo-700 mb-2">Actions correctives</label>
-                    <div class="bg-white p-3 rounded-lg border border-indigo-200 text-gray-800">{{ $ticket->incident_actions }}</div>
-                </div>
-                @endif
-                
-                @if($ticket->incident_resolved_at || $ticket->incident_impact_residuel)
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @if($ticket->incident_resolved_at)
-                    <div>
-                        <label class="block text-sm font-medium text-indigo-700 mb-2">Date de résolution</label>
-                        <div class="bg-white p-3 rounded-lg border border-indigo-200">{{ $ticket->incident_resolved_at->format('d/m/Y H:i') }}</div>
+        <div class="p-6 space-y-2">
+            @foreach($ticket->n2_progress_entries as $entry)
+                @if(is_array($entry) && !empty($entry['text']))
+                    <div class="bg-white p-3 rounded-lg border border-gray-200 text-sm">
+                        <span class="text-xs text-gray-500">{{ $entry['at'] ?? '' }}</span>
+                        <p class="mt-1 whitespace-pre-wrap text-gray-800">{{ $entry['text'] }}</p>
                     </div>
-                    @endif
-                    
-                    @if($ticket->incident_impact_residuel)
-                    <div>
-                        <label class="block text-sm font-medium text-indigo-700 mb-2">Impact résiduel</label>
-                        <div class="bg-white p-3 rounded-lg border border-indigo-200">
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold
-                                @if($ticket->incident_impact_residuel === 'Faible') bg-green-100 text-green-800
-                                @elseif($ticket->incident_impact_residuel === 'Moyen') bg-yellow-100 text-yellow-800
-                                @elseif($ticket->incident_impact_residuel === 'Élevé') bg-red-100 text-red-800
-                                @endif">
-                                {{ $ticket->incident_impact_residuel }}
-                            </span>
-                        </div>
-                    </div>
-                    @endif
-                </div>
                 @endif
-                
-                @if($ticket->incident_files && count($ticket->incident_files) > 0)
-                <div>
-                    <label class="block text-sm font-medium text-indigo-700 mb-2">Pièces jointes incident</label>
-                    <div class="space-y-2">
-                        @foreach($ticket->incident_files as $index => $file)
-                            <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-indigo-200">
-                                <div class="flex items-center">
-                                    <svg class="w-4 h-4 text-indigo-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                    </svg>
-                                    <span class="text-sm text-gray-700">{{ $file['name'] }}</span>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
-            </div>
+            @endforeach
         </div>
     </div>
     @endif
 
-    <!-- CLOTURE -->
+    @if($ticket->n3_progress_entries && count($ticket->n3_progress_entries) > 0)
+    <div class="form-card-readonly bg-red-50/50 rounded-xl shadow-sm overflow-hidden mb-6 border border-red-100">
+        <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-red-200">
+            <h2 class="text-lg font-semibold text-white">Commentaires de contrôle (N+3)</h2>
+        </div>
+        <div class="p-6 space-y-3">
+            @foreach($ticket->n3_progress_entries as $entry)
+                @if(is_array($entry) && !empty($entry['text']))
+                    <div class="border border-gray-200 rounded-lg p-3 bg-white text-sm text-gray-800">
+                        <span class="text-xs text-gray-500">{{ $entry['at'] ?? '' }} — {{ $entry['role'] ?? 'N3' }}</span>
+                        <p class="mt-1 whitespace-pre-wrap">{{ $entry['text'] }}</p>
+                    </div>
+                @endif
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    <!-- Approbation → retour N+2 -->
     @if($ticket->status === 'PENDING_N3')
-        <div class="form-card-cloture bg-white rounded-xl shadow-md overflow-hidden mb-6 border-2 border-purple-200">
-            <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
-                <h2 class="text-lg font-semibold text-white">Clôture du ticket</h2>
+        <div class="form-card-cloture bg-white rounded-xl shadow-md overflow-hidden mb-6 border-2 border-[#C8102E]/40">
+            <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4">
+                <h2 class="text-lg font-semibold text-white">Approuver et renvoyer au N+2</h2>
             </div>
-            <div class="p-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Note de clôture</label>
-                <textarea id="closeNote" rows="3" 
-                          class="w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                          placeholder="Observations, commentaires de clôture..."></textarea>
-                <p class="text-xs text-gray-500 mt-2">Cette note sera visible dans l'historique et par tous les intervenants.</p>
+            <div class="p-6 space-y-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Commentaire final (optionnel, ajouté aux notes N+3)</label>
+                <textarea id="approveNote" rows="2" 
+                          class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]"
+                          placeholder="Synthèse du contrôle, conditions…"></textarea>
+                <p class="text-xs text-gray-500">La demande repart chez le N+2 pour exécution / finalisation, puis envoi au N+1.</p>
             </div>
         </div>
     @endif
 
     @if($ticket->status === 'CLOSED')
-        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div class="flex">
-                <svg class="w-5 h-5 text-purple-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-[#C8102E] mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                 </svg>
                 <div>
-                    <p class="text-purple-800 font-medium">Ticket clôturé</p>
-                    <p class="text-sm text-purple-600">le {{ $ticket->closed_at ? $ticket->closed_at->format('d/m/Y H:i') : '' }}</p>
+                    <p class="text-gray-900 font-medium">Ticket clôturé</p>
+                    <p class="text-sm text-[#4a4a4a]">le {{ $ticket->closed_at ? $ticket->closed_at->format('d/m/Y H:i') : '' }}</p>
                     @if($ticket->close_note)
-                        <p class="text-sm text-purple-700 mt-2"><strong>Note :</strong> {{ $ticket->close_note }}</p>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Note :</strong> {{ $ticket->close_note }}</p>
                     @endif
                 </div>
             </div>
+            <a href="{{ route('change.ticket.pdf', $ticket) }}" target="_blank" rel="noopener"
+               class="inline-flex items-center justify-center px-4 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white text-sm font-semibold rounded-lg shrink-0">
+                Télécharger le PDF
+            </a>
         </div>
     @endif
 
     <!-- HISTORIQUE COMPLET -->
     @if($ticket->history && count($ticket->history) > 0)
         <div class="form-card bg-white rounded-xl shadow-md overflow-hidden mb-6">
-            <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-800">HISTORIQUE COMPLET</h2>
+            <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-white">HISTORIQUE COMPLET</h2>
             </div>
             <div class="p-6">
                 <div class="space-y-4">
@@ -389,9 +351,9 @@
                         <div class="flex">
                             <div class="flex-shrink-0 mr-4">
                                 <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2"
-                                     style="background: {{ $h['role'] === 'N1' ? 'rgba(59,130,246,0.1)' : ($h['role'] === 'N2' ? 'rgba(16,185,129,0.1)' : 'rgba(139,92,246,0.1)') }}; 
-                                            border-color: {{ $h['role'] === 'N1' ? '#3b82f6' : ($h['role'] === 'N2' ? '#10b981' : '#8b5cf6') }};
-                                            color: {{ $h['role'] === 'N1' ? '#3b82f6' : ($h['role'] === 'N2' ? '#10b981' : '#8b5cf6') }};">
+                                     style="background: {{ $h['role'] === 'N1' ? 'rgba(200,16,46,0.08)' : ($h['role'] === 'N2' ? 'rgba(74,74,74,0.08)' : 'rgba(200,16,46,0.12)') }}; 
+                                            border-color: {{ $h['role'] === 'N1' ? '#C8102E' : ($h['role'] === 'N2' ? '#4a4a4a' : '#a00d24') }};
+                                            color: {{ $h['role'] === 'N1' ? '#C8102E' : ($h['role'] === 'N2' ? '#4a4a4a' : '#a00d24') }};">
                                     {{ $h['role'] }}
                                 </div>
                             </div>
@@ -425,11 +387,11 @@
         </a>
         
         @if($ticket->status === 'PENDING_N3')
-            <button type="button" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center" onclick="closeTicket()">
+            <button type="button" class="px-6 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors inline-flex items-center" onclick="approveReturnToN2()">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
-                Clôturer le ticket
+                Approuver — retour N+2
             </button>
         @endif
     </div>
@@ -506,21 +468,26 @@ a:hover svg {
 
 @push('scripts')
 <script>
-function closeTicket() {
-    const note = document.getElementById('closeNote')?.value;
-    if (!note) {
-        alert('Veuillez saisir une note de clôture');
+function approveReturnToN2() {
+    const note = document.getElementById('approveNote')?.value || '';
+    if (!confirm('Approuver le contrôle et renvoyer la demande au N+2 pour finalisation ?')) {
         return;
     }
-    
-    if(confirm('Clôturer ce ticket ?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = "{{ route('change.n3.close', $ticket) }}";
-        form.innerHTML = '@csrf<input type="hidden" name="note" value="' + note + '">';
-        document.body.appendChild(form);
-        form.submit();
-    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ route('change.n3.approve-n2', $ticket) }}";
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = '_token';
+    csrf.value = '{{ csrf_token() }}';
+    form.appendChild(csrf);
+    const n = document.createElement('input');
+    n.type = 'hidden';
+    n.name = 'note';
+    n.value = note;
+    form.appendChild(n);
+    document.body.appendChild(form);
+    form.submit();
 }
 </script>
 @endpush
