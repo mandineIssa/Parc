@@ -215,7 +215,7 @@
                 @php
                     $user = auth()->user();
                     $eodN3 = $user && $user->canAccessEodAsN3();
-                    $eodCtrl = $user && $user->canAccessEodAsController();
+                    $eodCtrl = $user && $user->canSignEodControllerSlot();
                     $eodN1 = $user && $user->role_change === 'N1';
                     $eodN2 = $user && $user->role_change === 'N2';
                     $eodAny = $eodN1 || $eodN2 || $eodN3 || $eodCtrl;

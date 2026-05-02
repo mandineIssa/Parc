@@ -21,6 +21,7 @@
                             @case('Sécurité électronique') bg-orange-100 text-orange-700 @break
                             @case('Active Directory') bg-indigo-100 text-indigo-700 @break
                             @case('Modem/WiFi') bg-teal-100 text-teal-700 @break
+                            @case('Imprimante') bg-cyan-100 text-cyan-800 @break
                             @default bg-gray-100 text-gray-700
                         @endswitch">{{ $password->categorie }}</span>
                 </h1>

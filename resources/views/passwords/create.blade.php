@@ -42,6 +42,7 @@
                     'Sécurité électronique' => ['icon'=>'📷','sub'=>'Vidéo / Contrôle accès',    'color'=>'orange'],
                     'Active Directory'      => ['icon'=>'👤','sub'=>'Comptes AD / GPO',           'color'=>'indigo'],
                     'Modem/WiFi'            => ['icon'=>'📡','sub'=>'AP / Box 4G / ADSL',         'color'=>'teal'],
+                    'Imprimante'            => ['icon'=>'🖨️','sub'=>'IPP / SNMP / Interface web','color'=>'cyan'],
                 ];
                 $currentCat = old('categorie','');
                 @endphp
@@ -381,12 +382,24 @@ const CAT_CONFIG = {
         protocoles: ['HTTP','HTTPS','Telnet','WPA2','WPA3'],
         comptePlaceholder: 'ex: admin',
     },
+    'Imprimante': {
+        color: 'cyan', label: '🖨️ Imprimante',
+        nomPlaceholder: 'ex: HP-LaserJet-AGP, Canon-IR-DAKAR',
+        showNomExi: false, showVm: false, showInstance: false,
+        showTypeEquip: true, typeEquipLabel: "Type d'imprimante",
+        typeEquipOptions: ['Laser / LED','Jet d\'encre','Multifonction (MFP)','Étiqueteuse','Traceur','Autre'],
+        showExtraField: true, extraLabel: 'Numéro de série / modèle',
+        extraPlaceholder: 'ex: SN12345, HP MFP M428',
+        protocoles: ['HTTP','HTTPS','SNMP','IPP','LPD','FTP'],
+        comptePlaceholder: 'ex: admin, root (interface web)',
+    },
 };
 
 // ── Couleurs de focus par catégorie ─────────────────────────────────────────
 const COLOR_RING = {
     blue:'focus:ring-blue-500', purple:'focus:ring-purple-500', green:'focus:ring-green-500',
     orange:'focus:ring-orange-500', indigo:'focus:ring-indigo-500', teal:'focus:ring-teal-500',
+    cyan:'focus:ring-cyan-500',
 };
 
 let champsCount = {{ count(old('champs_libres', [])) }};

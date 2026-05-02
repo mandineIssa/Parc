@@ -41,7 +41,7 @@ class LicenceController extends Controller
     {
         $types   = Licence::types();
         $statuts = Licence::statuts();
-        $sites   = ['AGP', 'TOUBA', 'TAMBA', 'ZIG', 'PIKINE', 'DAKAR', 'AUTRE'];
+        $sites   = config('agencies.sites', []);
         return view('licences.create', compact('types', 'statuts', 'sites'));
     }
 
@@ -95,7 +95,7 @@ class LicenceController extends Controller
     {
         $types   = Licence::types();
         $statuts = Licence::statuts();
-        $sites   = ['AGP', 'TOUBA', 'TAMBA', 'ZIG', 'PIKINE', 'DAKAR', 'AUTRE'];
+        $sites   = config('agencies.sites', []);
         return view('licences.edit', compact('licence', 'types', 'statuts', 'sites'));
     }
 

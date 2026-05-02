@@ -7,7 +7,11 @@
 @section('content')
 @php
     $u = auth()->user();
-    $viewerCanSignAsController = $u->canAccessEodAsController()
+    $canSignEodCtrlSlot = $u->canSignEodControllerSlot()
+        && ! $fiche->controller_validated_at
+        && in_array($fiche->status, ['PENDING_N3_CONTROLLER', 'PENDING_CONTROLLER'], true);
+    $showControllerSlotReadOnly = $u->canAccessEodAsN3()
+        && ! $u->canSignEodControllerSlot()
         && ! $fiche->controller_validated_at
         && in_array($fiche->status, ['PENDING_N3_CONTROLLER', 'PENDING_CONTROLLER'], true);
     $eodBackRoute = $u->eodSidebarShowsN3Section() ? 'eod.n3.index' : 'eod.controller.index';
@@ -310,10 +314,15 @@
                     @endif
                 @else
                     <p class="text-amber-800">Signature Controller en attente.</p>
-                    @if($viewerCanSignAsController)
+                    @if($canSignEodCtrlSlot)
                         <a href="{{ route('eod.controller.edit', $fiche) }}" class="mt-3 inline-flex items-center px-4 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white text-sm font-semibold rounded-lg shadow-sm">
                             Signer en tant que Controller
                         </a>
+                    @elseif($showControllerSlotReadOnly)
+                        <div class="mt-3 rounded-lg border border-dashed border-gray-300 bg-gray-100/90 px-4 py-3 text-sm text-gray-500 pointer-events-none select-none opacity-90">
+                            <p class="font-medium text-gray-600">Réservé au Contrôleur EOD (batch)</p>
+                            <p class="mt-1">Seuls les comptes <strong>Contrôleur EOD (batch)</strong> ou la désignation <strong>Controller — validation batch EOD</strong> peuvent signer cette case.</p>
+                        </div>
                     @endif
                 @endif
                 @if($fiche->status === 'VALIDATED')
@@ -364,7 +373,7 @@
     </div>
     @endif
 
-    @if($viewerCanSignAsController)
+    @if($canSignEodCtrlSlot)
     <div class="bg-white rounded-xl shadow-md border-2 border-[#C8102E]/25 overflow-hidden mb-6">
         <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
             <h2 class="text-lg font-semibold text-white">Votre signature Controller</h2>
@@ -381,6 +390,16 @@
                 Ouvrir le formulaire de signature Controller
             </a>
             <span class="text-sm text-gray-500">Même contenu que la page « Validation Controller » pour cette fiche.</span>
+        </div>
+    </div>
+    @elseif($showControllerSlotReadOnly)
+    <div class="bg-gray-100 rounded-xl shadow-inner border border-gray-200 overflow-hidden mb-6 opacity-95 pointer-events-none select-none">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-200/80">
+            <h2 class="text-lg font-semibold text-gray-600">Signature Controller</h2>
+            <p class="text-sm text-gray-500 mt-1">Réservée au profil Contrôleur EOD — non disponible pour un compte N+3 ou Super Admin sans désignation Controller.</p>
+        </div>
+        <div class="p-6">
+            <p class="text-sm text-gray-500">Seuls les comptes <strong>Contrôleur EOD (batch)</strong> ou <strong>Controller — validation batch EOD</strong> peuvent ouvrir le formulaire de signature.</p>
         </div>
     </div>
     @endif

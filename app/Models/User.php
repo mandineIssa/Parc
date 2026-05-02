@@ -60,6 +60,19 @@ class User extends Authenticatable
     }
 
     /**
+     * Peut soumettre la signature « Controller » : rôle principal eod_controller ou désignation CONTROLLER uniquement.
+     * Exclut les comptes N+3 et un Super Admin qui n’a pas l’une de ces deux affectations Controller.
+     */
+    public function canSignEodControllerSlot(): bool
+    {
+        if ($this->role === 'eod_n3') {
+            return false;
+        }
+
+        return $this->role === 'eod_controller' || $this->role_change === 'CONTROLLER';
+    }
+
+    /**
      * Menu latéral réduit : compte dédié EOD (rôle principal) ou case à cocher + role_change N3/CONTROLLER.
      */
     public function usesEodSignatureOnlySidebar(): bool
@@ -100,22 +113,7 @@ class User extends Authenticatable
      */
     public function eodSidebarShowsControllerSection(): bool
     {
-        if ($this->role === 'eod_n3') {
-            return false;
-        }
-        if ($this->role === 'eod_controller') {
-            return true;
-        }
-        if ($this->role === 'super_admin') {
-            return $this->canAccessEodAsController();
-        }
-        if ($this->usesEodSignatureOnlySidebar()
-            && $this->role_change === 'CONTROLLER'
-            && $this->role !== 'eod_n3') {
-            return true;
-        }
-
-        return $this->canAccessEodAsController() && $this->role !== 'eod_n3';
+        return $this->canSignEodControllerSlot();
     }
 
     /**

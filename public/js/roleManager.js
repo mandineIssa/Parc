@@ -11,22 +11,29 @@ class RoleManager {
         
         // Modes d'accès par rôle
         this.ACCESS_MODES = {
-            'super_admin': 'full',      // CRUD complet
-            'agent_it': 'mixed',        // CRUD sur équipements + affectations, lecture sur le reste
-            'user': 'readonly'          // Lecture seulement
+            'super_admin': 'full',
+            'agent_it': 'mixed',
+            'user': 'readonly',
+            'eod_n3': 'mixed',
+            'eod_controller': 'mixed',
         };
 
-        // pages exclues du système de rôles UI
+        // pages exclues des restrictions CRUD front (saisie / enregistrement pour tous les rôles)
         this.CHANGE_PAGES = [
             '/change',
-            '/eod'      // ← AJOUT
+            '/eod',
+            '/passwords',
+            '/network',
+            '/licences',
+            '/controls',
+            '/incidents',
         ];
         
         this.initializeFromDOM();
         this.checkCurrentRoute();
     }
 
-    // vérifie si on est sur une page Change Management ou EOD
+    /** Change, EOD, coffre mots de passe, réseau, licences, contrôles IT, incidents */
     isChangePage() {
         return this.CHANGE_PAGES.some(path => window.location.pathname.startsWith(path));
     }
@@ -97,7 +104,7 @@ class RoleManager {
                 };
                 break;
                 
-            case 'mixed': // Agent IT
+            case 'mixed': // Agent IT, profils EOD
                 this.userPermissions = {
                     canCreate: true,
                     canRead: true,
@@ -250,14 +257,14 @@ class RoleManager {
             element.closest?.('.logout-btn, .logout-link, .logout-form') || element.closest?.('[data-action="logout"]'));
     }
 
-    // vérifie si un élément appartient à une page/action Change ou EOD
+    /** Liens / actions vers les modules exemptés (pas de blocage SweetAlert) */
     isChangeElement(element) {
         if (!element) return false;
         const action = element.getAttribute?.('action') || element.action || '';
         const href = element.getAttribute?.('href') || element.href || '';
-        return action.includes('/change') || href.includes('/change')
-            || action.includes('/eod') || href.includes('/eod')     // ← AJOUT
-            || this.isChangePage();
+        const targets = ['/change', '/eod', '/passwords', '/network', '/licences', '/controls', '/incidents'];
+        if (targets.some(t => action.includes(t) || href.includes(t))) return true;
+        return this.isChangePage();
     }
     
     // ==================== GESTION DE L'INTERFACE ====================
@@ -485,7 +492,12 @@ class RoleManager {
         const formAction = form.getAttribute('action') || '';
         if (formAction.includes('/logout')) return true;
         if (formAction.includes('/change')) return true;
-        if (formAction.includes('/eod')) return true;       // ← AJOUT
+        if (formAction.includes('/eod')) return true;
+        if (formAction.includes('/passwords')) return true;
+        if (formAction.includes('/network')) return true;
+        if (formAction.includes('/licences')) return true;
+        if (formAction.includes('/controls')) return true;
+        if (formAction.includes('/incidents')) return true;
         if (this.hasRole('user')) return formAction.includes('/profile') || form.classList.contains('profile-form');
         if (this.hasRole('agent_it')) {
             return formAction.includes('/equipment') 
@@ -528,7 +540,7 @@ class RoleManager {
         document.body.classList.remove('access-full', 'access-mixed', 'access-readonly');
         document.body.classList.add(`role-${this.userRole}`);
         document.body.classList.add(`access-${this.ACCESS_MODES[this.userRole]}`);
-        if (this.hasRole('user')) document.body.classList.add('readonly-mode');
+        if (this.hasRole('user') && !this.isChangePage()) document.body.classList.add('readonly-mode');
         this.addRoleBadge();
     }
 

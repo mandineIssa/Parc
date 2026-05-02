@@ -56,12 +56,12 @@ class Password extends Model
 
     public static function categories(): array
     {
-        return ['Serveur','Réseau','Base de données','Sécurité électronique','Active Directory','Modem/WiFi'];
+        return ['Serveur','Réseau','Base de données','Sécurité électronique','Active Directory','Modem/WiFi','Imprimante'];
     }
 
     public static function sites(): array
     {
-        return ['AGP','TOUBA','TAMBA','ZIG','PIKINE','DAKAR','AUTRE'];
+        return config('agencies.sites', []);
     }
 }
 

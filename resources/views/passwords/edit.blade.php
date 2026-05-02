@@ -49,6 +49,7 @@
                     'Sécurité électronique'=>['icon'=>'📷','sub'=>'Vidéo / Contrôle accès','color'=>'orange'],
                     'Active Directory'=>['icon'=>'👤','sub'=>'Comptes AD / GPO','color'=>'indigo'],
                     'Modem/WiFi'=>['icon'=>'📡','sub'=>'AP / Box 4G / ADSL','color'=>'teal'],
+                    'Imprimante'=>['icon'=>'🖨️','sub'=>'IPP / SNMP / Interface web','color'=>'cyan'],
                 ];
                 @endphp
                 
@@ -116,7 +117,7 @@
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-400">
                     </div>
 
-                    <div id="row-type-equip" class="{{ in_array($currentCat, ['Réseau', 'Sécurité électronique', 'Modem/WiFi']) ? '' : 'hidden' }}">
+                    <div id="row-type-equip" class="{{ in_array($currentCat, ['Réseau', 'Sécurité électronique', 'Modem/WiFi', 'Imprimante']) ? '' : 'hidden' }}">
                         <label class="block text-sm font-medium text-gray-700 mb-1" id="label-type-equip">Type</label>
                         <select name="type_equipement" id="select-type-equip"
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
@@ -124,10 +125,12 @@
                         </select>
                     </div>
 
-                    <div id="row-extra" class="{{ $currentCat == 'Active Directory' ? '' : 'hidden' }}">
-                        <label class="block text-sm font-medium text-gray-700 mb-1" id="label-extra">Unité d'organisation (OU)</label>
+                    <div id="row-extra" class="{{ in_array($currentCat, ['Active Directory', 'Imprimante']) ? '' : 'hidden' }}">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" id="label-extra">
+                            @if($currentCat === 'Imprimante')Numéro de série / modèle@else Unité d'organisation (OU) @endif
+                        </label>
                         <input type="text" name="nom_exi" id="field-extra" value="{{ old('nom_exi', $password->nom_exi) }}"
-                               placeholder="OU=Admins,DC=COFINA,DC=LOCAL"
+                               placeholder="{{ $currentCat === 'Imprimante' ? 'ex: SN12345, HP MFP M428' : 'OU=Admins,DC=COFINA,DC=LOCAL' }}"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
                     </div>
 
@@ -138,7 +141,7 @@
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
                     </div>
 
-                    <div id="row-protocole" class="{{ in_array($currentCat, ['Serveur', 'Réseau', 'Base de données', 'Sécurité électronique', 'Modem/WiFi']) ? '' : 'hidden' }}">
+                    <div id="row-protocole" class="{{ in_array($currentCat, ['Serveur', 'Réseau', 'Base de données', 'Sécurité électronique', 'Modem/WiFi', 'Imprimante']) ? '' : 'hidden' }}">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Protocole d'accès</label>
                         <select name="protocole" id="select-protocole"
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
@@ -354,6 +357,13 @@ const CAT_CONFIG = {
         typeEquipLabel:'Type',
         typeEquipOptions:["Point d'accès WiFi","Modem ADSL","Box 4G","Routeur WiFi","VSAT"],
         protocoles:['HTTP','HTTPS','Telnet','WPA2','WPA3']
+    },
+    'Imprimante': {
+        color:'cyan',
+        label:'🖨️ Imprimante',
+        typeEquipLabel:"Type d'imprimante",
+        typeEquipOptions:['Laser / LED','Jet d\'encre','Multifonction (MFP)','Étiqueteuse','Traceur','Autre'],
+        protocoles:['HTTP','HTTPS','SNMP','IPP','LPD','FTP']
     }
 };
 

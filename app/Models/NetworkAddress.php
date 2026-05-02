@@ -22,7 +22,15 @@ class NetworkAddress extends Model
 
     public static function sites(): array
     {
-        return ['AGP', 'TOUBA', 'TAMBA', 'ZIG', 'PIKINE', 'DAKAR', 'CONGO', 'AUTRE'];
+        $sites = config('agencies.sites', []);
+        $add = config('agencies.network_additional_sites', []);
+        if ($add === [] || $sites === []) {
+            return $sites;
+        }
+        $last = end($sites) === 'AUTRE' ? array_pop($sites) : null;
+        $sites = array_merge($sites, $add);
+
+        return $last !== null ? array_merge($sites, [$last]) : $sites;
     }
 
     public static function typesEquipement(): array

@@ -867,11 +867,21 @@ class EodSuiviController extends Controller
     private function authorizeRole($role): void
     {
         $user = Auth::user();
+        $allowedRoles = is_array($role) ? $role : [$role];
+
         if ($user->role === 'super_admin') {
+            $controllerOnly = count($allowedRoles) === 1 && $allowedRoles[0] === 'CONTROLLER';
+            if ($controllerOnly) {
+                if (! $user->canSignEodControllerSlot()) {
+                    abort(403, 'Seuls les comptes Contrôleur EOD (batch) ou la désignation Controller — validation batch EOD peuvent accéder à cette fonction.');
+                }
+
+                return;
+            }
+
             return;
         }
 
-        $allowedRoles = is_array($role) ? $role : [$role];
         foreach ($allowedRoles as $r) {
             if ($this->userMatchesEodRole($user, $r)) {
                 return;
@@ -887,7 +897,7 @@ class EodSuiviController extends Controller
             'N1' => $user->role_change === 'N1',
             'N2' => $user->role_change === 'N2',
             'N3' => $user->canAccessEodAsN3(),
-            'CONTROLLER' => $user->canAccessEodAsController(),
+            'CONTROLLER' => $user->canSignEodControllerSlot(),
             default => false,
         };
     }
