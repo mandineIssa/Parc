@@ -755,11 +755,26 @@
                 @endif
 
                 @if($isEditable)
-                    <div>
+                    <div id="eod-attachments-wrapper">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Ajouter des fichiers</label>
-                        <input type="file" name="eod_attachments_files[]" multiple
-                               class="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-red-50 file:text-[#C8102E]">
-                        <p class="text-xs text-gray-500 mt-1">Formats: PDF, Word, Excel, CSV, TXT, JPG, PNG (max 10 Mo par fichier).</p>
+                        <p class="text-xs text-gray-500 mb-3">Une ligne par fichier, ou utilisez « Ajouter une pièce jointe » pour en sélectionner plusieurs (comme pour les incidents).</p>
+                        <div id="eod-attachments-rows" class="space-y-3">
+                            <div class="eod-attachment-row flex flex-wrap items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <div class="flex-1 min-w-[220px]">
+                                    <input type="file" name="eod_attachments_files[]"
+                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,application/pdf"
+                                           class="eod-attachment-input block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-red-50 file:text-[#C8102E]">
+                                </div>
+                                <button type="button" class="eod-attachment-remove eod-btn-remove shrink-0 w-9 h-9 rounded-lg text-lg leading-none" onclick="removeEodAttachmentRow(this)" title="Retirer cette ligne" style="display:none;">×</button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addEodAttachmentRow()" class="eod-btn-add mt-3">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Ajouter une pièce jointe
+                        </button>
+                        <p class="text-xs text-gray-500 mt-2">Formats : PDF, Word, Excel, CSV, TXT, JPG, PNG (max 10 Mo par fichier).</p>
                     </div>
                 @endif
             </div>
@@ -917,6 +932,43 @@ function addBatchRow() {
         </div>
     `;
     container.appendChild(div);
+}
+
+function refreshEodAttachmentRemoveButtons() {
+    const container = document.getElementById('eod-attachments-rows');
+    if (!container) return;
+    const rows = container.querySelectorAll('.eod-attachment-row');
+    const showRemove = rows.length > 1;
+    rows.forEach(function(row) {
+        const btn = row.querySelector('.eod-attachment-remove');
+        if (btn) btn.style.display = showRemove ? '' : 'none';
+    });
+}
+
+function addEodAttachmentRow() {
+    const container = document.getElementById('eod-attachments-rows');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'eod-attachment-row flex flex-wrap items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100';
+    div.innerHTML = `
+        <div class="flex-1 min-w-[220px]">
+            <input type="file" name="eod_attachments_files[]"
+                   accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,application/pdf"
+                   class="eod-attachment-input block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-red-50 file:text-[#C8102E]">
+        </div>
+        <button type="button" class="eod-attachment-remove eod-btn-remove shrink-0 w-9 h-9 rounded-lg text-lg leading-none" onclick="removeEodAttachmentRow(this)" title="Retirer cette ligne">×</button>
+    `;
+    container.appendChild(div);
+    refreshEodAttachmentRemoveButtons();
+}
+
+function removeEodAttachmentRow(btn) {
+    const container = document.getElementById('eod-attachments-rows');
+    if (!container) return;
+    const rows = container.querySelectorAll('.eod-attachment-row');
+    if (rows.length <= 1) return;
+    btn.closest('.eod-attachment-row').remove();
+    refreshEodAttachmentRemoveButtons();
 }
 
 function addIncidentRow() {
