@@ -265,11 +265,11 @@
                         <span class="text-xs text-gray-400">{{ $f->taille_formatee }}</span>
                         <a href="{{ route('passwords.fichier.download', [$password, $f]) }}"
                            class="text-blue-600 hover:underline text-xs">Télécharger</a>
-                        <form method="POST" action="{{ route('passwords.fichier.delete', [$password, $f]) }}"
-                              onsubmit="return confirm('Supprimer ce fichier ?')">
-                            @csrf @method('DELETE')
-                            <button class="text-red-500 hover:text-red-700 text-xs">Supprimer</button>
-                        </form>
+                        <button type="submit" form="password-fichier-delete-{{ $f->id }}"
+                                onclick="return confirm('Supprimer ce fichier ?')"
+                                class="text-red-500 hover:text-red-700 text-xs">
+                            Supprimer
+                        </button>
                     </div>
                     @endforeach
                 </div>
@@ -296,13 +296,11 @@
             <div class="bg-red-50 rounded-xl border border-red-200 p-5">
                 <h3 class="text-sm font-semibold text-red-700 mb-2">Zone dangereuse</h3>
                 <p class="text-xs text-red-500 mb-3">La suppression est définitive et journalisée.</p>
-                <form method="POST" action="{{ route('passwords.destroy', $password) }}"
-                      onsubmit="return confirm('Supprimer définitivement cette fiche ?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="border border-red-400 text-red-700 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-medium transition">
-                        Supprimer cette fiche
-                    </button>
-                </form>
+                <button type="submit" form="password-destroy-form"
+                        onclick="return confirm('Supprimer définitivement cette fiche ?')"
+                        class="border border-red-400 text-red-700 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    Supprimer cette fiche
+                </button>
             </div>
 
             <div class="flex justify-end gap-3 pb-4">
@@ -315,6 +313,15 @@
                 </button>
             </div>
         </div>
+    </form>
+
+    @foreach($password->fichiers as $f)
+    <form id="password-fichier-delete-{{ $f->id }}" method="POST" action="{{ route('passwords.fichier.delete', [$password, $f]) }}" class="hidden">
+        @csrf @method('DELETE')
+    </form>
+    @endforeach
+    <form id="password-destroy-form" method="POST" action="{{ route('passwords.destroy', $password) }}" class="hidden">
+        @csrf @method('DELETE')
     </form>
 </div>
 
