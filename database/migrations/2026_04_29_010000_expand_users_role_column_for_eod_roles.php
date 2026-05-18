@@ -8,6 +8,8 @@ return new class extends Migration
     /**
      * La colonne role était un ENUM ('user','agent_it','super_admin') : les valeurs
      * eod_n3 / eod_controller provoquaient SQLSTATE 1265 (Data truncated).
+     *
+     * Cible production / CI : MySQL ou MariaDB uniquement (pas SQLite).
      */
     public function up(): void
     {

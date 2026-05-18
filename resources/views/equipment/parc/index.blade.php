@@ -74,17 +74,25 @@
             $totalParcValue = Equipment::where('statut', 'parc')->sum('prix');
             
             $stats = [
-                ['label' => 'Réseau', 'count' => $countReseau, 'valeur' => $valeurReseau, 'color' => 'blue', 'icon' => '🌐'],
-                ['label' => 'Informatique', 'count' => $countInformatique, 'valeur' => $valeurInformatique, 'color' => 'green', 'icon' => '💻'],
-                ['label' => 'Électronique', 'count' => $countElectronique, 'valeur' => $valeurElectronique, 'color' => 'purple', 'icon' => '🔌'],
-                ['label' => 'En Service', 'count' => $countEnService, 'valeur' => 0, 'color' => 'green', 'icon' => '✓'],
-                ['label' => 'À Remplacer', 'count' => $countARemplacer, 'valeur' => 0, 'color' => 'red', 'icon' => '⚠️'],
-                ['label' => 'Valeur totale', 'count' => $totalParcCount, 'valeur' => $totalParcValue, 'color' => 'yellow', 'icon' => '💰'],
+                ['label' => 'Réseau', 'count' => $countReseau, 'valeur' => $valeurReseau, 'icon' => '🌐', 'filtre' => 'reseau', 'gradient' => 'linear-gradient(135deg, #7A0C1A 0%, #A61B29 100%)'],
+                ['label' => 'Informatique', 'count' => $countInformatique, 'valeur' => $valeurInformatique, 'icon' => '💻', 'filtre' => 'informatique', 'gradient' => 'linear-gradient(135deg, #8F2432 0%, #BF3142 100%)'],
+                ['label' => 'Électronique', 'count' => $countElectronique, 'valeur' => $valeurElectronique, 'icon' => '🔌', 'filtre' => 'electronique', 'gradient' => 'linear-gradient(135deg, #525866 0%, #6B7280 100%)'],
+                ['label' => 'En Service', 'count' => $countEnService, 'valeur' => 0, 'icon' => '✓', 'filtre' => 'en_service', 'gradient' => 'linear-gradient(135deg, #3E4654 0%, #5D6472 100%)'],
+                ['label' => 'À Remplacer', 'count' => $countARemplacer, 'valeur' => 0, 'icon' => '⚠️', 'filtre' => 'a_remplacer', 'gradient' => 'linear-gradient(135deg, #9F1F2C 0%, #D03140 100%)'],
+                ['label' => 'Valeur totale', 'count' => $totalParcCount, 'valeur' => $totalParcValue, 'icon' => '💰', 'filtre' => '', 'gradient' => 'linear-gradient(135deg, #3D3D44 0%, #5E616B 100%)'],
             ];
         @endphp
         
         @foreach($stats as $stat)
-        <div class="bg-gradient-to-r from-{{ $stat['color'] }}-500 to-{{ $stat['color'] }}-600 rounded-xl shadow-lg p-6 text-white">
+        @php
+            $isActive = request('filtre_rapide') === $stat['filtre'] || ($stat['filtre'] === '' && !request()->filled('filtre_rapide') && !request()->filled('type') && !request()->filled('etat') && !request()->filled('search'));
+            $targetUrl = $stat['filtre'] !== ''
+                ? route('parc.index', array_merge(request()->except(['page', 'filtre_rapide']), ['filtre_rapide' => $stat['filtre']]))
+                : route('parc.index');
+        @endphp
+        <a href="{{ $targetUrl }}"
+           class="rounded-xl shadow-lg p-6 text-white block transition-all duration-200 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A61B29] {{ $isActive ? 'ring-2 ring-offset-2 ring-[#A61B29]' : '' }}"
+           style="background: {{ $stat['gradient'] }};">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">{{ $stat['label'] }}</p>
@@ -99,7 +107,7 @@
                     {{ $stat['icon'] }}
                 </div>
             </div>
-        </div>
+        </a>
         @endforeach
     </div>
 
@@ -163,22 +171,22 @@
         <div class="mt-4 pt-4 border-t border-gray-100">
             <div class="flex flex-wrap gap-2">
                 <span class="text-sm text-gray-500 flex items-center mr-3">Filtres rapides :</span>
-                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ !request()->hasAny(['search', 'type', 'etat', 'filtre_rapide']) ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200' }}" data-filter="">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ !request()->hasAny(['search', 'type', 'etat', 'filtre_rapide']) ? 'bg-[#A61B29] text-white' : 'bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC]' }}" data-filter="">
                     Tous
                 </button>
-                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'reseau' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800 hover:bg-blue-200' }}" data-filter="reseau">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'reseau' ? 'bg-[#A61B29] text-white' : 'bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC]' }}" data-filter="reseau">
                     Réseau
                 </button>
-                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'informatique' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800 hover:bg-green-200' }}" data-filter="informatique">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'informatique' ? 'bg-[#A61B29] text-white' : 'bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC]' }}" data-filter="informatique">
                     Informatique
                 </button>
-                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'electronique' ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-800 hover:bg-purple-200' }}" data-filter="electronique">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'electronique' ? 'bg-[#5D6472] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}" data-filter="electronique">
                     Électronique
                 </button>
-                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'a_remplacer' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-800 hover:bg-red-200' }}" data-filter="a_remplacer">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'a_remplacer' ? 'bg-[#D03140] text-white' : 'bg-[#FCEBEC] text-[#9F1F2C] hover:bg-[#F8DADC]' }}" data-filter="a_remplacer">
                     À remplacer
                 </button>
-                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'non_affecte' ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' }}" data-filter="non_affecte">
+                <button type="button" class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full transition {{ request('filtre_rapide') == 'non_affecte' ? 'bg-[#3E4654] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}" data-filter="non_affecte">
                     Non affecté
                 </button>
             </div>

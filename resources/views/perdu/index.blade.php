@@ -47,7 +47,7 @@
 
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-        <div class="bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #3D3D44 0%, #5E616B 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Total</p>
@@ -60,7 +60,7 @@
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #7A0C1A 0%, #A61B29 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">En recherche</p>
@@ -73,7 +73,7 @@
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #8F2432 0%, #BF3142 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Retrouvés</p>
@@ -86,7 +86,7 @@
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #9F1F2C 0%, #D03140 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Définitifs</p>
@@ -99,7 +99,7 @@
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #525866 0%, #6B7280 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Avec plainte</p>
@@ -125,14 +125,14 @@
                     </div>
                     <input type="text" 
                            id="searchInput"
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition"
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition"
                            placeholder="Rechercher par N° série, équipement, lieu..."
                            value="{{ request('search') }}">
                 </div>
             </div>
             
             <div class="w-full md:w-48">
-                <select id="statutFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition bg-white">
+                <select id="statutFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Tous les statuts</option>
                     <option value="en_cours" {{ request('statut_recherche') == 'en_cours' ? 'selected' : '' }}>En recherche</option>
                     <option value="trouve" {{ request('statut_recherche') == 'trouve' ? 'selected' : '' }}>Retrouvé</option>
@@ -141,7 +141,7 @@
             </div>
             
             <div class="w-full md:w-48">
-                <select id="typeFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition bg-white">
+                <select id="typeFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Tous les types</option>
                     <option value="vol" {{ request('type_disparition') == 'vol' ? 'selected' : '' }}>Vol</option>
                     <option value="perte" {{ request('type_disparition') == 'perte' ? 'selected' : '' }}>Perte</option>
@@ -162,22 +162,22 @@
         <div class="mt-4 pt-4 border-t border-gray-100">
             <div class="flex flex-wrap gap-2">
                 <span class="text-sm text-gray-500 flex items-center mr-3">Filtres rapides :</span>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-red-100 text-red-800 hover:bg-red-200 transition" data-filter="all">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FCEBEC] text-[#9F1F2C] hover:bg-[#F8DADC] transition" data-filter="all">
                     Tous
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition" data-filter="en_cours">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="en_cours">
                     En recherche
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition" data-filter="trouve">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="trouve">
                     Retrouvés
                 </button>
                 <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition" data-filter="definitif">
                     Définitifs
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-purple-100 text-purple-800 hover:bg-purple-200 transition" data-filter="avec_plainte">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition" data-filter="avec_plainte">
                     Avec plainte
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition" data-filter="doublure">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition" data-filter="doublure">
                     Avec doublure
                 </button>
             </div>
@@ -710,9 +710,9 @@ document.addEventListener('DOMContentLoaded', function() {
         filterButtons.forEach(btn => {
             const filter = btn.dataset.filter;
             if (filter === currentFilter) {
-                btn.classList.add('ring-2', 'ring-offset-2', 'ring-red-500');
+                btn.classList.add('ring-2', 'ring-offset-2', 'ring-[#A61B29]');
             } else {
-                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-red-500');
+                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-[#A61B29]');
             }
         });
     }

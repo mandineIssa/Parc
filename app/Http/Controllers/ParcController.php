@@ -73,6 +73,9 @@ class ParcController extends Controller
                 case 'a_remplacer':
                     $query->where('etat', 'mauvais');
                     break;
+                case 'en_service':
+                    $query->whereIn('etat', ['neuf', 'bon', 'moyen']);
+                    break;
                 case 'non_affecte':
                     $query->whereDoesntHave('parc');
                     break;
@@ -131,6 +134,9 @@ class ParcController extends Controller
             switch ($filtreRapide) {
                 case 'a_remplacer':
                     $prixTotalQuery->where('etat', 'mauvais');
+                    break;
+                case 'en_service':
+                    $prixTotalQuery->whereIn('etat', ['neuf', 'bon', 'moyen']);
                     break;
                 case 'non_affecte':
                     $prixTotalQuery->whereDoesntHave('parc');

@@ -1,20 +1,14 @@
-// Puis dans resources/views/documentation.blade.php :
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">Documentation Complète</h1>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Guide Utilisateur</h2>
-            <p>Documentation pour les utilisateurs standard...</p>
-        </div>
-        
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-4">Guide Administrateur</h2>
-            <p>Documentation pour les administrateurs...</p>
-        </div>
-    </div>
-</div>
+    @php
+        // Ancien fichier conservé : redirection vers la documentation complète
+    @endphp
+    <script>window.location.href = @json(route('documentation.index'));</script>
+    <meta http-equiv="refresh" content="0;url={{ route('documentation.index') }}">
+    <p class="p-8 text-center">
+        <a href="{{ route('documentation.index') }}" class="text-[#A61B29] underline font-medium">
+            Accéder à la documentation complète
+        </a>
+    </p>
 @endsection

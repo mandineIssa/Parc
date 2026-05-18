@@ -145,26 +145,6 @@
         </div>
     </div>
 
-    <!-- Graphiques et visualisations -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <!-- Graphique des statuts -->
-        <div class="bg-white rounded-xl shadow-lg p-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">Répartition par statut</h2>
-            <div class="h-64">
-                <canvas id="statusChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Graphique des types -->
-        <div class="bg-white rounded-xl shadow-lg p-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">Répartition par type</h2>
-            <div class="h-64">
-                <canvas id="typesChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tableau des soumissions -->
     <!-- Tableau des soumissions -->
 <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
     <div class="flex justify-between items-center mb-6">
@@ -319,42 +299,6 @@
     @endif
 </div>
 
-    <!-- Informations supplémentaires (pour Super Admin) -->
-    @if(auth()->user()->canApprove())
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Top demandeurs -->
-        <div class="bg-white rounded-xl shadow-lg p-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">🏆 Top demandeurs</h2>
-            <div class="space-y-4">
-                @foreach($charts['top_submitters'] as $submitter)
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                            <span class="text-blue-600 font-semibold">{{ substr($submitter->name, 0, 1) }}</span>
-                        </div>
-                        <div>
-                            <div class="font-medium">{{ $submitter->name }}</div>
-                            <div class="text-xs text-gray-500">{{ $submitter->email }}</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold text-lg">{{ $submitter->submissions }}</div>
-                        <div class="text-xs text-gray-500">soumissions</div>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
-
-        <!-- Timeline des 30 derniers jours -->
-        <div class="bg-white rounded-xl shadow-lg p-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">📈 Évolution (30 jours)</h2>
-            <div class="h-64">
-                <canvas id="timelineChart"></canvas>
-            </div>
-        </div>
-    </div>
-    @endif
 </div>
 @endsection
 
@@ -364,8 +308,6 @@
 @endpush
 
 @push('scripts')
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Date Range Picker -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -385,126 +327,6 @@ $(function() {
                         'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
         }
     });
-});
-
-// Données pour les graphiques
-const statusData = {
-    labels: ['En attente', 'Approuvé', 'Rejeté'],
-    datasets: [{
-        data: [
-            {{ $charts['status_data']->where('status', 'pending')->first()->count ?? 0 }},
-            {{ $charts['status_data']->where('status', 'approved')->first()->count ?? 0 }},
-            {{ $charts['status_data']->where('status', 'rejected')->first()->count ?? 0 }}
-        ],
-        backgroundColor: [
-            '#FBBF24', // Jaune
-            '#10B981', // Vert
-            '#EF4444'  // Rouge
-        ]
-    }]
-};
-
-const typesData = {
-    labels: {!! json_encode($charts['types_data']->pluck('type')) !!},
-    datasets: [{
-        label: 'Nombre de soumissions',
-        data: {!! json_encode($charts['types_data']->pluck('count')) !!},
-        backgroundColor: '#3B82F6',
-        borderColor: '#1D4ED8',
-        borderWidth: 1
-    }]
-};
-
-const timelineData = {
-    labels: {!! json_encode($charts['timeline_data']->pluck('date')) !!},
-    datasets: [
-        {
-            label: 'Total',
-            data: {!! json_encode($charts['timeline_data']->pluck('total')) !!},
-            borderColor: '#3B82F6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            fill: true
-        },
-        {
-            label: 'Approuvées',
-            data: {!! json_encode($charts['timeline_data']->pluck('approved')) !!},
-            borderColor: '#10B981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            fill: true
-        },
-        {
-            label: 'En attente',
-            data: {!! json_encode($charts['timeline_data']->pluck('pending')) !!},
-            borderColor: '#FBBF24',
-            backgroundColor: 'rgba(251, 191, 36, 0.1)',
-            fill: true
-        }
-    ]
-};
-
-// Initialiser les graphiques
-document.addEventListener('DOMContentLoaded', function() {
-    // Graphique des statuts (pie)
-    const statusCtx = document.getElementById('statusChart').getContext('2d');
-    new Chart(statusCtx, {
-        type: 'pie',
-        data: statusData,
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-
-    // Graphique des types (bar)
-    const typesCtx = document.getElementById('typesChart').getContext('2d');
-    new Chart(typesCtx, {
-        type: 'bar',
-        data: typesData,
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
-
-    // Graphique timeline (line) - seulement pour Super Admin
-    @if(auth()->user()->canApprove())
-    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
-    new Chart(timelineCtx, {
-        type: 'line',
-        data: timelineData,
-        options: {
-            responsive: true,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        }
-    });
-    @endif
 });
 
 // Fonction pour rafraîchir le dashboard

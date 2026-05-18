@@ -44,7 +44,7 @@
 
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #7A0C1A 0%, #A61B29 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Total équipements</p>
@@ -59,7 +59,7 @@
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #525866 0%, #6B7280 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Valeur résiduelle totale</p>

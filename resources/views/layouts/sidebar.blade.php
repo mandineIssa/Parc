@@ -1,4 +1,4 @@
-{{-- resources/views/layouts/sidebar.blade.php --}}
+{{-- Sidebar — structure PARC + modules (sans icônes) --}}
 <aside id="sidebar" class="fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 shadow-xl transform -translate-x-full lg:translate-x-0 transition-all duration-300 ease-in-out z-40 flex flex-col">
 
     <nav class="flex-1 overflow-y-auto py-4 sidebar-custom-scrollbar" id="sidebar-nav">
@@ -7,414 +7,190 @@
             @include('layouts.partials.sidebar-eod-signature-only')
         @else
 
-        {{-- ════════════════════════════════════════
-             SECTION : RAPPORTS
-        ════════════════════════════════════════ --}}
-        <div class="sidebar-section" data-section="rapports">
-            <button class="sidebar-section-header group" data-section="rapports">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-purple-500 group-hover:text-purple-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                    </svg>
-                    <span class="font-medium">Rapports</span>
-                </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+        @php
+            $stocksMenuOpen = request()->routeIs('dashboard.celer-*') || request()->routeIs('dashboard.deceler-*');
+            $stockBranchCelerOpen = request()->routeIs('dashboard.celer-*');
+            $stockBranchDecelerOpen = request()->routeIs('dashboard.deceler-*');
+        @endphp
+
+        {{-- ═══ PARC (menu principal) ═══ --}}
+        <div class="sidebar-section" data-section="parc">
+            <button type="button" class="sidebar-section-header sidebar-section-header--root" data-section="parc">
+                <span class="font-semibold">PARC</span>
+                <span class="sidebar-chevron" aria-hidden="true"></span>
             </button>
             <div class="sidebar-section-body">
-                <a href="{{ route('reports.index') }}" class="sidebar-item {{ request()->routeIs('reports.index') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Vue d'ensemble</span>
-                </a>
-                <a href="{{ route('reports.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.equipment') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Équipements</span>
-                </a>
-                <a href="{{ route('reports.financial') }}" class="sidebar-item {{ request()->routeIs('reports.financial') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Financier</span>
-                </a>
+
+                {{-- Rapports --}}
+                <div class="sidebar-subsection" data-subsection="rapports">
+                    <button type="button" class="sidebar-subsection-header" data-subsection="rapports">
+                        <span>Rapports</span>
+                        <span class="sidebar-chevron sidebar-chevron--sm" aria-hidden="true"></span>
+                    </button>
+                    <div class="sidebar-subsection-body">
+                        <a href="{{ route('reports.index') }}" class="sidebar-item {{ request()->routeIs('reports.index') ? 'sidebar-active' : '' }}">Vue d'ensemble</a>
+                        <a href="{{ route('reports.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.equipment') ? 'sidebar-active' : '' }}">Équipements</a>
+                        <a href="{{ route('reports.financial') }}" class="sidebar-item {{ request()->routeIs('reports.financial') ? 'sidebar-active' : '' }}">Financier</a>
                 @if(class_exists('App\Models\Maintenance'))
-                <a href="{{ route('reports.maintenance') }}" class="sidebar-item {{ request()->routeIs('reports.maintenance') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Maintenance</span>
-                </a>
+                        <a href="{{ route('reports.maintenance') }}" class="sidebar-item {{ request()->routeIs('reports.maintenance') ? 'sidebar-active' : '' }}">Maintenance</a>
                 @endif
                 <div class="sidebar-divider"></div>
-                <a href="{{ route('reports.import.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.import.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Importer</span>
-                </a>
-                <a href="{{ route('reports.export.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.export.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Exporter</span>
-                </a>
+                        <a href="{{ route('reports.import.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.import.*') ? 'sidebar-active' : '' }}">Importer</a>
+                        <a href="{{ route('reports.export.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.export.*') ? 'sidebar-active' : '' }}">Exporter</a>
             </div>
         </div>
 
-        {{-- ════════════════════════════════════════
-             SECTION : ÉQUIPEMENTS
-        ════════════════════════════════════════ --}}
-        <div class="sidebar-section" data-section="equipements">
-            <button class="sidebar-section-header group" data-section="equipements">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-blue-500 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                    <span class="font-medium">Équipements</span>
-                </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+                {{-- Gestion --}}
+                <div class="sidebar-subsection" data-subsection="gestion">
+                    <button type="button" class="sidebar-subsection-header" data-subsection="gestion">
+                        <span>Gestion</span>
+                        <span class="sidebar-chevron sidebar-chevron--sm" aria-hidden="true"></span>
             </button>
-            <div class="sidebar-section-body">
-                <a href="{{ route('equipment.index') }}" class="sidebar-item {{ request()->routeIs('equipment.index') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Tous les équipements</span>
-                </a>
-                <a href="{{ route('equipment.import.form') }}" class="sidebar-item {{ request()->routeIs('equipment.import.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Import</span>
-                </a>
-                <a href="{{ route('equipment.export') }}" class="sidebar-item {{ request()->routeIs('equipment.export') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Export</span>
-                </a>
+                    <div class="sidebar-subsection-body">
+                        <a href="{{ route('parc.index') }}" class="sidebar-item {{ request()->routeIs('parc.index') ? 'sidebar-active' : '' }}">Parc</a>
+                        <a href="{{ route('parc.reaffectations.index') }}" class="sidebar-item {{ request()->routeIs('parc.reaffectations.*') ? 'sidebar-active' : '' }}">Historique réaffectations</a>
+                        <a href="{{ route('maintenance.index') }}" class="sidebar-item {{ request()->routeIs('maintenance.*') ? 'sidebar-active' : '' }}">Maintenances</a>
+                        @if(isset($approval) && $approval)
+                            <a href="{{ route('approvals.attachments.show', $approval->id) }}" class="sidebar-item {{ request()->routeIs('approvals.attachments.show') ? 'sidebar-active' : '' }}">Pièces jointes approbation</a>
+                        @else
+                            <span class="sidebar-item sidebar-item--disabled">Pièces jointes approbation</span>
+                        @endif
+                        <a href="{{ route('hors-service.index') }}" class="sidebar-item {{ request()->routeIs('hors-service.*') ? 'sidebar-active' : '' }}">Hors service</a>
+                        <a href="{{ route('perdu.index') }}" class="sidebar-item {{ request()->routeIs('perdu.*') ? 'sidebar-active' : '' }}">Perdu</a>
             </div>
         </div>
 
-        {{-- ════════════════════════════════════════
-             SECTION : STOCKS — CELER
-        ════════════════════════════════════════ --}}
-        <div class="sidebar-section" data-section="celer">
-            <button class="sidebar-section-header group" data-section="celer">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-cyan-500 group-hover:text-cyan-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                    </svg>
-                    <span class="font-medium">Stocks — CELER</span>
-                </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+                {{-- Équipements --}}
+                <div class="sidebar-subsection" data-subsection="equipements">
+                    <button type="button" class="sidebar-subsection-header" data-subsection="equipements">
+                        <span>Équipements</span>
+                        <span class="sidebar-chevron sidebar-chevron--sm" aria-hidden="true"></span>
             </button>
-            <div class="sidebar-section-body">
-                <a href="{{ route('dashboard.celer-informatique') }}" class="sidebar-item {{ request()->routeIs('dashboard.celer-informatique') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Informatique</span>
-                </a>
-                <a href="{{ route('dashboard.celer-reseau') }}" class="sidebar-item {{ request()->routeIs('dashboard.celer-reseau') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Réseau</span>
-                </a>
-                <a href="{{ route('dashboard.celer-electronique') }}" class="sidebar-item {{ request()->routeIs('dashboard.celer-electronique') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Électronique</span>
-                </a>
+                    <div class="sidebar-subsection-body">
+                        <a href="{{ route('equipment.index') }}" class="sidebar-item {{ request()->routeIs('equipment.index') ? 'sidebar-active' : '' }}">Tous les équipements</a>
+                        <a href="{{ route('equipment.renewal') }}" class="sidebar-item {{ request()->routeIs('equipment.renewal') ? 'sidebar-active' : '' }}">Renouvellement</a>
+                        <a href="{{ route('equipment.import.form') }}" class="sidebar-item {{ request()->routeIs('equipment.import.*') ? 'sidebar-active' : '' }}">Import</a>
+                        <a href="{{ route('equipment.export') }}" class="sidebar-item {{ request()->routeIs('equipment.export') ? 'sidebar-active' : '' }}">Export</a>
             </div>
         </div>
 
-        {{-- ════════════════════════════════════════
-             SECTION : STOCKS — DECELER
-        ════════════════════════════════════════ --}}
-        <div class="sidebar-section" data-section="deceler">
-            <button class="sidebar-section-header group" data-section="deceler">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-emerald-500 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                    </svg>
-                    <span class="font-medium">Stocks — DECELER</span>
-                </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div class="sidebar-section-body">
-                <a href="{{ route('dashboard.deceler-informatique') }}" class="sidebar-item {{ request()->routeIs('dashboard.deceler-informatique') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Informatique</span>
+                {{-- Documentation --}}
+                <a href="{{ route('documentation.index') }}"
+                   class="sidebar-subsection-link {{ request()->routeIs('documentation.*') ? 'sidebar-active' : '' }}">
+                    Documentation
                 </a>
-                <a href="{{ route('dashboard.deceler-reseau') }}" class="sidebar-item {{ request()->routeIs('dashboard.deceler-reseau') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Réseau</span>
-                </a>
-                <a href="{{ route('dashboard.deceler-electronique') }}" class="sidebar-item {{ request()->routeIs('dashboard.deceler-electronique') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Électronique</span>
-                </a>
-            </div>
-        </div>
 
-        {{-- ════════════════════════════════════════
-             SECTION : GESTION
-        ════════════════════════════════════════ --}}
-        <div class="sidebar-section" data-section="gestion">
-            <button class="sidebar-section-header group" data-section="gestion">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-amber-500 group-hover:text-amber-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                    </svg>
-                    <span class="font-medium">Gestion</span>
-                </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div class="sidebar-section-body">
-                <a href="{{ route('parc.index') }}" class="sidebar-item {{ request()->routeIs('parc.index') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Parc</span>
-                </a>
-                <a href="{{ route('parc.reaffectations.index') }}" class="sidebar-item {{ request()->routeIs('parc.reaffectations.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Historique Réaffectations</span>
-                </a>
-                <a href="{{ route('maintenance.index') }}" class="sidebar-item {{ request()->routeIs('maintenance.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Maintenances</span>
-                </a>
-                @if(isset($approval) && $approval)
-                    <a href="{{ route('approvals.attachments.show', $approval->id) }}" class="sidebar-item {{ request()->routeIs('approvals.attachments.show') ? 'sidebar-active' : '' }}">
-                        <span class="sidebar-dot"></span>
-                        <span>Pièces jointes Approbation</span>
-                    </a>
-                @else
-                    <div class="sidebar-item opacity-40 cursor-not-allowed">
-                        <span class="sidebar-dot"></span>
-                        <span>Pièces jointes Approbation</span>
+                {{-- Stocks : CELER / DECELER --}}
+                <div class="sidebar-subsection" data-subsection="stocks">
+                    <button type="button" class="sidebar-subsection-header {{ $stocksMenuOpen ? 'is-active' : '' }}" data-subsection="stocks">
+                        <span>Stocks</span>
+                        <span class="sidebar-chevron sidebar-chevron--sm {{ $stocksMenuOpen ? 'open' : '' }}" aria-hidden="true"></span>
+                    </button>
+                    <div class="sidebar-subsection-body sidebar-subsection-body--stocks {{ $stocksMenuOpen ? 'open' : '' }}">
+
+                        <div class="sidebar-stock-branch" data-stock-branch="celer">
+                            <button type="button" class="sidebar-stock-branch-header {{ $stockBranchCelerOpen ? 'is-active' : '' }}" data-stock-branch="celer">
+                                <span class="sidebar-stock-branch-title">CELER</span>
+                                <span class="sidebar-chevron sidebar-chevron--xs {{ $stockBranchCelerOpen ? 'open' : '' }}" aria-hidden="true"></span>
+                            </button>
+                            <div class="sidebar-stock-branch-body {{ $stockBranchCelerOpen ? 'open' : '' }}">
+                                <a href="{{ route('dashboard.celer-informatique') }}" class="sidebar-item sidebar-item--stock {{ request()->routeIs('dashboard.celer-informatique*') ? 'sidebar-active' : '' }}">Informatique</a>
+                                <a href="{{ route('dashboard.celer-reseau') }}" class="sidebar-item sidebar-item--stock {{ request()->routeIs('dashboard.celer-reseau*') ? 'sidebar-active' : '' }}">Réseau</a>
+                                <a href="{{ route('dashboard.celer-electronique') }}" class="sidebar-item sidebar-item--stock {{ request()->routeIs('dashboard.celer-electronique*') ? 'sidebar-active' : '' }}">Électronique</a>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-stock-branch" data-stock-branch="deceler">
+                            <button type="button" class="sidebar-stock-branch-header {{ $stockBranchDecelerOpen ? 'is-active' : '' }}" data-stock-branch="deceler">
+                                <span class="sidebar-stock-branch-title">DECELER</span>
+                                <span class="sidebar-chevron sidebar-chevron--xs {{ $stockBranchDecelerOpen ? 'open' : '' }}" aria-hidden="true"></span>
+                            </button>
+                            <div class="sidebar-stock-branch-body {{ $stockBranchDecelerOpen ? 'open' : '' }}">
+                                <a href="{{ route('dashboard.deceler-informatique') }}" class="sidebar-item sidebar-item--stock {{ request()->routeIs('dashboard.deceler-informatique*') ? 'sidebar-active' : '' }}">Informatique</a>
+                                <a href="{{ route('dashboard.deceler-reseau') }}" class="sidebar-item sidebar-item--stock {{ request()->routeIs('dashboard.deceler-reseau*') ? 'sidebar-active' : '' }}">Réseau</a>
+                                <a href="{{ route('dashboard.deceler-electronique') }}" class="sidebar-item sidebar-item--stock {{ request()->routeIs('dashboard.deceler-electronique*') ? 'sidebar-active' : '' }}">Électronique</a>
+                            </div>
+                        </div>
+
                     </div>
-                @endif
-                <a href="{{ route('hors-service.index') }}" class="sidebar-item {{ request()->routeIs('hors-service.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Hors Service</span>
-                </a>
-                <a href="{{ route('perdu.index') }}" class="sidebar-item {{ request()->routeIs('perdu.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Perdu</span>
-                </a>
-            </div>
-        </div>
-
-        {{-- ════════════════════════════════════════
-             SECTION : EOD SUIVI
-        ════════════════════════════════════════ --}}
-        <div class="sidebar-section" data-section="eod">
-            <button class="sidebar-section-header group" data-section="eod">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-orange-500 group-hover:text-orange-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <span class="font-medium">EOD Suivi</span>
                 </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div class="sidebar-section-body">
-                @php
-                    $user = auth()->user();
-                    $eodN3 = $user && $user->canAccessEodAsN3();
-                    $eodCtrl = $user && $user->canSignEodControllerSlot();
-                    $eodN1 = $user && $user->role_change === 'N1';
-                    $eodN2 = $user && $user->role_change === 'N2';
-                    $eodAny = $eodN1 || $eodN2 || $eodN3 || $eodCtrl;
-                @endphp
-                @if($eodAny)
-                    @if($eodN1)
-                        <a href="{{ route('eod.n1.index') }}" class="sidebar-item {{ request()->routeIs('eod.n1.index') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>Mes fiches EOD</span>
-                        </a>
-                        <a href="{{ route('eod.n1.create') }}" class="sidebar-item {{ request()->routeIs('eod.n1.create') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>Nouvelle fiche EOD</span>
-                        </a>
-                    @endif
-                    @if($eodN2)
-                        <a href="{{ route('eod.n2.index') }}" class="sidebar-item {{ request()->routeIs('eod.n2.index') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>Mes fiches EOD</span>
-                        </a>
-                        <a href="{{ route('eod.n2.create') }}" class="sidebar-item {{ request()->routeIs('eod.n2.create') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>Nouvelle fiche EOD</span>
-                        </a>
-                    @endif
-                    @if($eodN3)
-                        <a href="{{ route('eod.n3.pending') }}" class="sidebar-item {{ request()->routeIs('eod.n3.pending') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>Fiches à signer (N+3)</span>
-                        </a>
-                        <a href="{{ route('eod.n3.index') }}" class="sidebar-item {{ request()->routeIs('eod.n3.index') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>Supervision EOD</span>
-                        </a>
-                    @endif
-                    @if($eodCtrl)
-                        <a href="{{ route('eod.controller.index') }}" class="sidebar-item {{ request()->routeIs('eod.controller.*') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>Validation Controller</span>
-                        </a>
-                    @endif
-                @else
-                    <div class="px-4 py-2 text-xs text-gray-400 italic">Profil sans accès EOD (rôle principal Signataire N+3 ou Contrôleur EOD, ou rôle Change N1–N3 / Controller)</div>
-                @endif
+
             </div>
         </div>
 
-        {{-- ════════════════════════════════════════
-             SECTION : INFRASTRUCTURE IT
-        ════════════════════════════════════════ --}}
+        {{-- Infrastructure IT --}}
         <div class="sidebar-section" data-section="infrastructure">
-            <button class="sidebar-section-header group" data-section="infrastructure">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-rose-500 group-hover:text-rose-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                    </svg>
+            <button type="button" class="sidebar-section-header" data-section="infrastructure">
                     <span class="font-medium">Infrastructure IT</span>
-                </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+                <span class="sidebar-chevron" aria-hidden="true"></span>
             </button>
             <div class="sidebar-section-body">
-                <div class="sidebar-group-label">Mots de Passe</div>
-                <a href="{{ route('passwords.index') }}" class="sidebar-item {{ request()->routeIs('passwords.index') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Tous les mots de passe</span>
-                </a>
-                <a href="{{ route('passwords.create') }}" class="sidebar-item {{ request()->routeIs('passwords.create') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Nouvelle fiche</span>
-                </a>
+                <p class="sidebar-group-label">Mots de passe</p>
+                <a href="{{ route('passwords.index') }}" class="sidebar-item {{ request()->routeIs('passwords.index') ? 'sidebar-active' : '' }}">Tous les mots de passe</a>
+                <a href="{{ route('passwords.create') }}" class="sidebar-item {{ request()->routeIs('passwords.create') ? 'sidebar-active' : '' }}">Nouvelle fiche</a>
                 <div class="sidebar-divider"></div>
-                <div class="sidebar-group-label">Plan d'Adressage</div>
-                <a href="{{ route('network.index') }}" class="sidebar-item {{ request()->routeIs('network.index') && !request('type') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Vue d'ensemble</span>
-                </a>
-                <a href="{{ route('network.index', ['type' => 'plan_adressage']) }}" class="sidebar-item {{ request('type') === 'plan_adressage' ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Plans VLAN</span>
-                </a>
-                <a href="{{ route('network.index', ['type' => 'branchement_local']) }}" class="sidebar-item {{ request('type') === 'branchement_local' ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Branchements locaux</span>
-                </a>
-                <a href="{{ route('network.create') }}" class="sidebar-item {{ request()->routeIs('network.create') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Ajouter une entrée</span>
-                </a>
+                <p class="sidebar-group-label">Plan d'adressage</p>
+                <a href="{{ route('network.index') }}" class="sidebar-item {{ request()->routeIs('network.index') && !request('type') ? 'sidebar-active' : '' }}">Vue d'ensemble</a>
+                <a href="{{ route('network.index', ['type' => 'plan_adressage']) }}" class="sidebar-item {{ request('type') === 'plan_adressage' ? 'sidebar-active' : '' }}">Plans VLAN</a>
+                <a href="{{ route('network.index', ['type' => 'branchement_local']) }}" class="sidebar-item {{ request('type') === 'branchement_local' ? 'sidebar-active' : '' }}">Branchements locaux</a>
+                <a href="{{ route('network.create') }}" class="sidebar-item {{ request()->routeIs('network.create') ? 'sidebar-active' : '' }}">Ajouter une entrée</a>
                 <div class="sidebar-divider"></div>
-                <div class="sidebar-group-label">Licences</div>
-                <a href="{{ route('licences.index') }}" class="sidebar-item {{ request()->routeIs('licences.index') && !request('type') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Toutes les licences</span>
-                </a>
-                @foreach(['Fortinet' => '🛡', 'FAI' => '🌐', 'Certificat' => '🔐', 'Office365' => '📧'] as $type => $icon)
-                <a href="{{ route('licences.index', ['type' => $type]) }}" class="sidebar-item {{ request('type') === $type ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>{{ $icon }} {{ $type }}</span>
-                </a>
+                <p class="sidebar-group-label">Licences</p>
+                <a href="{{ route('licences.index') }}" class="sidebar-item {{ request()->routeIs('licences.index') && !request('type') ? 'sidebar-active' : '' }}">Toutes les licences</a>
+                @foreach(['Fortinet', 'FAI', 'Certificat', 'Office365'] as $type)
+                <a href="{{ route('licences.index', ['type' => $type]) }}" class="sidebar-item {{ request('type') === $type ? 'sidebar-active' : '' }}">{{ $type }}</a>
                 @endforeach
-                <a href="{{ route('licences.create') }}" class="sidebar-item {{ request()->routeIs('licences.create') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Nouvelle licence</span>
-                </a>
+                <a href="{{ route('licences.create') }}" class="sidebar-item {{ request()->routeIs('licences.create') ? 'sidebar-active' : '' }}">Nouvelle licence</a>
             </div>
         </div>
 
-        {{-- ════════════════════════════════════════
-             SECTION : CHANGE MANAGEMENT
-        ════════════════════════════════════════ --}}
+        {{-- Change Management --}}
         <div class="sidebar-section" data-section="change">
-            <button class="sidebar-section-header group" data-section="change">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-indigo-500 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
+            <button type="button" class="sidebar-section-header" data-section="change">
                     <span class="font-medium">Change Management</span>
-                </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+                <span class="sidebar-chevron" aria-hidden="true"></span>
             </button>
             <div class="sidebar-section-body">
                 @php $user = auth()->user(); $hasChangeRole = $user && $user->role_change; @endphp
                 @if($hasChangeRole)
                     @if($user->role_change === 'N1')
-                        <a href="{{ route('change.n1.index') }}" class="sidebar-item {{ request()->routeIs('change.n1.*') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>N+1 — Mes formulaires</span>
-                        </a>
-                        <a href="{{ route('change.n1.create') }}" class="sidebar-item {{ request()->routeIs('change.n1.create') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>Nouveau formulaire</span>
-                        </a>
+                        <a href="{{ route('change.n1.index') }}" class="sidebar-item {{ request()->routeIs('change.n1.*') ? 'sidebar-active' : '' }}">N+1 — Mes formulaires</a>
+                        <a href="{{ route('change.n1.create') }}" class="sidebar-item {{ request()->routeIs('change.n1.create') ? 'sidebar-active' : '' }}">Nouveau formulaire</a>
                     @elseif($user->role_change === 'N2')
-                        <a href="{{ route('change.n2.index') }}" class="sidebar-item {{ request()->routeIs('change.n2.*') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>N+2 — Formulaires à traiter</span>
-                        </a>
+                        <a href="{{ route('change.n2.index') }}" class="sidebar-item {{ request()->routeIs('change.n2.*') ? 'sidebar-active' : '' }}">N+2 — Formulaires à traiter</a>
                     @elseif($user->role_change === 'N3')
-                        <a href="{{ route('change.n3.index') }}" class="sidebar-item {{ request()->routeIs('change.n3.*') ? 'sidebar-active' : '' }}">
-                            <span class="sidebar-dot"></span>
-                            <span>N+3 — Validation finale</span>
-                        </a>
+                        <a href="{{ route('change.n3.index') }}" class="sidebar-item {{ request()->routeIs('change.n3.*') ? 'sidebar-active' : '' }}">N+3 — Validation finale</a>
                     @elseif($user->role_change === 'CONTROLLER')
-                        <p class="px-4 py-2 text-xs text-gray-500">Profil <strong>Controller EOD</strong> : utilisez la section « EOD Suivi » pour valider les batchs.</p>
+                        <p class="sidebar-hint">Profil Controller EOD : utilisez la section « EOD Suivi ».</p>
                     @endif
                     <div class="sidebar-divider"></div>
                     <form method="POST" action="{{ route('change.role.clear') }}" class="w-full">
                         @csrf
-                        <button type="submit" class="sidebar-item w-full">
-                            <span class="sidebar-dot"></span>
-                            <span>Changer de rôle (session)</span>
-                        </button>
+                        <button type="submit" class="sidebar-item w-full text-left">Changer de rôle (session)</button>
                     </form>
                     <div class="px-4 py-2 mt-1">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
-                             style="background:{{ $user->role_change === 'N1' ? 'rgba(59,130,246,0.1)' : ($user->role_change === 'N2' ? 'rgba(16,185,129,0.1)' : ($user->role_change === 'N3' ? 'rgba(139,92,246,0.1)' : 'rgba(99,102,241,0.1)')) }};color:{{ $user->role_change === 'N1' ? '#3b82f6' : ($user->role_change === 'N2' ? '#10b981' : ($user->role_change === 'N3' ? '#8b5cf6' : '#4f46e5')) }}">
-                            Rôle actuel : {{ $user->role_change === 'N1' ? 'N+1' : ($user->role_change === 'N2' ? 'N+2' : ($user->role_change === 'N3' ? 'N+3' : 'CONTROLLER')) }}
+                        <span class="sidebar-role-pill">
+                            Rôle actuel :
+                            {{ $user->role_change === 'N1' ? 'N+1' : ($user->role_change === 'N2' ? 'N+2' : ($user->role_change === 'N3' ? 'N+3' : 'CONTROLLER')) }}
                         </span>
                     </div>
                 @else
-                    <a href="{{ route('change.role') }}" class="sidebar-item {{ request()->routeIs('change.role') ? 'sidebar-active' : '' }}">
-                        <span class="sidebar-dot"></span>
-                        <span>Sélectionner un rôle</span>
-                    </a>
+                    <a href="{{ route('change.role') }}" class="sidebar-item {{ request()->routeIs('change.role') ? 'sidebar-active' : '' }}">Sélectionner un rôle</a>
                 @endif
             </div>
         </div>
 
-        {{-- ════════════════════════════════════════
-             SECTION : CONTRÔLES IT
-        ════════════════════════════════════════ --}}
+        {{-- Contrôles IT --}}
         <div class="sidebar-section" data-section="controls">
-            <button class="sidebar-section-header group" data-section="controls">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-red-500 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                    </svg>
+            <button type="button" class="sidebar-section-header" data-section="controls">
                     <span class="font-medium">Contrôles IT</span>
-                </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+                <span class="sidebar-chevron" aria-hidden="true"></span>
             </button>
             <div class="sidebar-section-body">
-                <a href="{{ route('controls.dashboard') }}" class="sidebar-item {{ request()->routeIs('controls.dashboard') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Dashboard Contrôles</span>
-                </a>
-                <a href="{{ route('controls.index') }}" class="sidebar-item {{ request()->routeIs('controls.index') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Tous les contrôles</span>
-                </a>
+                <a href="{{ route('controls.dashboard') }}" class="sidebar-item {{ request()->routeIs('controls.dashboard') ? 'sidebar-active' : '' }}">Dashboard contrôles</a>
+                <a href="{{ route('controls.index') }}" class="sidebar-item {{ request()->routeIs('controls.index') ? 'sidebar-active' : '' }}">Tous les contrôles</a>
                 <a href="{{ route('controls.tasks.index') }}" class="sidebar-item {{ request()->routeIs('controls.tasks.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span class="flex-1">Mes tâches</span>
+                    Mes tâches
                     @php
                         $nbTaches = 0;
                         try {
@@ -430,159 +206,102 @@
                     @endif
                 </a>
                 <div class="sidebar-divider"></div>
-                <div class="sidebar-group-label">Planification</div>
-                <a href="{{ route('controls.index') }}" class="sidebar-item {{ request()->routeIs('controls.index') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Toutes les planifications</span>
-                </a>
-                <a href="{{ route('controls.create') }}" class="sidebar-item {{ request()->routeIs('controls.create') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Nouveau contrôle</span>
-                </a>
+                <p class="sidebar-group-label">Planification</p>
+                <a href="{{ route('controls.create') }}" class="sidebar-item {{ request()->routeIs('controls.create') ? 'sidebar-active' : '' }}">Nouveau contrôle</a>
                 @if(auth()->user() && auth()->user()->role === 'super_admin')
                     <div class="sidebar-divider"></div>
-                    <div class="sidebar-group-label">Configuration</div>
-                    <a href="{{ route('controls.templates.index') }}" class="sidebar-item {{ request()->routeIs('controls.templates.*') ? 'sidebar-active' : '' }}">
-                        <span class="sidebar-dot"></span>
-                        <span>Templates de rapport</span>
-                    </a>
+                    <p class="sidebar-group-label">Modèles</p>
+                    <a href="{{ route('controls.templates.index') }}" class="sidebar-item {{ request()->routeIs('controls.templates.*') ? 'sidebar-active' : '' }}">Templates de rapport</a>
                 @endif
             </div>
         </div>
 
-        {{-- ════════════════════════════════════════════════════════
-     SECTION SIDEBAR — INCIDENTS
-     Insérer dans sidebar.blade.php après la section EOD
-     ════════════════════════════════════════════════════════ --}}
+        {{-- Incidents --}}
 <div class="sidebar-section" data-section="incidents">
-    <button class="sidebar-section-header group" data-section="incidents">
-        <div class="flex items-center gap-3">
-            <svg class="sidebar-icon text-red-500 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
+            <button type="button" class="sidebar-section-header" data-section="incidents">
             <span class="font-medium">Incidents</span>
-            {{-- Badge incidents actifs pour N2 / N3 --}}
             @php
                 $nbIncidentsSidebar = 0;
                 try {
                     $userSidebar = auth()->user();
                     if ($userSidebar && $userSidebar->isN2()) {
-                        $nbIncidentsSidebar = \App\Models\IncidentFiche::where('statut','en_cours_n2')->count();
+                            $nbIncidentsSidebar = \App\Models\IncidentFiche::where('statut', 'en_cours_n2')->count();
                     } elseif ($userSidebar && $userSidebar->isN3()) {
-                        $nbIncidentsSidebar = \App\Models\IncidentFiche::where('statut','en_cours_n3')->count();
+                            $nbIncidentsSidebar = \App\Models\IncidentFiche::where('statut', 'en_cours_n3')->count();
                     }
                 } catch (\Exception $e) {}
             @endphp
             @if($nbIncidentsSidebar > 0)
-                <span class="sidebar-badge ml-auto">{{ $nbIncidentsSidebar }}</span>
+                    <span class="sidebar-badge">{{ $nbIncidentsSidebar }}</span>
             @endif
-        </div>
-        <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-        </svg>
+                <span class="sidebar-chevron" aria-hidden="true"></span>
     </button>
     <div class="sidebar-section-body">
-
-        {{-- Vue d'ensemble : accessible à tous --}}
-        <a href="{{ route('incidents.index') }}"
-           class="sidebar-item {{ request()->routeIs('incidents.index') ? 'sidebar-active' : '' }}">
-            <span class="sidebar-dot"></span>
-            <span>Toutes les fiches</span>
-        </a>
-
-        {{-- Créer : N1 uniquement --}}
+                <a href="{{ route('incidents.index') }}" class="sidebar-item {{ request()->routeIs('incidents.index') ? 'sidebar-active' : '' }}">Toutes les fiches</a>
         @if(auth()->user()?->isN1() || auth()->user()?->isSuperAdmin())
-        <a href="{{ route('incidents.create') }}"
-           class="sidebar-item {{ request()->routeIs('incidents.create') ? 'sidebar-active' : '' }}">
-            <span class="sidebar-dot"></span>
-            <span>Nouvelle fiche incident</span>
-        </a>
+                <a href="{{ route('incidents.create') }}" class="sidebar-item {{ request()->routeIs('incidents.create') ? 'sidebar-active' : '' }}">Nouvelle fiche incident</a>
         @endif
-
-        {{-- Indicateur contextuel par rôle --}}
         @php $userSb = auth()->user(); @endphp
         @if($userSb?->isN1())
-            <div class="px-4 py-1.5">
-                <span class="text-[11px] text-blue-600 font-semibold">Rôle : N+1 Helpdesk</span>
-            </div>
+                    <p class="sidebar-hint">Rôle : N+1 Helpdesk</p>
         @elseif($userSb?->isN2())
-            <div class="px-4 py-1.5">
-                <span class="text-[11px] text-orange-600 font-semibold flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-orange-500 {{ $nbIncidentsSidebar > 0 ? 'animate-pulse' : '' }}"></span>
-                    Rôle : N+2 Support
-                    @if($nbIncidentsSidebar > 0)
-                    — {{ $nbIncidentsSidebar }} en attente
-                    @endif
-                </span>
-            </div>
+                    <p class="sidebar-hint">Rôle : N+2 Support@if($nbIncidentsSidebar > 0) — {{ $nbIncidentsSidebar }} en attente@endif</p>
         @elseif($userSb?->isN3())
-            <div class="px-4 py-1.5">
-                <span class="text-[11px] text-purple-600 font-semibold flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500 {{ $nbIncidentsSidebar > 0 ? 'animate-pulse' : '' }}"></span>
-                    Rôle : N+3 Validateur
-                    @if($nbIncidentsSidebar > 0)
-                    — {{ $nbIncidentsSidebar }} en attente
+                    <p class="sidebar-hint">Rôle : N+3 Validateur@if($nbIncidentsSidebar > 0) — {{ $nbIncidentsSidebar }} en attente@endif</p>
                     @endif
-                </span>
             </div>
-        @endif
+        </div>
 
+        {{-- EOD Suivi --}}
+        <div class="sidebar-section" data-section="eod">
+            <button type="button" class="sidebar-section-header" data-section="eod">
+                <span class="font-medium">EOD Suivi</span>
+                <span class="sidebar-chevron" aria-hidden="true"></span>
+            </button>
+            <div class="sidebar-section-body">
+                @php
+                    $user = auth()->user();
+                    $eodN3 = $user && $user->canAccessEodAsN3();
+                    $eodCtrl = $user && $user->canSignEodControllerSlot();
+                    $eodN1 = $user && $user->role_change === 'N1';
+                    $eodN2 = $user && $user->role_change === 'N2';
+                    $eodAny = $eodN1 || $eodN2 || $eodN3 || $eodCtrl;
+                @endphp
+                @if($eodAny)
+                    @if($eodN1)
+                        <a href="{{ route('eod.n1.index') }}" class="sidebar-item {{ request()->routeIs('eod.n1.index') ? 'sidebar-active' : '' }}">Mes fiches EOD</a>
+                        <a href="{{ route('eod.n1.create') }}" class="sidebar-item {{ request()->routeIs('eod.n1.create') ? 'sidebar-active' : '' }}">Nouvelle fiche EOD</a>
+                    @endif
+                    @if($eodN2)
+                        <a href="{{ route('eod.n2.index') }}" class="sidebar-item {{ request()->routeIs('eod.n2.index') ? 'sidebar-active' : '' }}">Mes fiches EOD</a>
+                        <a href="{{ route('eod.n2.create') }}" class="sidebar-item {{ request()->routeIs('eod.n2.create') ? 'sidebar-active' : '' }}">Nouvelle fiche EOD</a>
+                    @endif
+                    @if($eodN3)
+                        <a href="{{ route('eod.n3.pending') }}" class="sidebar-item {{ request()->routeIs('eod.n3.pending') ? 'sidebar-active' : '' }}">Fiches à signer (N+3)</a>
+                        <a href="{{ route('eod.n3.index') }}" class="sidebar-item {{ request()->routeIs('eod.n3.index') ? 'sidebar-active' : '' }}">Supervision EOD</a>
+                    @endif
+                    @if($eodCtrl)
+                        <a href="{{ route('eod.controller.index') }}" class="sidebar-item {{ request()->routeIs('eod.controller.*') ? 'sidebar-active' : '' }}">Validation Controller</a>
+                    @endif
+                @else
+                    <p class="sidebar-hint">Profil sans accès EOD</p>
+                @endif
     </div>
 </div>
 
-{{--
-══════════════════════════════════════════════════════
-ÉTAPE JS — Ajouter dans le tableau sectionMap du sidebar :
-
-{ section: 'incidents', patterns: ['incidents'] },
-══════════════════════════════════════════════════════
---}}
-
-        {{-- ════════════════════════════════════════
-             SECTION : CONFIGURATION
-        ════════════════════════════════════════ --}}
+        {{-- Configuration --}}
         <div class="sidebar-section" data-section="configuration">
-            <button class="sidebar-section-header group" data-section="configuration">
-                <div class="flex items-center gap-3">
-                    <svg class="sidebar-icon text-gray-500 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a2 2 0 11-6 0 2 2 0 016 0z"/>
-                    </svg>
+            <button type="button" class="sidebar-section-header" data-section="configuration">
                     <span class="font-medium">Configuration</span>
-                </div>
-                <svg class="sidebar-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+                <span class="sidebar-chevron" aria-hidden="true"></span>
             </button>
             <div class="sidebar-section-body">
-                @auth
-                <a href="{{ route('dashboard') }}" class="sidebar-item {{ request()->routeIs('dashboard*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Dashboard</span>
-                </a>
+                <a href="{{ route('agencies.index') }}" class="sidebar-item {{ request()->routeIs('agencies.*') ? 'sidebar-active' : '' }}">Agences</a>
+                <a href="{{ route('categories.index') }}" class="sidebar-item {{ request()->routeIs('categories.*') ? 'sidebar-active' : '' }}">Catégories</a>
+                <a href="{{ route('suppliers.index') }}" class="sidebar-item {{ request()->routeIs('suppliers.*') ? 'sidebar-active' : '' }}">Fournisseurs</a>
+                <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : '' }}">Administration</a>
                 <div class="sidebar-divider"></div>
-                @endauth
-                <a href="{{ route('agencies.index') }}" class="sidebar-item {{ request()->routeIs('agencies.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Agences</span>
-                </a>
-                <a href="{{ route('categories.index') }}" class="sidebar-item {{ request()->routeIs('categories.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Catégories</span>
-                </a>
-                <a href="{{ route('suppliers.index') }}" class="sidebar-item {{ request()->routeIs('suppliers.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Fournisseurs</span>
-                </a>
-                <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Administration</span>
-                </a>
-                <div class="sidebar-divider"></div>
-                <a href="{{ route('audits.index') }}" class="sidebar-item {{ request()->routeIs('audits.*') ? 'sidebar-active' : '' }}">
-                    <span class="sidebar-dot"></span>
-                    <span>Journal d'activité</span>
-                </a>
+                <a href="{{ route('audits.index') }}" class="sidebar-item {{ request()->routeIs('audits.*') ? 'sidebar-active' : '' }}">Journal d'activité</a>
             </div>
         </div>
 
@@ -590,7 +309,6 @@
 
     </nav>
 
-    {{-- VERSION --}}
     <div class="flex-shrink-0 px-4 py-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         <div class="flex items-center justify-between">
             <div>
@@ -605,34 +323,18 @@
 
 </aside>
 
-{{-- Overlay mobile --}}
 <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden lg:hidden z-30 transition-all duration-300"></div>
 
 <style>
-/* ── Custom Scrollbar ── */
-.sidebar-custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-}
-.sidebar-custom-scrollbar::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-.sidebar-custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-}
-.sidebar-custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #C8102E;
-}
+.sidebar-custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.sidebar-custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+.sidebar-custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.sidebar-custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #C8102E; }
 
-/* ── Section entière ── */
-.sidebar-section {
-    border-bottom: 1px solid #f3f4f6;
-    margin-bottom: 2px;
-}
+.sidebar-section { border-bottom: 1px solid #f3f4f6; }
 
-/* ── Header cliquable de la section ── */
-.sidebar-section-header {
+.sidebar-section-header,
+.sidebar-subsection-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -642,44 +344,81 @@
     border: none;
     cursor: pointer;
     font-size: 13px;
-    font-weight: 500;
     color: #1f2937;
     text-align: left;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease;
+    gap: 8px;
 }
-.sidebar-section-header:hover {
+.sidebar-section-header--root {
+    font-size: 14px;
+    color: #7A0C1A;
     background: linear-gradient(90deg, #fef2f2 0%, #fff 100%);
 }
-.sidebar-section-header.is-active {
-    background: linear-gradient(90deg, #fee2e2 0%, #fff 100%);
+.sidebar-subsection-header {
+    padding: 10px 18px 10px 28px;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+.sidebar-section-header:hover,
+.sidebar-subsection-header:hover {
+    background: #fef2f2;
     color: #C8102E;
+}
+.sidebar-section-header.is-active,
+.sidebar-subsection-header.is-active {
+    color: #C8102E;
+    background: #fef2f2;
     border-left: 3px solid #C8102E;
 }
-.sidebar-section-header.is-active .sidebar-icon {
-    color: #C8102E !important;
-}
 
-/* ── Corps de la section (items) ── */
-.sidebar-section-body {
+.sidebar-chevron {
+    flex-shrink: 0;
+    font-size: 10px;
+    color: #9ca3af;
+    transition: transform 0.25s ease;
+    line-height: 1;
+}
+.sidebar-chevron::before { content: '▾'; }
+.sidebar-chevron--sm::before { content: '▸'; }
+.sidebar-chevron.open::before,
+.sidebar-chevron--sm.open::before { content: '▾'; }
+
+.sidebar-section-body,
+.sidebar-subsection-body {
     overflow: hidden;
     max-height: 0;
     transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: #fefefe;
 }
 .sidebar-section-body.open {
+    max-height: 2400px;
+}
+.sidebar-subsection-body.open {
     max-height: 800px;
 }
 
-/* ── Sections cachées ── */
-.sidebar-section.hidden-section {
-    display: none;
+.sidebar-section.hidden-section { display: none; }
+
+.sidebar-subsection-link {
+    display: block;
+    padding: 10px 18px 10px 28px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #374151;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.sidebar-subsection-link:hover,
+.sidebar-subsection-link.sidebar-active {
+    background: #fef2f2;
+    color: #C8102E;
 }
 
-/* ── Items ── */
 .sidebar-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+    gap: 8px;
     padding: 8px 18px 8px 42px;
     font-size: 12.5px;
     color: #6b7280;
@@ -689,8 +428,10 @@
     background: transparent;
     cursor: pointer;
     width: 100%;
+    text-align: left;
     position: relative;
 }
+.sidebar-item--nested { padding-left: 52px; font-size: 12px; }
 .sidebar-item::before {
     content: '';
     position: absolute;
@@ -702,35 +443,81 @@
     transition: width 0.2s ease;
 }
 .sidebar-item:hover::before,
-.sidebar-active::before {
-    width: 3px;
-}
-.sidebar-item:hover {
+.sidebar-active::before { width: 3px; }
+.sidebar-item:hover,
+.sidebar-active {
     background: #fef2f2;
     color: #C8102E;
-    padding-left: 42px;
 }
-.sidebar-active {
-    color: #C8102E !important;
-    font-weight: 600;
+.sidebar-active { font-weight: 600; }
+.sidebar-item--disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    padding: 8px 18px 8px 42px;
+    font-size: 12.5px;
+    color: #9ca3af;
+}
+
+.sidebar-nested-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 18px 4px 48px;
+    margin: 0;
+}
+
+/* Stocks : branches CELER / DECELER */
+.sidebar-subsection-body--stocks {
+    padding-top: 4px;
+    padding-bottom: 6px;
+}
+.sidebar-stock-branch {
+    margin: 0;
+}
+.sidebar-stock-branch-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 18px 8px 40px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #374151;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+.sidebar-stock-branch-header:hover,
+.sidebar-stock-branch-header.is-active {
+    color: #C8102E;
     background: #fef2f2;
 }
-
-.sidebar-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
+.sidebar-stock-branch-title {
+    flex: 1;
+}
+.sidebar-chevron--xs {
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
-    opacity: 0.4;
-    transition: opacity 0.2s ease;
 }
-.sidebar-item:hover .sidebar-dot,
-.sidebar-active .sidebar-dot {
-    opacity: 1;
-    transform: scale(1.2);
+.sidebar-stock-branch-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
 }
-
+.sidebar-stock-branch-body.open {
+    max-height: 200px;
+}
+.sidebar-item--stock {
+    padding-left: 54px;
+    font-size: 12px;
+}
 .sidebar-group-label {
     font-size: 9.5px;
     font-weight: 700;
@@ -738,15 +525,13 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: 10px 18px 4px 42px;
+    margin: 0;
 }
-
 .sidebar-divider {
     height: 1px;
-    background: linear-gradient(90deg, #e5e7eb 0%, #e5e7eb 50%, transparent 100%);
-    margin: 6px 18px;
-    border: none;
+    background: linear-gradient(90deg, #e5e7eb 0%, transparent 100%);
+    margin: 6px 18px 6px 42px;
 }
-
 .sidebar-badge {
     background: #C8102E;
     color: #fff;
@@ -754,171 +539,354 @@
     font-weight: 700;
     padding: 2px 7px;
     border-radius: 12px;
-    line-height: 1.4;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    margin-left: auto;
 }
-
-.sidebar-icon {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
+.sidebar-hint {
+    font-size: 11px;
     color: #9ca3af;
-    transition: all 0.2s ease;
+    font-style: italic;
+    padding: 8px 18px 8px 42px;
+    margin: 0;
 }
-.sidebar-section-header:hover .sidebar-icon {
-    transform: scale(1.05);
-}
-
-.sidebar-arrow {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    color: #9ca3af;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.sidebar-arrow.open {
-    transform: rotate(180deg);
-    color: #C8102E;
+.sidebar-role-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #7A0C1A;
+    background: #fef2f2;
+    padding: 4px 10px;
+    border-radius: 999px;
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
-    /* ── Mobile ── */
-    var sidebar   = document.getElementById('sidebar');
-    var overlay   = document.getElementById('sidebar-overlay');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
     var toggleBtn = document.getElementById('sidebar-toggle');
 
-    function openSidebar() {
-        sidebar.classList.remove('-translate-x-full');
-        overlay.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
-    }
     function closeSidebar() {
         sidebar.classList.add('-translate-x-full');
         overlay.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
     }
-
     if (toggleBtn) {
         toggleBtn.addEventListener('click', function () {
-            sidebar.classList.contains('-translate-x-full') ? openSidebar() : closeSidebar();
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                closeSidebar();
+            }
         });
     }
-    if (overlay) {
-        overlay.addEventListener('click', closeSidebar);
-    }
+    if (overlay) overlay.addEventListener('click', closeSidebar);
     sidebar.querySelectorAll('a').forEach(function (l) {
         l.addEventListener('click', function () {
             if (window.innerWidth < 1024) closeSidebar();
         });
     });
 
-    /* ══════════════════════════════════════════════════════
-       LOGIQUE PRINCIPALE - Utiliser uniquement les éléments du sidebar
-    ══════════════════════════════════════════════════════ */
-
     var path = window.location.pathname;
 
     var sectionMap = [
-        { section: 'rapports',       patterns: ['reports', 'rapports'] },
-        { section: 'equipements',    patterns: ['equipment'] },
-        { section: 'celer',          patterns: ['celer-informatique', 'celer-reseau', 'celer-electronique'] },
-        { section: 'deceler',        patterns: ['deceler-informatique', 'deceler-reseau', 'deceler-electronique'] },
-        { section: 'gestion',        patterns: ['parc', 'maintenance', 'hors-service', 'perdu', 'approvals'] },
-        { section: 'eod',            patterns: ['eod'] },
+        { section: 'parc', patterns: ['reports', 'equipment', 'documentation', 'celer', 'deceler', 'parc', 'maintenance', 'hors-service', 'perdu', 'approvals'] },
         { section: 'infrastructure', patterns: ['passwords', 'network', 'licences'] },
-        { section: 'change',         patterns: ['change'] },
-        { section: 'controls',       patterns: ['controls'] },
-        { section: 'configuration',  patterns: ['dashboard', 'agencies', 'categories', 'suppliers', 'users', 'audits'] },
+        { section: 'change', patterns: ['change'] },
+        { section: 'controls', patterns: ['controls'] },
         { section: 'incidents', patterns: ['incidents'] },
+        { section: 'eod', patterns: ['eod'] },
+        { section: 'configuration', patterns: ['agencies', 'categories', 'suppliers', 'users', 'audits'] },
     ];
 
-    var activeSection = null;
+    var subsectionMap = [
+        { subsection: 'rapports', patterns: ['reports'] },
+        { subsection: 'stocks', patterns: ['celer', 'deceler'] },
+        { subsection: 'gestion', patterns: ['/parc', 'maintenance', 'hors-service', 'perdu', 'approvals', 'reaffectations'] },
+        { subsection: 'equipements', patterns: ['equipment'] },
+    ];
+
+    function openPanel(body, chevron) {
+        if (!body) return;
+        body.classList.add('open');
+        body.style.removeProperty('max-height');
+        if (chevron) chevron.classList.add('open');
+        requestAnimationFrame(function () {
+            if (!body.classList.contains('open')) return;
+            var h = body.scrollHeight;
+            if (h > 0) {
+                body.style.maxHeight = h + 'px';
+            }
+        });
+    }
+
+    function refreshOpenPanelHeights() {
+        document.querySelectorAll('#sidebar .sidebar-section-body.open, #sidebar .sidebar-subsection-body.open, #sidebar .sidebar-stock-branch-body.open').forEach(function (body) {
+            body.style.removeProperty('max-height');
+            requestAnimationFrame(function () {
+                if (!body.classList.contains('open')) return;
+                var h = body.scrollHeight;
+                if (h > 0) {
+                    body.style.maxHeight = h + 'px';
+                }
+            });
+        });
+    }
+
+    function ensureParcMenuOpen() {
+        var parcSection = document.querySelector('#sidebar .sidebar-section[data-section="parc"]');
+        if (!parcSection) return;
+        parcSection.classList.remove('hidden-section');
+        var parcBody = parcSection.querySelector(':scope > .sidebar-section-body');
+        var parcHeader = parcSection.querySelector(':scope > .sidebar-section-header');
+        var parcChevron = parcHeader ? parcHeader.querySelector('.sidebar-chevron') : null;
+        if (parcBody && !parcBody.classList.contains('open')) {
+            openPanel(parcBody, parcChevron);
+        }
+        if (parcHeader) parcHeader.classList.add('is-active');
+    }
+
+    function resolveActiveSection() {
     for (var i = 0; i < sectionMap.length; i++) {
         var entry = sectionMap[i];
         for (var j = 0; j < entry.patterns.length; j++) {
-            if (path.includes(entry.patterns[j])) {
-                activeSection = entry.section;
-                break;
+                if (path.includes(entry.patterns[j])) return entry.section;
             }
         }
-        if (activeSection) break;
+        return null;
     }
 
-    // Ne cibler que les sections dans le sidebar
-    var sidebarSections = document.querySelectorAll('#sidebar .sidebar-section');
-    sidebarSections.forEach(function (section) {
-        var key    = section.dataset.section;
-        var body   = section.querySelector('.sidebar-section-body');
-        var arrow  = section.querySelector('.sidebar-arrow');
-        var header = section.querySelector('.sidebar-section-header');
+    function resolveActiveSubsection() {
+        if (resolveActiveSection() !== 'parc') return null;
+        for (var i = 0; i < subsectionMap.length; i++) {
+            var entry = subsectionMap[i];
+            for (var j = 0; j < entry.patterns.length; j++) {
+                if (path.includes(entry.patterns[j])) return entry.subsection;
+            }
+        }
+        if (path.includes('documentation')) return null;
+        return null;
+    }
+
+    var activeSection = resolveActiveSection();
+    var activeSubsection = resolveActiveSubsection();
+
+    document.querySelectorAll('#sidebar .sidebar-section').forEach(function (section) {
+        var key = section.dataset.section;
+        var body = section.querySelector(':scope > .sidebar-section-body');
+        var header = section.querySelector(':scope > .sidebar-section-header');
+        var chevron = header ? header.querySelector('.sidebar-chevron') : null;
 
         if (activeSection && key !== activeSection) {
             section.classList.add('hidden-section');
         } else if (activeSection && key === activeSection) {
-            if (body) {
-                body.classList.add('open');
-                body.style.maxHeight = body.scrollHeight + 'px';
-            }
-            if (arrow) arrow.classList.add('open');
+            openPanel(body, chevron);
             if (header) header.classList.add('is-active');
         }
     });
 
-    /* ── Clic sur le header : afficher toutes les sections + replier ── */
-    document.querySelectorAll('#sidebar .sidebar-section-header').forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-            e.stopPropagation(); // Empêcher la propagation vers d'autres éléments
-            var key     = btn.dataset.section;
-            var section = document.querySelector('#sidebar .sidebar-section[data-section="' + key + '"]');
-            if (!section) return;
-            
-            var body    = section.querySelector('.sidebar-section-body');
-            var arrow   = btn.querySelector('.sidebar-arrow');
+    function resolveActiveStockBranch() {
+        if (/\/deceler(?:\/|$|-)/.test(path)) return 'deceler';
+        if (/\/celer(?:\/|$|-)/.test(path)) return 'celer';
+        return null;
+    }
 
-            var allSections = document.querySelectorAll('#sidebar .sidebar-section');
-            var allBodies = document.querySelectorAll('#sidebar .sidebar-section-body');
-            var allArrows = document.querySelectorAll('#sidebar .sidebar-arrow');
-            var allHeaders = document.querySelectorAll('#sidebar .sidebar-section-header');
+    function openStockBranch(branchKey) {
+        if (!branchKey) return;
+        var branch = document.querySelector('#sidebar .sidebar-stock-branch[data-stock-branch="' + branchKey + '"]');
+        if (!branch) return;
+        var body = branch.querySelector('.sidebar-stock-branch-body');
+        var header = branch.querySelector('.sidebar-stock-branch-header');
+        var chevron = header ? header.querySelector('.sidebar-chevron') : null;
+        openPanel(body, chevron);
+        if (header) header.classList.add('is-active');
+    }
 
-            var isAlreadyOpen = body && body.classList.contains('open');
+    if (activeSection === 'parc') {
+        ensureParcMenuOpen();
+        document.querySelectorAll('#sidebar .sidebar-subsection').forEach(function (sub) {
+            var key = sub.dataset.subsection;
+            var body = sub.querySelector(':scope > .sidebar-subsection-body');
+            var header = sub.querySelector('.sidebar-subsection-header');
+            var chevron = header ? header.querySelector('.sidebar-chevron') : null;
+            if (activeSubsection && key === activeSubsection) {
+                openPanel(body, chevron);
+                if (header) header.classList.add('is-active');
+                if (key === 'stocks') {
+                    openStockBranch(resolveActiveStockBranch() || 'celer');
+                }
+            }
+        });
+        refreshOpenPanelHeights();
+        setTimeout(refreshOpenPanelHeights, 50);
+    }
 
-            if (isAlreadyOpen) {
-                // Fermer cette section si déjà ouverte
+    function closePanel(body, chevron, header) {
+        if (body) {
                 body.classList.remove('open');
                 body.style.maxHeight = '0';
-                if (arrow) arrow.classList.remove('open');
-                btn.classList.remove('is-active');
-            } else {
-                // Révéler toutes les sections
-                allSections.forEach(function (s) {
+        }
+        if (chevron) chevron.classList.remove('open');
+        if (header) header.classList.remove('is-active');
+    }
+
+    function getMainSections() {
+        return document.querySelectorAll('#sidebar-nav > .sidebar-section[data-section]');
+    }
+
+    function isMainSectionFocused(currentSection) {
+        var mainSections = getMainSections();
+        var visibleCount = 0;
+        mainSections.forEach(function (s) {
+            if (!s.classList.contains('hidden-section')) visibleCount++;
+        });
+        return visibleCount === 1 && !currentSection.classList.contains('hidden-section');
+    }
+
+    function showAllMainSections() {
+        getMainSections().forEach(function (s) {
                     s.classList.remove('hidden-section');
                 });
+    }
 
-                // Fermer tous les autres corps
-                allBodies.forEach(function (b) {
-                    b.classList.remove('open');
-                    b.style.maxHeight = '0';
-                });
-                allArrows.forEach(function (a) {
-                    a.classList.remove('open');
-                });
-                allHeaders.forEach(function (h) {
-                    h.classList.remove('is-active');
-                });
+    function focusMainSection(currentSection) {
+        getMainSections().forEach(function (s) {
+            if (s === currentSection) {
+                s.classList.remove('hidden-section');
+            } else {
+                s.classList.add('hidden-section');
+                var otherBody = s.querySelector(':scope > .sidebar-section-body');
+                var otherHeader = s.querySelector(':scope > .sidebar-section-header');
+                var otherChevron = otherHeader ? otherHeader.querySelector('.sidebar-chevron') : null;
+                closePanel(otherBody, otherChevron, otherHeader);
+            }
+        });
+    }
 
-                // Ouvrir celui cliqué
-                if (body) {
-                    body.classList.add('open');
-                    body.style.maxHeight = body.scrollHeight + 'px';
-                }
-                if (arrow) arrow.classList.add('open');
+    /* Menus principaux : un seul visible à la fois */
+    document.querySelectorAll('#sidebar-nav > .sidebar-section > .sidebar-section-header').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var currentSection = btn.closest('.sidebar-section');
+            if (!currentSection) return;
+
+            var body = currentSection.querySelector(':scope > .sidebar-section-body');
+            var chevron = btn.querySelector('.sidebar-chevron');
+            var isOpen = body && body.classList.contains('open');
+            var focused = isMainSectionFocused(currentSection);
+
+            if (isOpen && focused) {
+                closePanel(body, chevron, btn);
+                showAllMainSections();
+                return;
+            }
+
+            focusMainSection(currentSection);
+
+            if (!isOpen) {
+                openPanel(body, chevron);
+                btn.classList.add('is-active');
+            } else {
                 btn.classList.add('is-active');
             }
         });
     });
 
-}); // fin DOMContentLoaded
+    /* Sous-menus PARC : replier / déplier sans masquer les autres modules */
+    document.querySelectorAll('#sidebar .sidebar-subsection-header').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var sub = btn.closest('.sidebar-subsection');
+            if (!sub) return;
+
+            ensureParcMenuOpen();
+
+            var body = sub.querySelector('.sidebar-subsection-body');
+            var chevron = btn.querySelector('.sidebar-chevron');
+            var isOpen = body && body.classList.contains('open');
+            var parcBody = document.querySelector('#sidebar .sidebar-section[data-section="parc"] > .sidebar-section-body');
+
+            if (isOpen) {
+                closePanel(body, chevron, btn);
+                return;
+            }
+
+            if (parcBody) {
+                parcBody.querySelectorAll('.sidebar-subsection-body').forEach(function (b) {
+                    if (b !== body) {
+                        var otherHeader = b.closest('.sidebar-subsection')?.querySelector('.sidebar-subsection-header');
+                        var otherChevron = otherHeader ? otherHeader.querySelector('.sidebar-chevron') : null;
+                        closePanel(b, otherChevron, otherHeader);
+                    }
+                });
+                parcBody.querySelectorAll('.sidebar-subsection-header').forEach(function (h) {
+                    if (h !== btn) h.classList.remove('is-active');
+                });
+            }
+
+            openPanel(body, chevron);
+                btn.classList.add('is-active');
+
+            if (parcBody) {
+                requestAnimationFrame(function () {
+                    parcBody.style.maxHeight = parcBody.scrollHeight + 'px';
+                    if (body) body.style.maxHeight = body.scrollHeight + 'px';
+                });
+            }
+        });
+    });
+
+    /* CELER / DECELER sous Stocks */
+    document.querySelectorAll('#sidebar .sidebar-stock-branch-header').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var branch = btn.closest('.sidebar-stock-branch');
+            if (!branch) return;
+
+            ensureParcMenuOpen();
+
+            var stocksSub = document.querySelector('#sidebar .sidebar-subsection[data-subsection="stocks"]');
+            if (stocksSub) {
+                var stocksBody = stocksSub.querySelector(':scope > .sidebar-subsection-body');
+                var stocksHeader = stocksSub.querySelector('.sidebar-subsection-header');
+                var stocksChevron = stocksHeader ? stocksHeader.querySelector('.sidebar-chevron') : null;
+                openPanel(stocksBody, stocksChevron);
+                if (stocksHeader) stocksHeader.classList.add('is-active');
+            }
+
+            var body = branch.querySelector('.sidebar-stock-branch-body');
+            var chevron = btn.querySelector('.sidebar-chevron');
+            var isOpen = body && body.classList.contains('open');
+            var stocksBodyEl = stocksSub ? stocksSub.querySelector(':scope > .sidebar-subsection-body') : null;
+
+            if (isOpen) {
+                closePanel(body, chevron, btn);
+            } else {
+                if (stocksBodyEl) {
+                    stocksBodyEl.querySelectorAll('.sidebar-stock-branch-body').forEach(function (b) {
+                        if (b !== body) {
+                            var otherHeader = b.closest('.sidebar-stock-branch')?.querySelector('.sidebar-stock-branch-header');
+                            var otherChevron = otherHeader ? otherHeader.querySelector('.sidebar-chevron') : null;
+                            closePanel(b, otherChevron, otherHeader);
+                        }
+                    });
+                    stocksBodyEl.querySelectorAll('.sidebar-stock-branch-header').forEach(function (h) {
+                        if (h !== btn) h.classList.remove('is-active');
+                    });
+                }
+                openPanel(body, chevron);
+                btn.classList.add('is-active');
+            }
+
+            if (stocksBodyEl) {
+                requestAnimationFrame(function () {
+                    stocksBodyEl.style.maxHeight = stocksBodyEl.scrollHeight + 'px';
+                    var parcBody = document.querySelector('#sidebar .sidebar-section[data-section="parc"] > .sidebar-section-body');
+                    if (parcBody) parcBody.style.maxHeight = parcBody.scrollHeight + 'px';
+                });
+            }
+        });
+    });
+});
 </script>

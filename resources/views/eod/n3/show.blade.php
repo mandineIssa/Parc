@@ -355,14 +355,13 @@
                         <input type="file" name="n3_signature_file" accept="image/*" class="block w-full text-sm text-gray-600">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Ou signer ci-dessous</label>
-                    <div class="border border-gray-300 rounded-lg bg-white overflow-hidden max-w-lg">
-                        <canvas id="n3-sig-canvas" width="480" height="160" class="w-full touch-none cursor-crosshair" style="max-height:160px;"></canvas>
-                    </div>
-                    <input type="hidden" name="n3_signature_canvas" id="n3_signature_canvas" value="">
-                    <button type="button" id="n3-sig-clear" class="mt-2 px-3 py-1.5 text-xs bg-gray-200 rounded-lg">Effacer</button>
-                </div>
+                <x-signature-pad
+                    canvas-id="n3-sig-canvas"
+                    hidden-input-id="n3_signature_canvas"
+                    hidden-input-name="n3_signature_canvas"
+                    form-id="n3-sign-form"
+                    label="Ou signer ci-dessous"
+                />
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Note (optionnel)</label>
                     <textarea name="n3_validation_note" rows="2" class="w-full rounded-lg border-gray-300 text-sm">{{ old('n3_validation_note') }}</textarea>
@@ -458,46 +457,3 @@
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-(function(){
-    const canvas = document.getElementById('n3-sig-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let drawing = false;
-    function pos(ev) {
-        const r = canvas.getBoundingClientRect();
-        const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
-        const y = (ev.touches ? ev.touches[0].clientY : ev.clientY) - r.top;
-        return { x, y };
-    }
-    function start(ev) { drawing = true; ctx.beginPath(); const p = pos(ev); ctx.moveTo(p.x, p.y); ev.preventDefault(); }
-    function move(ev) {
-        if (!drawing) return;
-        const p = pos(ev);
-        ctx.strokeStyle = '#111'; ctx.lineWidth = 2; ctx.lineCap = 'round';
-        ctx.lineTo(p.x, p.y); ctx.stroke();
-        ev.preventDefault();
-    }
-    function end() { drawing = false; }
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', end);
-    canvas.addEventListener('touchstart', start, { passive: false });
-    canvas.addEventListener('touchmove', move, { passive: false });
-    canvas.addEventListener('touchend', end);
-    document.getElementById('n3-sig-clear')?.addEventListener('click', function() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        document.getElementById('n3_signature_canvas').value = '';
-    });
-    document.getElementById('n3-sign-form')?.addEventListener('submit', function() {
-        const blank = document.createElement('canvas');
-        blank.width = canvas.width; blank.height = canvas.height;
-        if (canvas.toDataURL() !== blank.toDataURL()) {
-            document.getElementById('n3_signature_canvas').value = canvas.toDataURL('image/png');
-        }
-    });
-})();
-</script>
-@endpush

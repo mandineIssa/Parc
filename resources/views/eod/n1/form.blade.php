@@ -296,8 +296,12 @@
 
 .eod-section-header {
     background: linear-gradient(to right, #C8102E, #4a4a4a);
-    padding: 12px 20px;
+    padding: 10px 16px;
     border-bottom: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .eod-section-header h3 {
@@ -305,6 +309,45 @@
     font-weight: 600;
     color: #ffffff;
     margin: 0;
+    flex: 1;
+}
+
+.eod-section-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.eod-toolbar-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.eod-toolbar-btn:hover {
+    background: rgba(255, 255, 255, 0.32);
+}
+
+.eod-toolbar-btn:active {
+    transform: scale(0.96);
+}
+
+.eod-toolbar-remove {
+    font-size: 26px;
+    padding-bottom: 2px;
 }
 
 .eod-section-body {
@@ -542,6 +585,12 @@
         <div class="eod-section-card">
             <div class="eod-section-header">
                 <h3>2. Traitement Batch</h3>
+                @if($isEditable)
+                <div class="eod-section-toolbar">
+                    <button type="button" class="eod-toolbar-btn eod-toolbar-add" onclick="addBatchRow()" title="Ajouter une ligne batch" aria-label="Ajouter une ligne">+</button>
+                    <button type="button" class="eod-toolbar-btn eod-toolbar-remove" onclick="removeLastBatchRow()" title="Supprimer la dernière ligne" aria-label="Supprimer la dernière ligne">−</button>
+                </div>
+                @endif
             </div>
             <div class="eod-section-body">
                 <input type="hidden" name="batch_data" id="batch_data_json">
@@ -557,7 +606,7 @@
                 @endphp
                 <div id="batch-container" class="space-y-4">
                     @forelse($batchData as $index => $batch)
-                    <div class="batch-item grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg relative">
+                    <div class="batch-item grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Batch</label>
                             <input type="text" data-batch="batch"
@@ -579,32 +628,37 @@
                                    {{ !$isEditable ? 'disabled' : '' }}
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
-                        <div class="relative">
+                        <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Observation</label>
                             <input type="text" data-batch="observation"
                                    value="{{ $batch['observation'] ?? '' }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
-                            @if($isEditable && $index > 0)
-                            <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.batch-item').remove()">
-                                ×
-                            </button>
-                            @endif
                         </div>
                     </div>
                     @empty
+                @if($isEditable)
+                    <div class="batch-item grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Batch</label>
+                            <input type="text" data-batch="batch" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Heure début</label>
+                            <input type="text" data-batch="debut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Heure fin</label>
+                            <input type="text" data-batch="fin" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Observation</label>
+                            <input type="text" data-batch="observation" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                        </div>
+                    </div>
+                @endif
                     @endforelse
                 </div>
-                
-                @if($isEditable)
-                <button type="button" onclick="addBatchRow()" class="eod-btn-add mt-4">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Ajouter un batch
-                </button>
-                <p class="text-xs text-gray-500 mt-2">Cliquez sur "Ajouter un batch" uniquement si nécessaire.</p>
-                @endif
             </div>
         </div>
 
@@ -614,7 +668,7 @@
                 <h3>3. Émargement</h3>
             </div>
             <div class="eod-section-body space-y-4">
-                <p class="text-xs text-gray-500">Note libre, signature manuscrite (canvas) et/ou photo importée. Le responsable batch est celui du compte connecté (mis à jour à l’enregistrement).</p>
+                <p class="text-xs text-gray-500">Signez sur le canvas ou utilisez « Charger ma signature » (profil utilisateur). Le responsable batch est celui du compte connecté (mis à jour à l’enregistrement).</p>
                 <input type="hidden" name="emargement" value="{{ old('emargement', isset($fiche) ? ($fiche->emargement ?? '') : '') }}">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Responsable batch</label>
@@ -623,22 +677,15 @@
                            class="w-full rounded-lg border-gray-200 bg-gray-50 text-gray-800 shadow-sm max-w-xl">
                 </div>
                 @if($isEditable)
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Signature (canvas)</label>
-                        <div class="border border-gray-300 rounded-lg bg-white overflow-hidden">
-                            <canvas id="emargement-canvas" width="440" height="160" class="w-full touch-none cursor-crosshair" style="max-height:160px;"></canvas>
-                        </div>
-                        <input type="hidden" name="emargement_signature_canvas" id="emargement_signature_canvas" value="">
-                        <div class="flex gap-2 mt-2">
-                            <button type="button" id="emargement-clear" class="px-3 py-1.5 text-xs bg-gray-200 rounded-lg">Effacer</button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ou importer une photo / scan</label>
-                        <input type="file" name="emargement_signature_file" accept="image/*" capture="environment"
-                               class="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-red-50 file:text-[#C8102E]">
-                    </div>
+                <div class="max-w-xl">
+                    <x-signature-pad
+                            canvas-id="emargement-canvas"
+                            hidden-input-id="emargement_signature_canvas"
+                            hidden-input-name="emargement_signature_canvas"
+                            form-id="eod-form"
+                            label="Signature (canvas)"
+                            :width="440"
+                        />
                 </div>
                 @elseif(isset($fiche) && $fiche->emargement_signature_path)
                 <div>
@@ -653,6 +700,12 @@
         <div class="eod-section-card">
             <div class="eod-section-header">
                 <h3>4. Incidents Observés</h3>
+                @if($isEditable)
+                <div class="eod-section-toolbar">
+                    <button type="button" class="eod-toolbar-btn eod-toolbar-add" onclick="addIncidentRow()" title="Ajouter un incident" aria-label="Ajouter une ligne">+</button>
+                    <button type="button" class="eod-toolbar-btn eod-toolbar-remove" onclick="removeLastIncidentRow()" title="Supprimer la dernière ligne" aria-label="Supprimer la dernière ligne">−</button>
+                </div>
+                @endif
             </div>
             <div class="eod-section-body">
                 <input type="hidden" name="incidents_data" id="incidents_data_json">
@@ -669,7 +722,7 @@
                 @endphp
                 <div id="incidents-container" class="space-y-4">
                     @forelse($incidentsData as $index => $incident)
-                    <div class="incident-item grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg relative">
+                    <div class="incident-item grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure</label>
                             <input type="text" data-incident="heure"
@@ -698,7 +751,7 @@
                                    {{ !$isEditable ? 'disabled' : '' }}
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
-                        <div class="relative">
+                        <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Statut</label>
                             <select data-incident="statut" {{ !$isEditable ? 'disabled' : '' }}
                                     class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
@@ -707,26 +760,40 @@
                                 <option value="En cours" {{ ($incident['statut'] ?? '') == 'En cours' ? 'selected' : '' }}>En cours</option>
                                 <option value="Non résolu" {{ ($incident['statut'] ?? '') == 'Non résolu' ? 'selected' : '' }}>Non résolu</option>
                             </select>
-                            @if($isEditable && $index > 0)
-                            <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.incident-item').remove()">
-                                ×
-                            </button>
-                            @endif
                         </div>
                     </div>
                     @empty
+                @if($isEditable)
+                    <div class="incident-item grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Heure</label>
+                            <input type="text" data-incident="heure" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Incident</label>
+                            <input type="text" data-incident="incident" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Impact</label>
+                            <input type="text" data-incident="impact" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Action corrective</label>
+                            <input type="text" data-incident="action" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Statut</label>
+                            <select data-incident="statut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                                <option value="">Sélectionner</option>
+                                <option value="Résolu">Résolu</option>
+                                <option value="En cours">En cours</option>
+                                <option value="Non résolu">Non résolu</option>
+                            </select>
+                        </div>
+                    </div>
+                @endif
                     @endforelse
                 </div>
-                
-                @if($isEditable)
-                <button type="button" onclick="addIncidentRow()" class="eod-btn-add mt-4">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Ajouter un incident
-                </button>
-                <p class="text-xs text-gray-500 mt-2">Cliquez sur "Ajouter un incident" uniquement si nécessaire.</p>
-                @endif
             </div>
         </div>
 
@@ -734,6 +801,12 @@
         <div class="eod-section-card">
             <div class="eod-section-header">
                 <h3>5. Pièces jointes</h3>
+                @if($isEditable)
+                <div class="eod-section-toolbar">
+                    <button type="button" class="eod-toolbar-btn eod-toolbar-add" onclick="addEodAttachmentRow()" title="Ajouter une pièce jointe" aria-label="Ajouter une ligne">+</button>
+                    <button type="button" class="eod-toolbar-btn eod-toolbar-remove" onclick="removeLastEodAttachmentRow()" title="Supprimer la dernière ligne" aria-label="Supprimer la dernière ligne">−</button>
+                </div>
+                @endif
             </div>
             <div class="eod-section-body space-y-4">
                 @php
@@ -756,8 +829,7 @@
 
                 @if($isEditable)
                     <div id="eod-attachments-wrapper">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ajouter des fichiers</label>
-                        <p class="text-xs text-gray-500 mb-3">Une ligne par fichier, ou utilisez « Ajouter une pièce jointe » pour en sélectionner plusieurs (comme pour les incidents).</p>
+                        <p class="text-xs text-gray-500 mb-3">Utilisez <strong>+</strong> et <strong>−</strong> dans la barre du titre pour ajouter ou retirer une ligne de fichier.</p>
                         <div id="eod-attachments-rows" class="space-y-3">
                             <div class="eod-attachment-row flex flex-wrap items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                                 <div class="flex-1 min-w-[220px]">
@@ -765,16 +837,9 @@
                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,application/pdf"
                                            class="eod-attachment-input block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-red-50 file:text-[#C8102E]">
                                 </div>
-                                <button type="button" class="eod-attachment-remove eod-btn-remove shrink-0 w-9 h-9 rounded-lg text-lg leading-none" onclick="removeEodAttachmentRow(this)" title="Retirer cette ligne" style="display:none;">×</button>
                             </div>
                         </div>
-                        <button type="button" onclick="addEodAttachmentRow()" class="eod-btn-add mt-3">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Ajouter une pièce jointe
-                        </button>
-                        <p class="text-xs text-gray-500 mt-2">Formats : PDF, Word, Excel, CSV, TXT, JPG, PNG (max 10 Mo par fichier).</p>
+                        <p class="text-xs text-gray-500 mt-3">Formats : PDF, Word, Excel, CSV, TXT, JPG, PNG (max 10 Mo par fichier).</p>
                     </div>
                 @endif
             </div>
@@ -797,23 +862,8 @@
                     Save
                 </button>
             @endif
-            
-            @if($isEditable && isset($fiche))
-                <button type="button" onclick="submitToN3Controller()" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                    </svg>
-                    Soumettre à N+3 et Controller
-                </button>
-            @endif
         </div>
     </form>
-
-    @if(isset($fiche))
-    <form id="submit-n3-form" method="POST" action="{{ route($eodRoutePrefix . '.submit', $fiche) }}" style="display:none;">
-        @csrf
-    </form>
-    @endif
 
     <!-- Bouton de retour au dashboard -->
     <div class="mt-8">
@@ -858,60 +908,53 @@ document.getElementById('eod-form').addEventListener('submit', function(e) {
     flushEmargementCanvas();
 });
 
-(function initEmargementCanvas() {
-    const canvas = document.getElementById('emargement-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let drawing = false;
-    function pos(ev) {
-        const r = canvas.getBoundingClientRect();
-        const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
-        const y = (ev.touches ? ev.touches[0].clientY : ev.clientY) - r.top;
-        return { x, y };
-    }
-    function start(ev) { drawing = true; ctx.beginPath(); const p = pos(ev); ctx.moveTo(p.x, p.y); ev.preventDefault(); }
-    function move(ev) {
-        if (!drawing) return;
-        const p = pos(ev);
-        ctx.strokeStyle = '#111';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-        ev.preventDefault();
-    }
-    function end() { drawing = false; }
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', end);
-    canvas.addEventListener('touchstart', start, { passive: false });
-    canvas.addEventListener('touchmove', move, { passive: false });
-    canvas.addEventListener('touchend', end);
-    document.getElementById('emargement-clear')?.addEventListener('click', function() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        document.getElementById('emargement_signature_canvas').value = '';
-    });
-})();
-
 function flushEmargementCanvas() {
-    const canvas = document.getElementById('emargement-canvas');
-    const hid = document.getElementById('emargement_signature_canvas');
-    if (canvas && hid && canvas.getContext) {
-        const blank = document.createElement('canvas');
-        blank.width = canvas.width;
-        blank.height = canvas.height;
-        if (canvas.toDataURL() !== blank.toDataURL()) {
-            hid.value = canvas.toDataURL('image/png');
-        }
+    if (typeof CofinaSignature !== 'undefined') {
+        CofinaSignature.flushCanvas('emargement-canvas', 'emargement_signature_canvas');
     }
 }
 
-// ==================== AJOUT DE LIGNES ====================
+// ==================== AJOUT / SUPPRESSION DE LIGNES (barre + / −) ====================
+
+function clearRowInputs(row) {
+    row.querySelectorAll('input, select, textarea').forEach(function (el) {
+        if (el.type === 'file') {
+            el.value = '';
+        } else if (el.tagName === 'SELECT') {
+            el.selectedIndex = 0;
+        } else {
+            el.value = '';
+        }
+    });
+}
+
+function removeLastDynamicRow(containerId, itemSelector) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const items = container.querySelectorAll(itemSelector);
+    if (items.length > 1) {
+        items[items.length - 1].remove();
+    } else if (items.length === 1) {
+        clearRowInputs(items[0]);
+    }
+}
+
+function removeLastBatchRow() {
+    removeLastDynamicRow('batch-container', '.batch-item');
+}
+
+function removeLastIncidentRow() {
+    removeLastDynamicRow('incidents-container', '.incident-item');
+}
+
+function removeLastEodAttachmentRow() {
+    removeLastDynamicRow('eod-attachments-rows', '.eod-attachment-row');
+}
 
 function addBatchRow() {
     const container = document.getElementById('batch-container');
     const div = document.createElement('div');
-    div.className = 'batch-item grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg relative';
+    div.className = 'batch-item grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg';
     div.innerHTML = `
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Batch</label>
@@ -925,24 +968,12 @@ function addBatchRow() {
             <label class="block text-sm font-medium text-gray-600 mb-1">Heure fin</label>
             <input type="text" data-batch="fin" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
-        <div class="relative">
+        <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Observation</label>
             <input type="text" data-batch="observation" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
-            <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.batch-item').remove()">×</button>
         </div>
     `;
     container.appendChild(div);
-}
-
-function refreshEodAttachmentRemoveButtons() {
-    const container = document.getElementById('eod-attachments-rows');
-    if (!container) return;
-    const rows = container.querySelectorAll('.eod-attachment-row');
-    const showRemove = rows.length > 1;
-    rows.forEach(function(row) {
-        const btn = row.querySelector('.eod-attachment-remove');
-        if (btn) btn.style.display = showRemove ? '' : 'none';
-    });
 }
 
 function addEodAttachmentRow() {
@@ -956,25 +987,14 @@ function addEodAttachmentRow() {
                    accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,application/pdf"
                    class="eod-attachment-input block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-red-50 file:text-[#C8102E]">
         </div>
-        <button type="button" class="eod-attachment-remove eod-btn-remove shrink-0 w-9 h-9 rounded-lg text-lg leading-none" onclick="removeEodAttachmentRow(this)" title="Retirer cette ligne">×</button>
     `;
     container.appendChild(div);
-    refreshEodAttachmentRemoveButtons();
-}
-
-function removeEodAttachmentRow(btn) {
-    const container = document.getElementById('eod-attachments-rows');
-    if (!container) return;
-    const rows = container.querySelectorAll('.eod-attachment-row');
-    if (rows.length <= 1) return;
-    btn.closest('.eod-attachment-row').remove();
-    refreshEodAttachmentRemoveButtons();
 }
 
 function addIncidentRow() {
     const container = document.getElementById('incidents-container');
     const div = document.createElement('div');
-    div.className = 'incident-item grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg relative';
+    div.className = 'incident-item grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg';
     div.innerHTML = `
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Heure</label>
@@ -992,7 +1012,7 @@ function addIncidentRow() {
             <label class="block text-sm font-medium text-gray-600 mb-1">Action corrective</label>
             <input type="text" data-incident="action" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
-        <div class="relative">
+        <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Statut</label>
             <select data-incident="statut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
                 <option value="">Sélectionner</option>
@@ -1000,37 +1020,20 @@ function addIncidentRow() {
                 <option value="En cours">En cours</option>
                 <option value="Non résolu">Non résolu</option>
             </select>
-            <button type="button" class="absolute -right-2 -top-2 eod-btn-remove" onclick="this.closest('.incident-item').remove()">×</button>
         </div>
     `;
     container.appendChild(div);
 }
 
-// ==================== SOUMISSION N+3 + CONTROLLER ====================
-
-function submitToN3Controller() {
-    serializeFormData();
-    flushEmargementCanvas();
-    const doSubmit = function() {
-        document.getElementById('submit-n3-form').submit();
-    };
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            title: 'Soumettre à N+3 et Controller ?',
-            text: 'La fiche sera transmise pour les deux signatures. Vous ne pourrez plus la modifier tant qu’elle n’est pas renvoyée en rejet.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#16a34a',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Oui, soumettre',
-            cancelButtonText: 'Annuler'
-        }).then((result) => {
-            if (result.isConfirmed) doSubmit();
-        });
-    } else {
-        if (confirm('Soumettre cette fiche à N+3 et au Controller ?')) doSubmit();
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('batch-container') && !document.querySelector('#batch-container .batch-item')) {
+        addBatchRow();
     }
-}
+    if (document.getElementById('incidents-container') && !document.querySelector('#incidents-container .incident-item')) {
+        addIncidentRow();
+    }
+});
+
 </script>
 @endpush
 @endsection

@@ -51,8 +51,7 @@ class EodSuiviController extends Controller
         $this->attachEmargementSignature($request, $fiche);
         $this->attachEodFiles($request, $fiche);
 
-        return redirect()->route('eod.n1.edit', $fiche)
-            ->with('success', 'Fiche de suivi créée avec succès.');
+        return $this->submitFicheToN3AndController($fiche->fresh(), 'eod.n1.index');
     }
 
     public function n1Edit(EodSuivi $fiche)
@@ -68,7 +67,19 @@ class EodSuiviController extends Controller
         $this->authorizeRole('N1');
         $this->authorizeOwner($fiche);
 
-        return $this->persistAuthorUpdate($request, $fiche);
+        if (! in_array($fiche->status, ['DRAFT', 'REJECTED'], true)) {
+            return back()->with('error', 'Cette fiche ne peut plus être modifiée.');
+        }
+
+        $data = $this->validatedEodPayload($request);
+        $data['updated_by'] = Auth::id();
+        $data['responsable_batch'] = $this->currentUserFullName();
+
+        $fiche->update($data);
+        $this->attachEmargementSignature($request, $fiche);
+        $this->attachEodFiles($request, $fiche);
+
+        return $this->submitFicheToN3AndController($fiche->fresh(), 'eod.n1.index');
     }
 
     public function n1SubmitToN3Controller(Request $request, EodSuivi $fiche)
@@ -108,8 +119,7 @@ class EodSuiviController extends Controller
         $this->attachEmargementSignature($request, $fiche);
         $this->attachEodFiles($request, $fiche);
 
-        return redirect()->route('eod.n2.edit', $fiche)
-            ->with('success', 'Fiche de suivi créée avec succès.');
+        return $this->submitFicheToN3AndController($fiche->fresh(), 'eod.n2.index');
     }
 
     public function n2Edit(EodSuivi $fiche)
@@ -139,7 +149,19 @@ class EodSuiviController extends Controller
         $this->authorizeRole('N2');
         $this->authorizeOwner($fiche);
 
-        return $this->persistAuthorUpdate($request, $fiche);
+        if (! in_array($fiche->status, ['DRAFT', 'REJECTED'], true)) {
+            return back()->with('error', 'Cette fiche ne peut plus être modifiée.');
+        }
+
+        $data = $this->validatedEodPayload($request);
+        $data['updated_by'] = Auth::id();
+        $data['responsable_batch'] = $this->currentUserFullName();
+
+        $fiche->update($data);
+        $this->attachEmargementSignature($request, $fiche);
+        $this->attachEodFiles($request, $fiche);
+
+        return $this->submitFicheToN3AndController($fiche->fresh(), 'eod.n2.index');
     }
 
     public function n2SubmitToN3Controller(Request $request, EodSuivi $fiche)

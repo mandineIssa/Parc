@@ -405,6 +405,162 @@ class EquipmentController extends Controller
         return view('equipment.index', compact('equipments', 'stats'));
     }
 
+    /**
+     * Plan de renouvellement : priorité selon l’ancienneté (date de mise en service ou livraison).
+     */
+    public function renewalPlanning(Request $request)
+    {
+        $allowedNiveaux = ['recent', 'seuil_reference', 'a_remplacer', 'inconnu'];
+        $niveau = $request->query('niveau');
+        $niveau = is_string($niveau) && in_array($niveau, $allowedNiveaux, true) ? $niveau : null;
+
+        $statut = $request->query('statut');
+        $allowedStatuts = ['stock', 'parc', 'maintenance', 'hors_service', 'perdu'];
+        $statut = is_string($statut) && in_array($statut, $allowedStatuts, true) ? $statut : null;
+
+        $search = $request->query('search');
+        $search = is_string($search) ? trim($search) : '';
+
+        $query = Equipment::with(['agence', 'fournisseur']);
+
+        if ($niveau === null) {
+            $query->where(function ($q) {
+                $q->whereNotNull('date_mise_service')->orWhereNotNull('date_livraison');
+            });
+        } else {
+            $query->whereRenewalNiveau($niveau);
+        }
+
+        if ($statut !== null) {
+            $query->where('statut', $statut);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('numero_serie', 'like', "%{$search}%")
+                    ->orWhere('marque', 'like', "%{$search}%")
+                    ->orWhere('modele', 'like', "%{$search}%");
+            });
+        }
+
+        $equipments = $query->orderByRenewalPriority()->paginate(25)->withQueryString();
+
+        $counts = [
+            'avec_dates' => Equipment::where(function ($q) {
+                $q->whereNotNull('date_mise_service')->orWhereNotNull('date_livraison');
+            })->count(),
+            'recent' => Equipment::query()->whereRenewalNiveau('recent')->count(),
+            'seuil_reference' => Equipment::query()->whereRenewalNiveau('seuil_reference')->count(),
+            'a_remplacer' => Equipment::query()->whereRenewalNiveau('a_remplacer')->count(),
+            'inconnu' => Equipment::query()->whereRenewalNiveau('inconnu')->count(),
+        ];
+
+        $orangeYears = (float) config('equipment_renewal.orange_years', 2);
+        $redYears = (float) config('equipment_renewal.red_years', 3);
+
+        return view('equipment.renewal.index', compact('equipments', 'counts', 'orangeYears', 'redYears', 'niveau', 'statut', 'search'));
+    }
+
+    /**
+     * Export CSV des équipements « à remplacer » (seuil critique renouvellement).
+     */
+    public function exportRenewalToReplace(Request $request)
+    {
+        $statut = $request->query('statut');
+        $allowedStatuts = ['stock', 'parc', 'maintenance', 'hors_service', 'perdu'];
+        $statut = is_string($statut) && in_array($statut, $allowedStatuts, true) ? $statut : null;
+
+        $search = $request->query('search');
+        $search = is_string($search) ? trim($search) : '';
+
+        $query = Equipment::with(['agence', 'fournisseur'])
+            ->whereRenewalNiveau('a_remplacer');
+
+        if ($statut !== null) {
+            $query->where('statut', $statut);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('numero_serie', 'like', "%{$search}%")
+                    ->orWhere('marque', 'like', "%{$search}%")
+                    ->orWhere('modele', 'like', "%{$search}%")
+                    ->orWhere('nom', 'like', "%{$search}%");
+            });
+        }
+
+        $equipments = $query->orderByRenewalPriority()->get();
+
+        $filename = 'equipements_a_remplacer_' . now()->format('Y-m-d_His') . '.csv';
+
+        return response()->streamDownload(function () use ($equipments) {
+            $file = fopen('php://output', 'w');
+            if ($file === false) {
+                return;
+            }
+
+            fprintf($file, "\xEF\xBB\xBF");
+
+            fputcsv($file, [
+                'Priorité',
+                'Type',
+                'N° série',
+                'Marque',
+                'Modèle',
+                'Nom',
+                'Âge (ans)',
+                'Date référence',
+                'Origine date',
+                'Niveau renouvellement',
+                'Commentaire renouvellement',
+                'Statut',
+                'Agence',
+                'Fournisseur',
+                'Prix (FCFA)',
+                'Date livraison',
+                'Date mise en service',
+            ], ';');
+
+            $priority = 1;
+            foreach ($equipments as $equipment) {
+                $ref = $equipment->lifecycleReferenceDate();
+                $origineDate = $equipment->date_mise_service
+                    ? 'Mise en service'
+                    : ($equipment->date_livraison ? 'Livraison (repli)' : '');
+
+                fputcsv($file, [
+                    $priority,
+                    $equipment->type,
+                    $equipment->numero_serie,
+                    $equipment->marque,
+                    $equipment->modele,
+                    $equipment->nom,
+                    $equipment->age_equipement_annees !== null
+                        ? number_format($equipment->age_equipement_annees, 2, ',', '')
+                        : '',
+                    $ref ? $ref->format('d/m/Y') : '',
+                    $origineDate,
+                    $equipment->libelleRenouvellementCourt(),
+                    $equipment->libelleRenouvellementLong(),
+                    $equipment->statut,
+                    $equipment->agence?->nom ?? '',
+                    $equipment->fournisseur?->nom ?? '',
+                    $equipment->prix !== null ? (string) $equipment->prix : '',
+                    $equipment->date_livraison?->format('d/m/Y') ?? '',
+                    $equipment->date_mise_service?->format('d/m/Y') ?? '',
+                ], ';');
+
+                $priority++;
+            }
+
+            fclose($file);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        ]);
+    }
+
     public function show($id)
     {
         try {

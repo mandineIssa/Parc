@@ -15,6 +15,13 @@
                 </div>
             </div>
 
+            <!-- Signature profil -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <div class="max-w-xl">
+                    @include('profile.partials.update-signature-form')
+                </div>
+            </div>
+
             <!-- Changer le mot de passe -->
             <div class="bg-white shadow rounded-lg p-6">
                 <div class="max-w-xl">

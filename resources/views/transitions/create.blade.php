@@ -630,10 +630,14 @@
                                 <canvas class="signature-pad border-2 border-gray-300 rounded bg-white w-full h-32"
                                     id="signatureCanvasInstallateur"></canvas>
                             </div>
-                            <div class="flex gap-2 mb-2">
+                            <div class="flex flex-wrap gap-2 mb-2">
                                 <button type="button" class="btn-cofina-outline text-xs py-1 px-2 flex-1"
                                     onclick="clearSignature('installateur')">
                                     Effacer
+                                </button>
+                                <button type="button" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 text-xs py-1 px-2 flex-1 rounded font-medium"
+                                    onclick="loadProfileSignature('installateur')">
+                                    Charger ma signature
                                 </button>
                                 <button type="button" class="btn-cofina text-xs py-1 px-2 flex-1"
                                     onclick="saveSignature('installateur')">
@@ -1078,10 +1082,14 @@
                                 <canvas class="signature-pad border-2 border-gray-300 rounded bg-white w-full h-32"
                                     id="signatureCanvasExpediteur"></canvas>
                             </div>
-                            <div class="flex gap-2 mb-2">
+                            <div class="flex flex-wrap gap-2 mb-2">
                                 <button type="button" class="btn-cofina-outline text-xs py-1 px-2 flex-1"
                                     onclick="clearSignature('expediteur')">
                                     Effacer
+                                </button>
+                                <button type="button" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 text-xs py-1 px-2 flex-1 rounded font-medium"
+                                    onclick="loadProfileSignature('expediteur')">
+                                    Charger ma signature
                                 </button>
                                 <button type="button" class="btn-cofina text-xs py-1 px-2 flex-1"
                                     onclick="saveSignature('expediteur')">
@@ -1109,10 +1117,14 @@
                                 <canvas class="signature-pad border-2 border-gray-300 rounded bg-white w-full h-32"
                                     id="signatureCanvasReceptionnaire"></canvas>
                             </div>
-                            <div class="flex gap-2 mb-2">
+                            <div class="flex flex-wrap gap-2 mb-2">
                                 <button type="button" class="btn-cofina-outline text-xs py-1 px-2 flex-1"
                                     onclick="clearSignature('receptionnaire')">
                                     Effacer
+                                </button>
+                                <button type="button" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 text-xs py-1 px-2 flex-1 rounded font-medium"
+                                    onclick="loadProfileSignature('receptionnaire')">
+                                    Charger ma signature
                                 </button>
                                 <button type="button" class="btn-cofina text-xs py-1 px-2 flex-1"
                                     onclick="saveSignature('receptionnaire')">
@@ -2360,6 +2372,17 @@ function resizeCanvas(canvas) {
 
 
 
+function loadProfileSignature(type) {
+    const canvasId = getCanvasId(type);
+    const signaturePad = signaturePads[canvasId];
+    const hiddenInput = document.getElementById(`signature${capitalizeFirst(type)}`);
+    if (typeof CofinaSignature !== 'undefined' && signaturePad) {
+        CofinaSignature.loadProfileOntoSignaturePad(signaturePad, hiddenInput);
+    } else {
+        alert('Module signature non chargé ou zone non initialisée. Réessayez après avoir ouvert l\'étape du formulaire.');
+    }
+}
+
 function clearSignature(type) {
 
     const canvasId = getCanvasId(type);
@@ -2739,6 +2762,18 @@ const _dm = {
     receptionnaire_decele: { c: 'signatureCanvasReceptionnaireDecele', i: 'signatureReceptionnaireDecele' }
 };
  
+function loadProfileSignatureDecele(type) {
+    const m = _dm[type];
+    if (!m) return;
+    const pad = signaturePadsDecele[m.c];
+    const inp = document.querySelector(`#forms-container-decele #${m.i}`);
+    if (typeof CofinaSignature !== 'undefined' && pad) {
+        CofinaSignature.loadProfileOntoSignaturePad(pad, inp);
+    } else {
+        alert('Module signature non chargé ou zone non initialisée.');
+    }
+}
+
 function clearSignatureDecele(type) {
     const m = _dm[type]; if (!m) return;
     const p = signaturePadsDecele[m.c]; if (p) p.clear();

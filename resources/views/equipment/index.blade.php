@@ -11,7 +11,14 @@
             <h1 class="text-3xl font-bold text-gray-800">Inventaire des Équipements</h1>
             <p class="text-gray-600 mt-2">Gérez et suivez tous vos équipements IT</p>
         </div>
-        <div class="flex gap-3 mt-4 md:mt-0">
+        <div class="flex gap-3 mt-4 md:mt-0 flex-wrap">
+            <a href="{{ route('equipment.renewal') }}"
+               class="border border-gray-300 hover:border-gray-400 bg-white text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-sm hover:shadow transition flex items-center">
+                <svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Plan renouvellement
+            </a>
             <a href="{{ route('equipment.create') }}" 
                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,16 +68,22 @@
             }
             
             $statsConfig = [
-                ['label' => 'En Stock', 'key' => 'stock', 'color' => 'blue', 'icon' => '📦'],
-                ['label' => 'En Parc', 'key' => 'parc', 'color' => 'green', 'icon' => '🖥️'],
-                ['label' => 'Maintenance', 'key' => 'maintenance', 'color' => 'yellow', 'icon' => '🔧'],
-                ['label' => 'Hors Service', 'key' => 'hors_service', 'color' => 'red', 'icon' => '⛔'],
-                ['label' => 'Perdus', 'key' => 'perdu', 'color' => 'gray', 'icon' => '❓'],
+                ['label' => 'En Stock', 'key' => 'stock', 'statut' => 'stock', 'icon' => '📦', 'gradient' => 'linear-gradient(135deg, #7A0C1A 0%, #A61B29 100%)'],
+                ['label' => 'En Parc', 'key' => 'parc', 'statut' => 'parc', 'icon' => '🖥️', 'gradient' => 'linear-gradient(135deg, #8F2432 0%, #BF3142 100%)'],
+                ['label' => 'Maintenance', 'key' => 'maintenance', 'statut' => 'maintenance', 'icon' => '🔧', 'gradient' => 'linear-gradient(135deg, #525866 0%, #6B7280 100%)'],
+                ['label' => 'Hors Service', 'key' => 'hors_service', 'statut' => 'hors_service', 'icon' => '⛔', 'gradient' => 'linear-gradient(135deg, #9F1F2C 0%, #D03140 100%)'],
+                ['label' => 'Perdus', 'key' => 'perdu', 'statut' => 'perdu', 'icon' => '❓', 'gradient' => 'linear-gradient(135deg, #3D3D44 0%, #5E616B 100%)'],
             ];
         @endphp
         
         @foreach($statsConfig as $stat)
-        <div class="bg-gradient-to-r from-{{ $stat['color'] }}-500 to-{{ $stat['color'] }}-600 rounded-xl shadow-lg p-6 text-white">
+        @php
+            $isActive = request('statut') === $stat['statut'];
+            $targetUrl = route('equipment.index', array_merge(request()->except(['page', 'statut']), ['statut' => $stat['statut']]));
+        @endphp
+        <a href="{{ $targetUrl }}"
+           class="rounded-xl shadow-lg p-6 text-white block transition-all duration-200 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A61B29] {{ $isActive ? 'ring-2 ring-offset-2 ring-[#A61B29]' : '' }}"
+           style="background: {{ $stat['gradient'] }};">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">{{ $stat['label'] }}</p>
@@ -81,7 +94,7 @@
                     {{ $stat['icon'] }}
                 </div>
             </div>
-        </div>
+        </a>
         @endforeach
     </div>
 
@@ -97,14 +110,14 @@
                     </div>
                     <input type="text" 
                            id="searchInput"
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition"
                            placeholder="Rechercher par nom, N° série, marque, modèle..."
                            value="{{ request('search') }}">
                 </div>
             </div>
             
             <div class="w-full md:w-48">
-                <select id="statutFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                <select id="statutFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Tous les statuts</option>
                     <option value="stock" {{ request('statut') == 'stock' ? 'selected' : '' }}>Stock</option>
                     <option value="parc" {{ request('statut') == 'parc' ? 'selected' : '' }}>Parc</option>
@@ -115,7 +128,7 @@
             </div>
             
             <div class="w-full md:w-48">
-                <select id="typeFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                <select id="typeFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Tous les types</option>
                     <option value="Réseau" {{ request('type') == 'Réseau' ? 'selected' : '' }}>Réseau</option>
                     <option value="Informatique" {{ request('type') == 'Informatique' ? 'selected' : '' }}>Informatique</option>
@@ -135,19 +148,19 @@
         <div class="mt-4 pt-4 border-t border-gray-100">
             <div class="flex flex-wrap gap-2">
                 <span class="text-sm text-gray-500 flex items-center mr-3">Filtres rapides :</span>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition" data-filter="all">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="all">
                     Tous
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition" data-filter="stock">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="stock">
                     Stock
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition" data-filter="parc">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="parc">
                     Parc
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition" data-filter="maintenance">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition" data-filter="maintenance">
                     Maintenance
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-red-100 text-red-800 hover:bg-red-200 transition" data-filter="hors_service">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FCEBEC] text-[#9F1F2C] hover:bg-[#F8DADC] transition" data-filter="hors_service">
                     Hors Service
                 </button>
                 <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition" data-filter="perdu">
@@ -194,6 +207,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Équipement</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Type</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Renouvellement</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Localisation</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Date De livraison</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Actions</th>
@@ -270,6 +284,13 @@
                                 {{ ucfirst(str_replace('_', ' ', $equipment->statut)) }}
                             </span>
                         </td>
+
+                        <td class="px-6 py-4 hidden md:table-cell align-top">
+                            @include('equipment.partials.renewal-badge', ['equipment' => $equipment])
+                            @if($equipment->age_equipement_annees !== null)
+                                <div class="text-xs text-gray-500 mt-1">{{ number_format($equipment->age_equipement_annees, 1, ',', ' ') }} ans</div>
+                            @endif
+                        </td>
                         
                         <td class="px-6 py-4 hidden lg:table-cell">
                             <div class="flex items-center">
@@ -284,8 +305,12 @@
                         </td>
                         
                         <td class="px-6 py-4 whitespace-nowrap hidden xl:table-cell">
-                            <div class="text-sm text-gray-900">{{ $equipment->date_livraison->format('d/m/Y') }}</div>
-                            <div class="text-xs text-gray-500">{{ $equipment->date_livraison->diffForHumans() }}</div>
+                            @if($equipment->date_livraison)
+                                <div class="text-sm text-gray-900">{{ $equipment->date_livraison->format('d/m/Y') }}</div>
+                                <div class="text-xs text-gray-500">{{ $equipment->date_livraison->diffForHumans() }}</div>
+                            @else
+                                <span class="text-sm text-gray-400">—</span>
+                            @endif
                         </td>
                         
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
@@ -620,9 +645,9 @@ document.addEventListener('DOMContentLoaded', function() {
         filterButtons.forEach(btn => {
             const filter = btn.dataset.filter;
             if (filter === currentFilter) {
-                btn.classList.add('ring-2', 'ring-offset-2', 'ring-blue-500');
+                btn.classList.add('ring-2', 'ring-offset-2', 'ring-[#A61B29]');
             } else {
-                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-blue-500');
+                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-[#A61B29]');
             }
         });
     }

@@ -42,7 +42,23 @@
                 <span class="ml-2 px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm">
                     N° Série: <span class="font-bold">{{ $equipment->numero_serie }}</span>
                 </span>
+                <span class="ml-2 inline-flex items-center align-middle">
+                    @include('equipment.partials.renewal-badge', ['equipment' => $equipment])
+                </span>
             </div>
+            @if($equipment->lifecycleReferenceDate())
+                <p class="mt-3 text-sm text-gray-600">
+                    {{ $equipment->libelleRenouvellementLong() }}
+                    — âge estimé :
+                    <strong>{{ $equipment->age_equipement_annees !== null ? number_format($equipment->age_equipement_annees, 2, ',', ' ').' ans' : '—' }}</strong>
+                    (référence {{ $equipment->date_mise_service ? 'mise en service' : 'livraison' }} :
+                    {{ $equipment->lifecycleReferenceDate()->format('d/m/Y') }}).
+                </p>
+            @else
+                <p class="mt-3 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 inline-block">
+                    Aucune date de mise en service ni de livraison : le niveau de renouvellement ne peut pas être calculé automatiquement.
+                </p>
+            @endif
         </div>
 
         <!-- Contenu principal -->

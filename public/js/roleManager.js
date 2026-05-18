@@ -247,14 +247,45 @@ class RoleManager {
     
     isLogoutElement(element) {
         if (!element) return false;
-        const href = element.getAttribute?.('href') || element.href || '';
-        const action = element.getAttribute?.('action') || element.action || '';
+
+        const href = String(element.getAttribute?.('href') || element.href || '');
+        const action = String(element.getAttribute?.('action') || element.action || '');
         const dataAction = element.getAttribute?.('data-action') || '';
-        if (href.includes('/logout') || action.includes('/logout') || dataAction === 'logout' ||
-            element.classList?.contains('logout-btn') || element.classList?.contains('logout-link') ||
-            element.classList?.contains('logout-form')) return true;
-        return !!(element.closest?.('form[action*="/logout"]') || element.closest?.('a[href*="/logout"]') ||
-            element.closest?.('.logout-btn, .logout-link, .logout-form') || element.closest?.('[data-action="logout"]'));
+        const formId = element.getAttribute?.('form') || '';
+        const name = element.getAttribute?.('name') || '';
+
+        if (
+            href.includes('/logout') ||
+            action.includes('/logout') ||
+            dataAction === 'logout' ||
+            formId === 'logout-form-global' ||
+            name === '_logout' ||
+            element.id === 'logout-form-global' ||
+            element.classList?.contains('logout-btn') ||
+            element.classList?.contains('logout-link') ||
+            element.classList?.contains('logout-form')
+        ) {
+            return true;
+        }
+
+        const form = element.closest?.('form');
+        if (form) {
+            const formAction = String(form.getAttribute?.('action') || form.action || '');
+            if (
+                form.id === 'logout-form-global' ||
+                form.classList?.contains('logout-form') ||
+                formAction.includes('/logout')
+            ) {
+                return true;
+            }
+        }
+
+        return !!(
+            element.closest?.('form[action*="/logout"]') ||
+            element.closest?.('a[href*="/logout"]') ||
+            element.closest?.('.logout-btn, .logout-link, .logout-form') ||
+            element.closest?.('[data-action="logout"]')
+        );
     }
 
     /** Liens / actions vers les modules exemptés (pas de blocage SweetAlert) */
@@ -469,7 +500,11 @@ class RoleManager {
             if (this.isLogoutElement(form)) return;
             if (!this.isFormAuthorized(form)) {
                 form.addEventListener('submit', (e) => {
+                    if (this.isLogoutElement(e.target) || this.isLogoutElement(form)) {
+                        return;
+                    }
                     e.preventDefault();
+                    e.stopPropagation();
                     this.showAccessDeniedAlert();
                 }, { capture: true });
                 form.classList.add('readonly-form');
@@ -586,6 +621,18 @@ class RoleManager {
     }
 
     setupProtectedClickHandlers() {
+        if (this._protectedClickHandlersBound) {
+            return;
+        }
+        this._protectedClickHandlersBound = true;
+
+        document.addEventListener('submit', (e) => {
+            const form = e.target;
+            if (form && form.tagName === 'FORM' && this.isLogoutElement(form)) {
+                return;
+            }
+        }, { capture: true });
+
         document.addEventListener('click', (e) => {
             if (this.isLogoutElement(e.target)) return;
             if (this.isChangePage()) return; // pas d'interception sur les pages Change/EOD

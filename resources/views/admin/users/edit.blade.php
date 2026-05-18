@@ -131,6 +131,8 @@
                         </button>
                     </div>
                 </form>
+
+                @include('admin.users.partials.signature-form', ['user' => $user])
             </div>
         </div>
     </div>

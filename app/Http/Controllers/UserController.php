@@ -4,6 +4,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\UserSignatureStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -61,12 +62,28 @@ class UserController extends Controller
             'eod_signature_only_ui' => ['sometimes', 'boolean'],
             'departement' => ['nullable', 'string', 'max:255'],
             'fonction' => ['nullable', 'string', 'max:255'],
+            'signature_file' => ['nullable', 'image', 'max:4096'],
+            'signature_canvas' => ['nullable', 'string'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['eod_signature_only_ui'] = $request->boolean('eod_signature_only_ui');
 
-        User::create($validated);
+        unset($validated['signature_file'], $validated['signature_canvas']);
+
+        $user = User::create($validated);
+
+        $signaturePath = UserSignatureStorage::storeFromRequest(
+            $request,
+            'signature_file',
+            'signature_canvas',
+            $user
+        );
+        if ($signaturePath) {
+            $user->signature_path = $signaturePath;
+            $user->signature_updated_at = now();
+            $user->save();
+        }
 
         return redirect()->route('users.index')
             ->with('success', 'Utilisateur créé avec succès.');

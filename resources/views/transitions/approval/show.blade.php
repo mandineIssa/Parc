@@ -729,10 +729,14 @@
 
         <input type="hidden" name="signature_verificateur" id="signatureVerificateur">
         
-        <div class="flex gap-2 mt-2">
+        <div class="flex flex-wrap gap-2 mt-2">
             <button type="button" onclick="clearSignature('verificateur')" 
                     class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-3 rounded text-sm">
                 Effacer
+            </button>
+            <button type="button" onclick="loadProfileSignature('verificateur')" 
+                    class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 py-1 px-3 rounded text-sm font-medium">
+                Charger ma signature
             </button>
             <button type="button" onclick="saveSignature('verificateur')" 
                     class="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded text-sm">
@@ -1171,6 +1175,22 @@ function initSignaturePads() {
             backgroundColor: 'rgb(255, 255, 255)',
             penColor: 'rgb(0, 0, 0)'
         });
+    }
+}
+
+function loadProfileSignature(type) {
+    let signaturePad, hiddenInput;
+    if (type === 'installateur') {
+        signaturePad = signaturePadInstallateur;
+        hiddenInput = document.getElementById('signatureInstallateur');
+    } else if (type === 'verificateur') {
+        signaturePad = signaturePadVerificateur;
+        hiddenInput = document.getElementById('signatureVerificateur');
+    }
+    if (typeof CofinaSignature !== 'undefined' && signaturePad) {
+        CofinaSignature.loadProfileOntoSignaturePad(signaturePad, hiddenInput);
+    } else {
+        alert('Module signature non chargé.');
     }
 }
 

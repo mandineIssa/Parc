@@ -17,6 +17,7 @@ use App\Models\HorsService;
 use App\Models\Stock;
 use App\Models\Deceler;
 use App\Models\Ceceler;
+use App\Support\SecureLog;
 class TransitionController extends Controller
 {
     
@@ -2596,8 +2597,7 @@ public function submitHorsService(Request $request)
     DB::beginTransaction();
 
     try {
-        // Log des données reçues pour débogage
-        Log::info('Données reçues pour hors service:', $request->all());
+        Log::info('Données reçues pour hors service (sanitisées)', SecureLog::requestPayload($request));
 
         // Validation complète avec messages personnalisés
         $validated = $request->validate([
@@ -2642,7 +2642,7 @@ public function submitHorsService(Request $request)
         }
 
         // Log des données après validation
-        Log::info('Données validées:', $validated);
+        Log::info('Données validées (clés)', ['keys' => array_keys($validated)]);
 
         // Préparer les données pour l'approbation
         $data = [
@@ -3979,7 +3979,7 @@ public function submitParcHorsService(Request $request)
 
     try {
         Log::info('=== DÉBUT submitParcHorsService ===');
-        Log::info('Données reçues:', $request->all());
+        Log::info('Données reçues (sanitisées)', SecureLog::requestPayload($request));
 
         // Validation complète avec checklist optionnelle
         $validated = $request->validate([
@@ -3996,7 +3996,7 @@ public function submitParcHorsService(Request $request)
             'checklist.justificatif' => 'nullable|string',
         ]);
 
-        Log::info('Données validées:', $validated);
+        Log::info('Données validées (clés)', ['keys' => array_keys($validated)]);
 
         $equipment = Equipment::with(['parc'])->findOrFail($validated['equipment_id']);
         Log::info('Équipement trouvé:', [
@@ -4437,7 +4437,7 @@ public function submitMaintenanceToStock(Request $request)
 
     try {
         // Log des données reçues pour débogage
-        Log::info('Données reçues pour maintenance→stock:', $request->all());
+        Log::info('Données reçues pour maintenance→stock (sanitisées)', SecureLog::requestPayload($request));
 
         // Validation complète
         $validated = $request->validate([
@@ -4986,7 +4986,7 @@ public function submitMaintenanceHorsService(Request $request)
 
     try {
         // Log des données reçues pour débogage
-        Log::info('Données reçues pour maintenance hors service:', $request->all());
+        Log::info('Données reçues pour maintenance hors service (sanitisées)', SecureLog::requestPayload($request));
 
         // Validation complète
         $validated = $request->validate([

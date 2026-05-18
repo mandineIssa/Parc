@@ -8,10 +8,14 @@
                         aria-label="Toggle sidebar">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <a href="{{ route('dashboard') }}" class="flex items-center">
+                <a href="{{ route('dashboard') }}"
+                   class="flex items-center"
+                   title="Tableau de bord"
+                   aria-label="Tableau de bord">
                     <img src="{{ asset('images/Cofina1.jpeg') }}"
-                         alt="Cofina Logo"
+                         alt="Cofina — accueil"
                          class="h-14 sm:h-18 w-auto mr-2 sm:mr-3">
+                    <span class="sr-only">Tableau de bord</span>
                     <span class="font-bold text-lg sm:text-xl text-gray-800 hidden xs:inline">Gestion Parc</span>
                 </a>
             </div>
@@ -62,14 +66,12 @@
                             <i class="fas fa-user mr-2"></i>Profil
                         </a>
 
-                        <form method="POST" action="{{ route('logout') }}" class="logout-form">
-                            @csrf
-                            <button type="submit"
-                                    class="logout-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
-                                    data-action="logout">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
-                            </button>
-                        </form>
+                        <button type="button"
+                                class="logout-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                data-action="logout"
+                                onclick="window.submitLogout && window.submitLogout(event)">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+                        </button>
 
                     </div>
                 </div>

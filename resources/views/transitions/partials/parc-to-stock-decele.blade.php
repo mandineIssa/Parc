@@ -154,9 +154,11 @@
                     <canvas class="signature-pad border-2 border-gray-300 rounded bg-white w-full h-32"
                         id="signatureCanvasAgentRetour"></canvas>
                 </div>
-                <div class="flex gap-2 mb-2">
+                <div class="flex flex-wrap gap-2 mb-2">
                     <button type="button" class="btn-cofina-outline text-xs py-1 px-2 flex-1"
                         onclick="clearSignatureDecele('agent_retour')">Effacer</button>
+                    <button type="button" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 text-xs py-1 px-2 flex-1 rounded font-medium"
+                        onclick="loadProfileSignatureDecele('agent_retour')">Charger ma signature</button>
                     <button type="button" class="btn-cofina text-xs py-1 px-2 flex-1"
                         onclick="saveSignatureDecele('agent_retour')">Sauvegarder</button>
                 </div>
@@ -402,9 +404,11 @@
                         <canvas class="signature-pad border-2 border-gray-300 rounded bg-white w-full h-32"
                             id="signatureCanvasExpediteurDecele"></canvas>
                     </div>
-                    <div class="flex gap-2 mb-2">
+                    <div class="flex flex-wrap gap-2 mb-2">
                         <button type="button" class="btn-cofina-outline text-xs py-1 px-2 flex-1"
                             onclick="clearSignatureDecele('expediteur_decele')">Effacer</button>
+                        <button type="button" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 text-xs py-1 px-2 flex-1 rounded font-medium"
+                            onclick="loadProfileSignatureDecele('expediteur_decele')">Charger ma signature</button>
                         <button type="button" class="btn-cofina text-xs py-1 px-2 flex-1"
                             onclick="saveSignatureDecele('expediteur_decele')">Sauvegarder</button>
                     </div>
@@ -428,9 +432,11 @@
                         <canvas class="signature-pad border-2 border-gray-300 rounded bg-white w-full h-32"
                             id="signatureCanvasReceptionnaireDecele"></canvas>
                     </div>
-                    <div class="flex gap-2 mb-2">
+                    <div class="flex flex-wrap gap-2 mb-2">
                         <button type="button" class="btn-cofina-outline text-xs py-1 px-2 flex-1"
                             onclick="clearSignatureDecele('receptionnaire_decele')">Effacer</button>
+                        <button type="button" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 text-xs py-1 px-2 flex-1 rounded font-medium"
+                            onclick="loadProfileSignatureDecele('receptionnaire_decele')">Charger ma signature</button>
                         <button type="button" class="btn-cofina text-xs py-1 px-2 flex-1"
                             onclick="saveSignatureDecele('receptionnaire_decele')">Sauvegarder</button>
                     </div>

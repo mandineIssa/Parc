@@ -21,6 +21,8 @@ class User extends Authenticatable
         'eod_signature_only_ui',
         'departement',
         'fonction',
+        'signature_path',
+        'signature_updated_at',
         'email_verified_at',
     ];
     
@@ -33,7 +35,22 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'eod_signature_only_ui' => 'boolean',
+        'signature_updated_at' => 'datetime',
     ];
+
+    public function hasStoredSignature(): bool
+    {
+        return ! empty($this->signature_path);
+    }
+
+    public function signaturePublicUrl(): ?string
+    {
+        if (! $this->signature_path) {
+            return null;
+        }
+
+        return asset('storage/' . $this->signature_path);
+    }
 
     /**
      * Accès aux écrans EOD N+3 (/eod/n3) : rôle principal eod_n3 ou ancien role_change N3.

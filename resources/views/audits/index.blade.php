@@ -36,7 +36,7 @@
 
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #3D3D44 0%, #5E616B 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Total</p>
@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #8F2432 0%, #BF3142 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Créations</p>
@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #7A0C1A 0%, #A61B29 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Modifications</p>
@@ -75,7 +75,7 @@
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="rounded-xl shadow-lg p-6 text-white" style="background: linear-gradient(135deg, #525866 0%, #6B7280 100%);">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium opacity-90">Transitions</p>
@@ -93,7 +93,7 @@
     <div class="bg-white rounded-xl shadow-md p-6 mb-8">
         <div class="flex flex-col md:flex-row gap-4">
             <div class="w-full md:w-48">
-                <select id="actionFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                <select id="actionFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Toutes les actions</option>
                     <option value="create" {{ request('action') == 'create' ? 'selected' : '' }}>Création</option>
                     <option value="update" {{ request('action') == 'update' ? 'selected' : '' }}>Modification</option>
@@ -103,7 +103,7 @@
             </div>
             
             <div class="w-full md:w-48">
-                <select id="modelFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                <select id="modelFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Tous les modèles</option>
                     <option value="Equipment" {{ request('model_type') == 'Equipment' ? 'selected' : '' }}>Équipement</option>
                     <option value="Parc" {{ request('model_type') == 'Parc' ? 'selected' : '' }}>Parc</option>
@@ -116,7 +116,7 @@
             </div>
             
             <div class="w-full md:w-48">
-                <select id="periodFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                <select id="periodFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="7" {{ request('period') == '7' ? 'selected' : '' }}>7 derniers jours</option>
                     <option value="30" {{ request('period') == '30' || !request('period') ? 'selected' : '' }}>30 derniers jours</option>
                     <option value="90" {{ request('period') == '90' ? 'selected' : '' }}>3 derniers mois</option>
@@ -133,7 +133,7 @@
                     </div>
                     <input type="text" 
                            id="searchInput"
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition"
                            placeholder="Rechercher par utilisateur, notes, ID..."
                            value="{{ request('search') }}">
                 </div>
@@ -154,19 +154,19 @@
                 <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition" data-filter="all">
                     Toutes
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition" data-filter="create">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="create">
                     Créations
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition" data-filter="update">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="update">
                     Modifications
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-red-100 text-red-800 hover:bg-red-200 transition" data-filter="delete">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FCEBEC] text-[#9F1F2C] hover:bg-[#F8DADC] transition" data-filter="delete">
                     Suppressions
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-purple-100 text-purple-800 hover:bg-purple-200 transition" data-filter="transition">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition" data-filter="transition">
                     Transitions
                 </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition" data-filter="today">
+                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition" data-filter="today">
                     Aujourd'hui
                 </button>
                 <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition" data-filter="week">
@@ -662,9 +662,9 @@ document.addEventListener('DOMContentLoaded', function() {
         filterButtons.forEach(btn => {
             const filter = btn.dataset.filter;
             if (filter === currentFilter) {
-                btn.classList.add('ring-2', 'ring-offset-2', 'ring-blue-500');
+                btn.classList.add('ring-2', 'ring-offset-2', 'ring-[#A61B29]');
             } else {
-                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-blue-500');
+                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-[#A61B29]');
             }
         });
     }

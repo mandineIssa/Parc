@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @auth
+    <meta name="profile-signature-url" content="{{ route('profile.signature.show') }}">
+    @endauth
     
     <!-- META TAGS POUR ROLE MANAGER -->
     <meta name="user-role" content="{{ auth()->check() ? auth()->user()->role : 'guest' }}">
@@ -89,6 +92,12 @@
 </head>
 
 <body class="bg-gray-50 min-h-screen flex flex-col role-{{ auth()->check() ? auth()->user()->role : 'guest' }} role-change-{{ auth()->check() && auth()->user()->role_change ? auth()->user()->role_change : 'none' }}">
+
+    @auth
+    <form id="logout-form-global" method="POST" action="{{ route('logout') }}" class="hidden logout-form" aria-hidden="true">
+        @csrf
+    </form>
+    @endauth
 
     <!-- Top Navigation -->
     @include('layouts.navigation')
@@ -221,6 +230,23 @@
     <!-- SCRIPTS ROLE MANAGER -->
     <script src="{{ asset('js/roleConfig.js') }}"></script>
     <script src="{{ asset('js/roleManager.js') }}"></script>
+    <script>
+        window.submitLogout = function (event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const form = document.getElementById('logout-form-global');
+            if (form) {
+                form.submit();
+                return;
+            }
+            const fallback = document.querySelector('form.logout-form[action*="logout"]');
+            if (fallback) {
+                fallback.submit();
+            }
+        };
+    </script>
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -234,11 +260,6 @@
                     console.log('Redirection en cours...');
                     return;
                 }
-            }
-            
-            // Configurer les gestionnaires de clic protégés
-            if (window.RoleManager && typeof window.RoleManager.setupProtectedClickHandlers === 'function') {
-                window.RoleManager.setupProtectedClickHandlers();
             }
             
             // Helper global pour vérifier les rôles
@@ -258,11 +279,6 @@
                     window.RoleManager.showAccessDeniedAlert();
                 }
             };
-            
-            // Appliquer les règles d'interface
-            if (window.RoleManager && typeof window.RoleManager.applyUIRules === 'function') {
-                window.RoleManager.applyUIRules();
-            }
             
             // Cacher les flash messages si SweetAlert est utilisé
             @if(session('success'))
@@ -388,6 +404,7 @@
         })();
     </script>
     
+    <script src="{{ asset('js/signature-canvas.js') }}"></script>
     @stack('scripts')
 
 </body>
