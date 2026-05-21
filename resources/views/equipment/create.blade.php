@@ -5398,7 +5398,8 @@ function validateForm(event) {
     }
     
     if (type === 'Informatique') {
-        if (!document.querySelector('[name="etat_stock"]').value) errors.push('État Stock');
+        const etatStock = document.querySelector('[name="etat_stock"]');
+        if (etatStock && !etatStock.value) errors.push('État Stock');
     }
     
     if (type === 'Logiciel') {
