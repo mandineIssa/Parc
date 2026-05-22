@@ -1,33 +1,48 @@
 {{-- Sidebar — structure PARC + modules (sans icônes) --}}
 <aside id="sidebar" class="fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 shadow-xl transform -translate-x-full lg:translate-x-0 transition-all duration-300 ease-in-out z-40 flex flex-col">
 
-    <nav class="flex-1 overflow-y-auto py-4 sidebar-custom-scrollbar" id="sidebar-nav">
+        @php
+            $rapportsMenuOpen = request()->routeIs('reports.*');
+            $gestionMenuOpen = request()->routeIs('parc.*', 'maintenance.*', 'hors-service.*', 'perdu.*', 'approvals.*');
+            $equipementsMenuOpen = request()->routeIs('equipment.*');
+            $stocksMenuOpen = request()->routeIs('dashboard.celer-*') || request()->routeIs('dashboard.deceler-*');
+            $stockBranchCelerOpen = request()->routeIs('dashboard.celer-*');
+            $stockBranchDecelerOpen = request()->routeIs('dashboard.deceler-*');
+            $parcSectionOpen = $rapportsMenuOpen || $gestionMenuOpen || $equipementsMenuOpen || $stocksMenuOpen
+                || request()->routeIs('documentation.*');
+            $activeParcSubsection = match (true) {
+                $rapportsMenuOpen => 'rapports',
+                $gestionMenuOpen => 'gestion',
+                $equipementsMenuOpen => 'equipements',
+                $stocksMenuOpen => 'stocks',
+                default => '',
+            };
+            $activeParcStockBranch = $stockBranchDecelerOpen ? 'deceler' : ($stockBranchCelerOpen ? 'celer' : '');
+        @endphp
+
+    <nav class="flex-1 overflow-y-auto py-4 sidebar-custom-scrollbar" id="sidebar-nav"
+         data-parc-subsection="{{ $activeParcSubsection }}"
+         data-parc-stock-branch="{{ $activeParcStockBranch }}">
 
         @if(auth()->check() && auth()->user()->usesEodSignatureOnlySidebar())
             @include('layouts.partials.sidebar-eod-signature-only')
         @else
 
-        @php
-            $stocksMenuOpen = request()->routeIs('dashboard.celer-*') || request()->routeIs('dashboard.deceler-*');
-            $stockBranchCelerOpen = request()->routeIs('dashboard.celer-*');
-            $stockBranchDecelerOpen = request()->routeIs('dashboard.deceler-*');
-        @endphp
-
         {{-- ═══ PARC (menu principal) ═══ --}}
         <div class="sidebar-section" data-section="parc">
-            <button type="button" class="sidebar-section-header sidebar-section-header--root" data-section="parc">
+            <button type="button" class="sidebar-section-header sidebar-section-header--root {{ $parcSectionOpen ? 'is-active' : '' }}" data-section="parc">
                 <span class="font-semibold">PARC</span>
-                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-chevron {{ $parcSectionOpen ? 'open' : '' }}" aria-hidden="true"></span>
             </button>
-            <div class="sidebar-section-body">
+            <div class="sidebar-section-body {{ $parcSectionOpen ? 'open' : '' }}">
 
                 {{-- Rapports --}}
                 <div class="sidebar-subsection" data-subsection="rapports">
-                    <button type="button" class="sidebar-subsection-header" data-subsection="rapports">
+                    <button type="button" class="sidebar-subsection-header {{ $rapportsMenuOpen ? 'is-active' : '' }}" data-subsection="rapports">
                         <span>Rapports</span>
-                        <span class="sidebar-chevron sidebar-chevron--sm" aria-hidden="true"></span>
+                        <span class="sidebar-chevron sidebar-chevron--sm {{ $rapportsMenuOpen ? 'open' : '' }}" aria-hidden="true"></span>
                     </button>
-                    <div class="sidebar-subsection-body">
+                    <div class="sidebar-subsection-body {{ $rapportsMenuOpen ? 'open' : '' }}">
                         <a href="{{ route('reports.index') }}" class="sidebar-item {{ request()->routeIs('reports.index') ? 'sidebar-active' : '' }}">Vue d'ensemble</a>
                         <a href="{{ route('reports.equipment') }}" class="sidebar-item {{ request()->routeIs('reports.equipment') ? 'sidebar-active' : '' }}">Équipements</a>
                         <a href="{{ route('reports.financial') }}" class="sidebar-item {{ request()->routeIs('reports.financial') ? 'sidebar-active' : '' }}">Financier</a>
@@ -42,11 +57,11 @@
 
                 {{-- Gestion --}}
                 <div class="sidebar-subsection" data-subsection="gestion">
-                    <button type="button" class="sidebar-subsection-header" data-subsection="gestion">
+                    <button type="button" class="sidebar-subsection-header {{ $gestionMenuOpen ? 'is-active' : '' }}" data-subsection="gestion">
                         <span>Gestion</span>
-                        <span class="sidebar-chevron sidebar-chevron--sm" aria-hidden="true"></span>
-            </button>
-                    <div class="sidebar-subsection-body">
+                        <span class="sidebar-chevron sidebar-chevron--sm {{ $gestionMenuOpen ? 'open' : '' }}" aria-hidden="true"></span>
+                    </button>
+                    <div class="sidebar-subsection-body {{ $gestionMenuOpen ? 'open' : '' }}">
                         <a href="{{ route('parc.index') }}" class="sidebar-item {{ request()->routeIs('parc.index') ? 'sidebar-active' : '' }}">Parc</a>
                         <a href="{{ route('parc.reaffectations.index') }}" class="sidebar-item {{ request()->routeIs('parc.reaffectations.*') ? 'sidebar-active' : '' }}">Historique réaffectations</a>
                         <a href="{{ route('maintenance.index') }}" class="sidebar-item {{ request()->routeIs('maintenance.*') ? 'sidebar-active' : '' }}">Maintenances</a>
@@ -62,11 +77,11 @@
 
                 {{-- Équipements --}}
                 <div class="sidebar-subsection" data-subsection="equipements">
-                    <button type="button" class="sidebar-subsection-header" data-subsection="equipements">
+                    <button type="button" class="sidebar-subsection-header {{ $equipementsMenuOpen ? 'is-active' : '' }}" data-subsection="equipements">
                         <span>Équipements</span>
-                        <span class="sidebar-chevron sidebar-chevron--sm" aria-hidden="true"></span>
-            </button>
-                    <div class="sidebar-subsection-body">
+                        <span class="sidebar-chevron sidebar-chevron--sm {{ $equipementsMenuOpen ? 'open' : '' }}" aria-hidden="true"></span>
+                    </button>
+                    <div class="sidebar-subsection-body {{ $equipementsMenuOpen ? 'open' : '' }}">
                         <a href="{{ route('equipment.index') }}" class="sidebar-item {{ request()->routeIs('equipment.index') ? 'sidebar-active' : '' }}">Tous les équipements</a>
                         <a href="{{ route('equipment.renewal') }}" class="sidebar-item {{ request()->routeIs('equipment.renewal') ? 'sidebar-active' : '' }}">Renouvellement</a>
                         <a href="{{ route('equipment.import.form') }}" class="sidebar-item {{ request()->routeIs('equipment.import.*') ? 'sidebar-active' : '' }}">Import</a>
@@ -391,10 +406,12 @@
     background: #fefefe;
 }
 .sidebar-section-body.open {
-    max-height: 2400px;
+    max-height: 5000px;
+    overflow: visible;
 }
 .sidebar-subsection-body.open {
-    max-height: 800px;
+    max-height: 2000px;
+    overflow: visible;
 }
 
 .sidebar-section.hidden-section { display: none; }
@@ -512,7 +529,12 @@
     transition: max-height 0.3s ease;
 }
 .sidebar-stock-branch-body.open {
-    max-height: 200px;
+    max-height: 500px;
+    overflow: visible;
+}
+.sidebar-subsection-body--stocks.open {
+    max-height: 2000px;
+    overflow: visible;
 }
 .sidebar-item--stock {
     padding-left: 54px;
@@ -559,6 +581,7 @@
 }
 </style>
 
+@verbatim
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var sidebar = document.getElementById('sidebar');
@@ -612,26 +635,77 @@ document.addEventListener('DOMContentLoaded', function () {
         body.classList.add('open');
         body.style.removeProperty('max-height');
         if (chevron) chevron.classList.add('open');
-        requestAnimationFrame(function () {
-            if (!body.classList.contains('open')) return;
-            var h = body.scrollHeight;
-            if (h > 0) {
-                body.style.maxHeight = h + 'px';
+    }
+
+    function closeAllStockBranches(exceptKey) {
+        document.querySelectorAll('#sidebar .sidebar-stock-branch').forEach(function (branch) {
+            if (exceptKey && branch.dataset.stockBranch === exceptKey) return;
+            var body = branch.querySelector('.sidebar-stock-branch-body');
+            var header = branch.querySelector('.sidebar-stock-branch-header');
+            var chevron = header ? header.querySelector('.sidebar-chevron') : null;
+            closePanel(body, chevron, header);
+        });
+    }
+
+    function openStockBranch(branchKey) {
+        if (!branchKey) return;
+        var branch = document.querySelector('#sidebar .sidebar-stock-branch[data-stock-branch="' + branchKey + '"]');
+        if (!branch) return;
+        var body = branch.querySelector('.sidebar-stock-branch-body');
+        var header = branch.querySelector('.sidebar-stock-branch-header');
+        var chevron = header ? header.querySelector('.sidebar-chevron') : null;
+        openPanel(body, chevron);
+        if (header) header.classList.add('is-active');
+    }
+
+    function closeAllParcSubsections(exceptSub) {
+        document.querySelectorAll('#sidebar .sidebar-section[data-section="parc"] .sidebar-subsection').forEach(function (sub) {
+            if (exceptSub && sub === exceptSub) return;
+            var body = sub.querySelector(':scope > .sidebar-subsection-body');
+            var header = sub.querySelector('.sidebar-subsection-header');
+            var chevron = header ? header.querySelector('.sidebar-chevron') : null;
+            closePanel(body, chevron, header);
+            if (sub.dataset.subsection === 'stocks') {
+                closeAllStockBranches();
             }
         });
     }
 
-    function refreshOpenPanelHeights() {
-        document.querySelectorAll('#sidebar .sidebar-section-body.open, #sidebar .sidebar-subsection-body.open, #sidebar .sidebar-stock-branch-body.open').forEach(function (body) {
-            body.style.removeProperty('max-height');
-            requestAnimationFrame(function () {
-                if (!body.classList.contains('open')) return;
-                var h = body.scrollHeight;
-                if (h > 0) {
-                    body.style.maxHeight = h + 'px';
+    /** Ouvre uniquement le sous-menu PARC demandé (+ branche Stocks si applicable). */
+    function activateParcSubsection(subKey, opts) {
+        opts = opts || {};
+        ensureParcMenuOpen();
+
+        var sub = document.querySelector('#sidebar .sidebar-section[data-section="parc"] .sidebar-subsection[data-subsection="' + subKey + '"]');
+        if (!sub) return;
+
+        var body = sub.querySelector(':scope > .sidebar-subsection-body');
+        var header = sub.querySelector('.sidebar-subsection-header');
+        var chevron = header ? header.querySelector('.sidebar-chevron') : null;
+        var isOpen = body && body.classList.contains('open');
+
+        if (opts.toggle && isOpen && subKey !== 'stocks') {
+            closePanel(body, chevron, header);
+            return;
+        }
+
+        closeAllParcSubsections(sub);
+        openPanel(body, chevron);
+        if (header) header.classList.add('is-active');
+
+        if (subKey === 'stocks') {
+            var branch = opts.stockBranch || resolveActiveStockBranch() || 'celer';
+            closeAllStockBranches(branch);
+            if (opts.toggle) {
+                var branchEl = document.querySelector('#sidebar .sidebar-stock-branch[data-stock-branch="' + branch + '"]');
+                var branchBody = branchEl ? branchEl.querySelector('.sidebar-stock-branch-body') : null;
+                if (branchBody && branchBody.classList.contains('open')) {
+                    closeAllStockBranches();
+                    return;
                 }
-            });
-        });
+            }
+            openStockBranch(branch);
+        }
     }
 
     function ensureParcMenuOpen() {
@@ -692,40 +766,25 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
-    function openStockBranch(branchKey) {
-        if (!branchKey) return;
-        var branch = document.querySelector('#sidebar .sidebar-stock-branch[data-stock-branch="' + branchKey + '"]');
-        if (!branch) return;
-        var body = branch.querySelector('.sidebar-stock-branch-body');
-        var header = branch.querySelector('.sidebar-stock-branch-header');
-        var chevron = header ? header.querySelector('.sidebar-chevron') : null;
-        openPanel(body, chevron);
-        if (header) header.classList.add('is-active');
-    }
+    var sidebarNav = document.getElementById('sidebar-nav');
+    var bladeParcSub = sidebarNav ? (sidebarNav.dataset.parcSubsection || '') : '';
+    var bladeParcBranch = sidebarNav ? (sidebarNav.dataset.parcStockBranch || '') : '';
 
     if (activeSection === 'parc') {
-        ensureParcMenuOpen();
-        document.querySelectorAll('#sidebar .sidebar-subsection').forEach(function (sub) {
-            var key = sub.dataset.subsection;
-            var body = sub.querySelector(':scope > .sidebar-subsection-body');
-            var header = sub.querySelector('.sidebar-subsection-header');
-            var chevron = header ? header.querySelector('.sidebar-chevron') : null;
-            if (activeSubsection && key === activeSubsection) {
-                openPanel(body, chevron);
-                if (header) header.classList.add('is-active');
-                if (key === 'stocks') {
-                    openStockBranch(resolveActiveStockBranch() || 'celer');
-                }
-            }
-        });
-        refreshOpenPanelHeights();
-        setTimeout(refreshOpenPanelHeights, 50);
+        var subToOpen = activeSubsection || bladeParcSub;
+        if (subToOpen) {
+            activateParcSubsection(subToOpen, {
+                stockBranch: subToOpen === 'stocks'
+                    ? (resolveActiveStockBranch() || bladeParcBranch || 'celer')
+                    : null
+            });
+        }
     }
 
     function closePanel(body, chevron, header) {
         if (body) {
                 body.classList.remove('open');
-                body.style.maxHeight = '0';
+                body.style.removeProperty('max-height');
         }
         if (chevron) chevron.classList.remove('open');
         if (header) header.classList.remove('is-active');
@@ -793,100 +852,77 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    /* Sous-menus PARC : replier / déplier sans masquer les autres modules */
-    document.querySelectorAll('#sidebar .sidebar-subsection-header').forEach(function (btn) {
+    /* Sous-menus PARC : un seul ouvert à la fois, adapté au clic */
+    document.querySelectorAll('#sidebar .sidebar-section[data-section="parc"] .sidebar-subsection-header').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
             var sub = btn.closest('.sidebar-subsection');
-            if (!sub) return;
+            if (!sub || !sub.dataset.subsection) return;
 
-            ensureParcMenuOpen();
-
-            var body = sub.querySelector('.sidebar-subsection-body');
-            var chevron = btn.querySelector('.sidebar-chevron');
+            var subKey = sub.dataset.subsection;
+            var body = sub.querySelector(':scope > .sidebar-subsection-body');
             var isOpen = body && body.classList.contains('open');
-            var parcBody = document.querySelector('#sidebar .sidebar-section[data-section="parc"] > .sidebar-section-body');
 
-            if (isOpen) {
-                closePanel(body, chevron, btn);
+            if (isOpen && subKey !== 'stocks') {
+                closePanel(body, btn.querySelector('.sidebar-chevron'), btn);
                 return;
             }
 
-            if (parcBody) {
-                parcBody.querySelectorAll('.sidebar-subsection-body').forEach(function (b) {
-                    if (b !== body) {
-                        var otherHeader = b.closest('.sidebar-subsection')?.querySelector('.sidebar-subsection-header');
-                        var otherChevron = otherHeader ? otherHeader.querySelector('.sidebar-chevron') : null;
-                        closePanel(b, otherChevron, otherHeader);
-                    }
-                });
-                parcBody.querySelectorAll('.sidebar-subsection-header').forEach(function (h) {
-                    if (h !== btn) h.classList.remove('is-active');
-                });
-            }
-
-            openPanel(body, chevron);
-                btn.classList.add('is-active');
-
-            if (parcBody) {
-                requestAnimationFrame(function () {
-                    parcBody.style.maxHeight = parcBody.scrollHeight + 'px';
-                    if (body) body.style.maxHeight = body.scrollHeight + 'px';
-                });
-            }
+            activateParcSubsection(subKey, {
+                stockBranch: subKey === 'stocks' ? (resolveActiveStockBranch() || 'celer') : null
+            });
         });
     });
 
-    /* CELER / DECELER sous Stocks */
+    /* CELER / DECELER : une seule branche ouverte */
     document.querySelectorAll('#sidebar .sidebar-stock-branch-header').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
             var branch = btn.closest('.sidebar-stock-branch');
-            if (!branch) return;
+            if (!branch || !branch.dataset.stockBranch) return;
 
-            ensureParcMenuOpen();
-
-            var stocksSub = document.querySelector('#sidebar .sidebar-subsection[data-subsection="stocks"]');
-            if (stocksSub) {
-                var stocksBody = stocksSub.querySelector(':scope > .sidebar-subsection-body');
-                var stocksHeader = stocksSub.querySelector('.sidebar-subsection-header');
-                var stocksChevron = stocksHeader ? stocksHeader.querySelector('.sidebar-chevron') : null;
-                openPanel(stocksBody, stocksChevron);
-                if (stocksHeader) stocksHeader.classList.add('is-active');
-            }
-
+            var branchKey = branch.dataset.stockBranch;
             var body = branch.querySelector('.sidebar-stock-branch-body');
-            var chevron = btn.querySelector('.sidebar-chevron');
             var isOpen = body && body.classList.contains('open');
-            var stocksBodyEl = stocksSub ? stocksSub.querySelector(':scope > .sidebar-subsection-body') : null;
 
             if (isOpen) {
-                closePanel(body, chevron, btn);
-            } else {
-                if (stocksBodyEl) {
-                    stocksBodyEl.querySelectorAll('.sidebar-stock-branch-body').forEach(function (b) {
-                        if (b !== body) {
-                            var otherHeader = b.closest('.sidebar-stock-branch')?.querySelector('.sidebar-stock-branch-header');
-                            var otherChevron = otherHeader ? otherHeader.querySelector('.sidebar-chevron') : null;
-                            closePanel(b, otherChevron, otherHeader);
-                        }
-                    });
-                    stocksBodyEl.querySelectorAll('.sidebar-stock-branch-header').forEach(function (h) {
-                        if (h !== btn) h.classList.remove('is-active');
-                    });
-                }
-                openPanel(body, chevron);
-                btn.classList.add('is-active');
+                closePanel(body, btn.querySelector('.sidebar-chevron'), btn);
+                return;
             }
 
-            if (stocksBodyEl) {
-                requestAnimationFrame(function () {
-                    stocksBodyEl.style.maxHeight = stocksBodyEl.scrollHeight + 'px';
-                    var parcBody = document.querySelector('#sidebar .sidebar-section[data-section="parc"] > .sidebar-section-body');
-                    if (parcBody) parcBody.style.maxHeight = parcBody.scrollHeight + 'px';
-                });
-            }
+            activateParcSubsection('stocks', { stockBranch: branchKey });
         });
     });
+
+    /* Clic sur un lien : mémoriser le sous-menu actif pour la prochaine visite */
+    document.querySelectorAll('#sidebar .sidebar-section[data-section="parc"] a.sidebar-item, #sidebar .sidebar-section[data-section="parc"] a.sidebar-subsection-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            var sub = link.closest('.sidebar-subsection');
+            if (!sub || !sub.dataset.subsection) return;
+            try {
+                sessionStorage.setItem('parcActiveSubsection', sub.dataset.subsection);
+                if (sub.dataset.subsection === 'stocks') {
+                    var stockBranch = link.closest('.sidebar-stock-branch');
+                    if (stockBranch && stockBranch.dataset.stockBranch) {
+                        sessionStorage.setItem('parcActiveStockBranch', stockBranch.dataset.stockBranch);
+                    }
+                }
+            } catch (err) { /* ignore */ }
+        });
+    });
+
+    /* Au chargement : si pas de route reconnue, rouvrir le dernier sous-menu visité */
+    if (activeSection === 'parc' && !activeSubsection) {
+        try {
+            var savedSub = sessionStorage.getItem('parcActiveSubsection');
+            var savedBranch = sessionStorage.getItem('parcActiveStockBranch');
+            if (savedSub && ['rapports', 'gestion', 'equipements', 'stocks'].indexOf(savedSub) !== -1) {
+                activateParcSubsection(savedSub, {
+                    stockBranch: savedSub === 'stocks' ? (savedBranch || 'celer') : null
+                });
+            }
+        } catch (err) { /* ignore */ }
+    }
 });
 </script>
+@endverbatim

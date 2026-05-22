@@ -15,7 +15,7 @@
     </form>
 
     {{-- Formulaire principal --}}
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" class="profile-form mt-6 space-y-6">
         @csrf
         @method('patch')
 

@@ -728,6 +728,74 @@
                             </label>
                         </div>
                     </div>
+
+                    <!-- Signatures vérification (Super Admin) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div class="bg-white p-4 rounded-lg border-2 border-green-300">
+                            <h4 class="font-bold mb-3 text-green-800">✍️ Signature de l'utilisateur *</h4>
+                            <p class="text-xs text-gray-600 mb-3">Utilisateur affecté (peut aussi être signé à l'étape « Fiche de mouvement »).</p>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1">Nom :</label>
+                                    <input type="text" name="utilisateur_signature_nom" id="utilisateur_signature_nom"
+                                        class="w-full px-3 py-2 border-2 border-gray-300 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1">Prénom :</label>
+                                    <input type="text" name="utilisateur_signature_prenom" id="utilisateur_signature_prenom"
+                                        class="w-full px-3 py-2 border-2 border-gray-300 rounded">
+                                </div>
+                            </div>
+                            <div class="signature-pad-container mb-3">
+                                <canvas class="signature-pad border-2 border-gray-300 rounded bg-white w-full h-32"
+                                    id="signatureCanvasUtilisateur"></canvas>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                <button type="button" class="btn-cofina-outline text-xs py-1 px-2 flex-1"
+                                    onclick="clearSignature('utilisateur')">Effacer</button>
+                                <button type="button" class="btn-cofina text-xs py-1 px-2 flex-1"
+                                    onclick="saveSignature('utilisateur')">Sauvegarder</button>
+                            </div>
+                            <input type="hidden" name="signature_utilisateur" id="signatureUtilisateur">
+                        </div>
+
+                        <div class="bg-white p-4 rounded-lg border-2 border-green-300">
+                            <h4 class="font-bold mb-3 text-green-800">✍️ Signature du vérificateur *</h4>
+                            <p class="text-xs text-gray-600 mb-3">Super Admin — dessinez puis cliquez <strong>Sauvegarder</strong>.</p>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1">Nom :</label>
+                                    <input type="text" name="verificateur_nom" required
+                                        value="{{ auth()->user()->name ?? '' }}"
+                                        class="w-full px-3 py-2 border-2 border-green-300 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1">Prénom :</label>
+                                    <input type="text" name="verificateur_prenom" required
+                                        value="{{ auth()->user()->prenom ?? '' }}"
+                                        class="w-full px-3 py-2 border-2 border-green-300 rounded">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-semibold mb-1">Fonction :</label>
+                                <input type="text" name="verificateur_fonction" value="Super Admin"
+                                    class="w-full px-3 py-2 border-2 border-green-300 rounded">
+                            </div>
+                            <div class="signature-pad-container mb-3">
+                                <canvas class="signature-pad border-2 border-gray-300 rounded bg-white w-full h-32"
+                                    id="signatureCanvasVerificateur"></canvas>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                <button type="button" class="btn-cofina-outline text-xs py-1 px-2 flex-1"
+                                    onclick="clearSignature('verificateur')">Effacer</button>
+                                <button type="button" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 text-xs py-1 px-2 flex-1 rounded font-medium"
+                                    onclick="loadProfileSignature('verificateur')">Charger ma signature</button>
+                                <button type="button" class="btn-cofina text-xs py-1 px-2 flex-1"
+                                    onclick="saveSignature('verificateur')">Sauvegarder</button>
+                            </div>
+                            <input type="hidden" name="signature_verificateur" id="signatureVerificateur">
+                        </div>
+                    </div>
                 </div>
                 @endif
 
@@ -1974,6 +2042,12 @@ function submitAllForms() {
 
     }
 
+    if (!formData.affectation_simple.department || !formData.affectation_simple.position) {
+        alert('Étape Affectation : sélectionnez le département et le poste.');
+        showStep(2);
+        return;
+    }
+
     
 
     if (!formData.mouvement || Object.keys(formData.mouvement).length === 0) {
@@ -2015,43 +2089,28 @@ function submitAllForms() {
     
 
     // Si Super Admin, vérifier les signatures supplémentaires
-
     if (isSuperAdmin) {
-
         if (!formData.installation.signature_verificateur) {
-
-            alert('Veuillez sauvegarder la signature du vérificateur (Super Admin)');
-
+            alert('Étape Installation : dessinez la signature du vérificateur (Super Admin) puis cliquez sur « Sauvegarder ».');
             showStep(1);
-
             return;
-
         }
 
-        
-
-        if (!formData.installation.signature_utilisateur) {
-
-            alert('Veuillez sauvegarder la signature de l\'utilisateur');
-
-            showStep(1);
-
+        var sigUtilisateur = formData.installation.signature_utilisateur || formData.mouvement.signature_receptionnaire;
+        if (!sigUtilisateur) {
+            alert('Signature utilisateur manquante : sauvegardez-la à l\'étape Installation (section Vérification) ou à l\'étape Fiche de mouvement (réceptionnaire).');
+            showStep(formData.installation.signature_utilisateur ? 3 : 1);
             return;
-
         }
-
-        
+        if (!formData.installation.signature_utilisateur && formData.mouvement.signature_receptionnaire) {
+            formData.installation.signature_utilisateur = formData.mouvement.signature_receptionnaire;
+        }
 
         if (!formData.mouvement.signature_receptionnaire) {
-
-            alert('Veuillez sauvegarder la signature du réceptionnaire');
-
+            alert('Étape Fiche de mouvement : sauvegardez la signature du réceptionnaire.');
             showStep(3);
-
             return;
-
         }
-
     }
 
     

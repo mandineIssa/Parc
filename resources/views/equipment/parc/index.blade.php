@@ -18,12 +18,13 @@
                 <span>Import Équipements</span>
             </a>
             
-            <a href="{{ route('parc.export') }}" 
-               class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition flex items-center">
+            <a href="{{ route('parc.export', request()->only(['search', 'type', 'etat', 'filtre_rapide'])) }}"
+               class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center"
+               title="Télécharger le tableau Parc (format Excel COFINA)">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
-                Exporter CSV
+                Export en masse
             </a>
             
             <a href="{{ route('parc.create') }}" 
@@ -264,7 +265,16 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="font-medium text-gray-900">{{ $equipment->nom }}</div>
+                                    @php
+                                        $nomAffichage = trim((string) ($equipment->nom ?? ''));
+                                        if ($nomAffichage === '') {
+                                            $nomAffichage = trim((string) ($equipment->modele ?? ''));
+                                        }
+                                        if ($nomAffichage === '') {
+                                            $nomAffichage = trim(($equipment->marque ?? '') . ' ' . ($equipment->modele ?? ''));
+                                        }
+                                    @endphp
+                                    <div class="font-medium text-gray-900">{{ $nomAffichage ?: '—' }}</div>
                                     <div class="text-sm text-gray-500 mt-1">
                                         <span class="inline-flex items-center">
                                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">

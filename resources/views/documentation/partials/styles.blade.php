@@ -12,4 +12,10 @@
 .doc-box-warn { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
 .doc-box-cofina { background: #fdf2f3; border: 1px solid #f8dadc; border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; }
 .doc-toc a { color: #A61B29; text-decoration: underline; }
+.doc-manuel-toc { columns: 2; column-gap: 2rem; }
+@media (max-width: 768px) { .doc-manuel-toc { columns: 1; } }
+.doc-manuel-toc li { break-inside: avoid; margin-bottom: 0.35rem; }
+.doc-figure img { max-height: 520px; object-fit: contain; }
+.doc-scenario { border-left: 4px solid #A61B29; padding-left: 1rem; margin: 1.5rem 0; }
+.doc-scenario h4 { color: #7A0C1A; font-weight: 700; margin-bottom: 0.5rem; }
 </style>

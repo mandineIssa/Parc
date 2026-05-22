@@ -10,12 +10,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use App\Services\ParcMassExcelExport;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Font;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class ParcController extends Controller
 {
@@ -892,206 +888,23 @@ public function downloadTemplate()
         }
     }
 
-    // ==================== EXPORT XLSX ====================
+    // ==================== EXPORT XLSX (modèle COFINA) ====================
 
     /**
-     * Exporter les données du parc en fichier Excel (.xlsx)
-     * Nécessite : composer require phpoffice/phpspreadsheet
-     *
-     * Paramètres GET optionnels : ?type=Informatique&etat=bon&statut_usage=actif
+     * Export en masse — format Excel COFINA (feuille Parc).
+     * Reprend les filtres actifs de la liste (?search, ?type, ?etat, ?filtre_rapide).
      */
-    public function export(Request $request)
+    public function export(Request $request, ParcMassExcelExport $exporter)
     {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Parc Informatique');
-
-        // ---- Définition des colonnes [libellé, largeur] ----------------------
-        $columns = [
-            'A'  => ['ID',                    8],
-            'B'  => ['Type',                 14],
-            'C'  => ['Numéro de série',       22],
-            'D'  => ['Marque',               14],
-            'E'  => ['Modèle',               18],
-            'F'  => ['Catégorie',            16],
-            'G'  => ['Sous-catégorie',       18],
-            'H'  => ['État',                 12],
-            'I'  => ['Statut',               12],
-            'J'  => ['Prix (FCFA)',          16],
-            'K'  => ['Garantie',             14],
-            'L'  => ['Date livraison',       16],
-            'M'  => ['Fournisseur',          20],
-            'N'  => ['Adresse MAC',          18],
-            'O'  => ['Adresse IP',           16],
-            'P'  => ['Réf. facture',         18],
-            'Q'  => ['Localisation équip.',  20],
-            // --- Données parc ---
-            'R'  => ['Utilisateur (compte)', 22],
-            'S'  => ['Nom',                  16],
-            'T'  => ['Prénom',               16],
-            'U'  => ['Position',             16],
-            'V'  => ['Département',          18],
-            'W'  => ['Poste affecté',        18],
-            'X'  => ['Date affectation',     18],
-            'Y'  => ['Date retour prévue',   18],
-            'Z'  => ['Statut usage',         14],
-            'AA' => ['Raison affectation',   22],
-            'AB' => ['Détail raison',        30],
-            'AC' => ['Localisation parc',    20],
-            'AD' => ['Téléphone',            16],
-            'AE' => ['Email',                24],
-            'AF' => ['Affecté par',          20],
-            'AG' => ['N° bon affectation',   22],
-            'AH' => ['Notes affectation',    35],
-            'AI' => ['Date création',        18],
-            'AJ' => ['Dernière modif.',      18],
-        ];
-
-        $lastCol  = array_key_last($columns);
-        $colKeys  = array_keys($columns);
-
-        // ---- Ligne 1 : titre -------------------------------------------------
-        $sheet->mergeCells("A1:{$lastCol}1");
-        $sheet->setCellValue('A1', 'PARC INFORMATIQUE — Export du ' . now()->format('d/m/Y H:i'));
-        $sheet->getStyle('A1')->applyFromArray([
-            'font'      => ['bold' => true, 'size' => 13, 'color' => ['argb' => 'FFFFFFFF'], 'name' => 'Arial'],
-            'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-        ]);
-        $sheet->getRowDimension(1)->setRowHeight(28);
-
-        // ---- Ligne 2 : en-têtes ----------------------------------------------
-        foreach ($columns as $col => [$label, $width]) {
-            $sheet->setCellValue("{$col}2", $label);
-            $sheet->getColumnDimension($col)->setWidth($width);
-        }
-        $sheet->getStyle("A2:{$lastCol}2")->applyFromArray([
-            'font'      => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FFFFFFFF'], 'name' => 'Arial'],
-            'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
-            'borders'   => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFFFFFFF']]],
-        ]);
-        $sheet->getRowDimension(2)->setRowHeight(22);
-
-        // ---- Requête ---------------------------------------------------------
-        $query = Equipment::where('statut', 'parc')
-            ->with([
-                'fournisseur',
-                'detail',
-                'categorie',
-                'parc.utilisateur',
-                'parc.affectePar',
-            ]);
-
-        if ($request->filled('type'))         $query->where('type', $request->type);
-        if ($request->filled('etat'))         $query->where('etat', $request->etat);
-        if ($request->filled('statut_usage'))
-            $query->whereHas('parc', fn($q) => $q->where('statut_usage', $request->statut_usage));
-
-        $equipments = $query->orderBy('created_at', 'desc')->get();
-
-        // ---- Données ---------------------------------------------------------
-        $row = 3;
-        foreach ($equipments as $eq) {
-            $parc = $eq->parc;
-            $util = $parc?->utilisateur;
-            $bg   = ($row % 2 === 0) ? 'FFEEF4FB' : 'FFFAFAFA';
-
-            $data = [
-                'A'  => $eq->id,
-                'B'  => $eq->type,
-                'C'  => $eq->numero_serie,
-                'D'  => $eq->marque,
-                'E'  => $eq->modele,
-                'F'  => $eq->detail?->categorie ?? $eq->categorie?->nom ?? '',
-                'G'  => $eq->detail?->sous_categorie ?? '',
-                'H'  => $eq->etat,
-                'I'  => $eq->statut,
-                'J'  => $eq->prix,
-                'K'  => $eq->garantie,
-                'L'  => $eq->date_livraison?->format('d/m/Y'),
-                'M'  => $eq->fournisseur?->nom,
-                'N'  => $eq->adresse_mac,
-                'O'  => $eq->adresse_ip,
-                'P'  => $eq->reference_facture,
-                'Q'  => $eq->localisation,
-                'R'  => $util?->name,
-                'S'  => $parc?->utilisateur_nom,
-                'T'  => $parc?->utilisateur_prenom,
-                'U'  => $parc?->position,
-                'V'  => $eq->departement,
-                'W'  => $parc?->poste_affecte ?? $eq->poste_staff,
-                'X'  => $parc?->date_affectation?->format('d/m/Y'),
-                'Y'  => $parc?->date_retour_prevue?->format('d/m/Y'),
-                'Z'  => $parc?->statut_usage,
-                'AA' => $parc?->affectation_reason,
-                'AB' => $parc?->affectation_reason_detail,
-                'AC' => $parc?->localisation,
-                'AD' => $parc?->telephone,
-                'AE' => $parc?->email,
-                'AF' => $parc?->affectePar?->name,
-                'AG' => $parc?->numero_bon_affectation,
-                'AH' => $parc?->notes_affectation,
-                'AI' => $eq->created_at?->format('d/m/Y H:i'),
-                'AJ' => ($parc?->derniere_modification ?? $eq->updated_at)?->format('d/m/Y H:i'),
-            ];
-
-            foreach ($data as $col => $value) {
-                $sheet->setCellValue("{$col}{$row}", $value ?? '');
-            }
-
-            $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
-                'font'      => ['size' => 9, 'name' => 'Arial'],
-                'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $bg]],
-                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
-            ]);
-
-            // Format prix
-            $sheet->getStyle("J{$row}")->getNumberFormat()->setFormatCode('#,##0 "FCFA"');
-
-            $sheet->getRowDimension($row)->setRowHeight(16);
-            $row++;
-        }
-
-        // ---- Bordures sur toutes les données ---------------------------------
-        if ($row > 3) {
-            $sheet->getStyle("A2:{$lastCol}" . ($row - 1))->applyFromArray([
-                'borders' => [
-                    'allBorders' => ['borderStyle' => Border::BORDER_THIN,   'color' => ['argb' => 'FFBDD7EE']],
-                    'outline'    => ['borderStyle' => Border::BORDER_MEDIUM,  'color' => ['argb' => 'FF1F3864']],
-                ],
-            ]);
-        }
-
-        // ---- Ligne de résumé -------------------------------------------------
-        $total = count($equipments);
-        $sheet->mergeCells("A{$row}:C{$row}");
-        $sheet->setCellValue("A{$row}", "Total : {$total} équipement(s)");
-        if ($row > 3) {
-            $sheet->setCellValue("J{$row}", "=SUM(J3:J" . ($row - 1) . ")");
-            $sheet->getStyle("J{$row}")->getNumberFormat()->setFormatCode('#,##0 "FCFA"');
-        }
-        $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
-            'font' => ['bold' => true, 'size' => 10, 'name' => 'Arial', 'color' => ['argb' => 'FFFFFFFF']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
-            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
-        ]);
-        $sheet->getRowDimension($row)->setRowHeight(18);
-
-        // ---- Figer + filtre automatique --------------------------------------
-        $sheet->freezePane('A3');
-        $sheet->setAutoFilter("A2:{$lastCol}2");
-
-        // ---- Stream du fichier -----------------------------------------------
-        $filename = 'export_parc_' . now()->format('Y-m-d_His') . '.xlsx';
+        $spreadsheet = $exporter->build($request);
+        $filename = 'parc_export_' . now()->format('Y-m-d_His') . '.xlsx';
 
         return response()->streamDownload(function () use ($spreadsheet) {
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
+            (new Xlsx($spreadsheet))->save('php://output');
         }, $filename, [
-            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            'Cache-Control'       => 'max-age=0',
+            'Cache-Control' => 'max-age=0',
         ]);
     }
 

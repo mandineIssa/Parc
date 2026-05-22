@@ -650,10 +650,15 @@ public function show(TransitionApproval $approval)
             $equipment = $approval->equipment;
             $targetUser = User::find($data['utilisateur_id'] ?? null);
 
+            $departement = $this->resolveDepartementFromTransition($data);
+            $posteAffecte = $this->resolvePosteAffecteFromTransition($data);
+            $localisation = $this->resolveLocalisationFromTransition($data);
+
             $equipment->update([
                 'statut' => 'parc',
-                'departement' => $data['departement'] ?? null,
-                'poste_staff' => $data['poste_affecte'] ?? null,
+                'nom' => $this->resolveEquipmentNomFromTransition($data, $equipment),
+                'departement' => $departement,
+                'poste_staff' => $posteAffecte,
                 'date_mise_service' => $data['date_affectation'] ?? now(),
                 'notes' => $data['notes'] ?? $equipment->notes,
                 'agency_id' => $data['agency_id'] ?? null,
@@ -664,13 +669,13 @@ public function show(TransitionApproval $approval)
                 'utilisateur_id'         => $data['utilisateur_id'] ?? null,
                 'utilisateur_nom'        => $data['utilisateur_nom'] ?? $data['user_name'] ?? null,
                 'utilisateur_prenom'     => $data['utilisateur_prenom'] ?? $data['user_prenom'] ?? null,
-                'departement'            => $data['departement'] ?? null,
-                'poste_affecte'          => $data['poste_affecte'] ?? $data['position'] ?? null,
-                'position'               => $data['position'] ?? null,
+                'departement'            => $departement,
+                'poste_affecte'          => $posteAffecte,
+                'position'               => $posteAffecte,
                 'date_affectation'       => $data['date_affectation'] ?? $data['affectation_date'] ?? now(),
                 'affectation_reason'     => $data['affectation_reason'] ?? null,
                 'affectation_reason_detail' => $data['affectation_reason_detail'] ?? null,
-                'localisation'           => $data['localisation'] ?? null,
+                'localisation'           => $localisation,
                 'telephone'              => $data['telephone'] ?? null,
                 'email'                  => $data['email'] ?? null,
                 'affectation_reason'     => $data['affectation_reason'] ?? null,
@@ -963,6 +968,9 @@ public function show(TransitionApproval $approval)
             $validated = $request->validate([
                 'installation' => 'required|array',
                 'affectation_simple' => 'required|array',
+                'affectation_simple.equipment_name' => 'required|string|max:255',
+                'affectation_simple.department' => 'required|string|max:255',
+                'affectation_simple.position' => 'required|string|max:255',
                 'mouvement' => 'required|array',
                 'transition_type' => 'required|string|in:stock_to_parc',
             ]);
@@ -1020,8 +1028,7 @@ public function show(TransitionApproval $approval)
     'user_name' => $this->extractUserName($validated['affectation_simple']),
     'user_prenom' => $this->extractUserPrenom($validated['affectation_simple']),
     
-    // ✅ CORRECTION : Séparer département et agence
-    'departement' => $validated['affectation_simple']['department'] ?? null, // IT, RH, Finance...
+    'departement' => $validated['affectation_simple']['department'] ?? null,
     'poste_affecte' => $validated['affectation_simple']['position'] ?? null,
     
     // ✅ CORRECTION CRITIQUE : Récupérer le NOM de l'agence (pas l'ID)
@@ -1033,7 +1040,8 @@ public function show(TransitionApproval $approval)
     
     'date_affectation' => $validated['affectation_simple']['affectation_date'] ?? now()->format('Y-m-d'),
     'affectation_reason' => $validated['affectation_simple']['affectation_reason'] ?? null,
-    
+    'equipment_name' => $validated['affectation_simple']['equipment_name'] ?? null,
+
     'choix_fiches' => ['installation', 'mouvement'],
 ];
            
@@ -1130,10 +1138,15 @@ private function extractUserPrenom($affectationData)
      */
     private function processStockToParc(Equipment $equipment, array $data, TransitionApproval $approval)
     {
+        $departement = $this->resolveDepartementFromTransition($data);
+        $posteAffecte = $this->resolvePosteAffecteFromTransition($data);
+        $localisation = $this->resolveLocalisationFromTransition($data);
+
         $equipment->update([
             'statut' => 'parc',
-            'departement' => $data['destination'] ?? null,
-            'poste_staff' => $data['receptionnaire_fonction'] ?? null,
+            'nom' => $this->resolveEquipmentNomFromTransition($data, $equipment),
+            'departement' => $departement,
+            'poste_staff' => $posteAffecte,
             'date_mise_service' => now(),
             'agency_id' => $data['agency_id'] ?? null,
              'notes' => $data['affectation_reason'] ?? $equipment->notes,
@@ -1144,13 +1157,14 @@ private function extractUserPrenom($affectationData)
             'utilisateur_id' => null,
             'utilisateur_nom' => $data['user_name'] ?? null,        
             'utilisateur_prenom' => $data['user_prenom'] ?? null,   
-            'departement' => $data['destination'] ?? null,
-            'poste_affecte' => $data['receptionnaire_fonction'] ?? null,
+            'departement' => $departement,
+            'poste_affecte' => $posteAffecte,
+            'position' => $posteAffecte,
             'date_affectation' => now(),
             'statut_usage' => 'actif',
             'notes_affectation' => 'Transition directe via formulaire',
             'transition_approval_id' => $approval->id,
-            'localisation' => $data['destination'] ?? null,
+            'localisation' => $localisation,
             'telephone' => $data['telephone'] ?? null,
             'email' => $data['email'] ?? null,
             'date_retour_prevue' => $data['date_retour_prevue'] ?? null,
@@ -1172,10 +1186,15 @@ private function extractUserPrenom($affectationData)
      */
     private function processMultiStepStockToParc(Equipment $equipment, array $data, TransitionApproval $approval)
     {
+        $departement = $this->resolveDepartementFromTransition($data);
+        $posteAffecte = $this->resolvePosteAffecteFromTransition($data);
+        $localisation = $this->resolveLocalisationFromTransition($data);
+
         $equipment->update([
             'statut' => 'parc',
-            'departement' => $data['departement'] ?? null,
-            'poste_staff' => $data['poste_affecte'] ?? null,
+            'nom' => $this->resolveEquipmentNomFromTransition($data, $equipment),
+            'departement' => $departement,
+            'poste_staff' => $posteAffecte,
             'date_mise_service' => $data['date_affectation'] ?? now(),
             'notes' => $data['affectation_reason'] ?? $equipment->notes,
              'agency_id' => $data['agency_id'] ?? null,
@@ -1185,14 +1204,15 @@ private function extractUserPrenom($affectationData)
             'utilisateur_id' => $data['utilisateur_id'] ?? null,
             'utilisateur_nom' => $data['user_name'] ?? null,        
             'utilisateur_prenom' => $data['user_prenom'] ?? null, 
-            'departement' => $data['departement'] ?? null,
-            'poste_affecte' => $data['poste_affecte'] ?? null,
+            'departement' => $departement,
+            'poste_affecte' => $posteAffecte,
+            'position' => $posteAffecte,
             'date_affectation' => $data['date_affectation'] ?? now(),
             'statut_usage' => 'actif',
             'date_retour_prevue' => $data['date_retour_prevue'] ?? null,
             'notes_affectation' => $data['affectation_reason'] ?? 'Transition multi-étapes',
             'transition_approval_id' => $approval->id,
-            'localisation' => $data['destination'] ?? null,
+            'localisation' => $localisation,
             'telephone' => $data['telephone'] ?? null,
             'email' => $data['email'] ?? null,
             'affectation_reason'     => $data['affectation_reason'] ?? null,
@@ -1219,6 +1239,95 @@ private function extractUserPrenom($affectationData)
   /**
  * Extraire le nom de l'utilisateur de façon robuste
  */
+/**
+ * Nom d'équipement saisi à l'affectation (étape 2) → colonne equipment.nom
+ */
+private function resolveEquipmentNomFromTransition(array $data, Equipment $equipment): ?string
+{
+    $affectation = $data['affectation_data'] ?? $data['affectation_simple'] ?? [];
+    $name = trim((string) ($data['equipment_name'] ?? $affectation['equipment_name'] ?? ''));
+
+    if ($name !== '') {
+        return $name;
+    }
+
+    $existing = trim((string) ($equipment->nom ?? ''));
+
+    return $existing !== '' ? $existing : null;
+}
+
+/**
+ * Département (service IT, RH, etc.) — requis en base sur la table parc.
+ */
+private function resolveDepartementFromTransition(array $data): string
+{
+    $aff = $data['affectation_data'] ?? $data['affectation_simple'] ?? [];
+
+    foreach ([
+        $aff['department'] ?? null,
+        $data['departement'] ?? null,
+        $aff['departement'] ?? null,
+    ] as $value) {
+        $value = trim((string) $value);
+        if ($value !== '') {
+            return $value;
+        }
+    }
+
+    foreach ([
+        $data['destination'] ?? null,
+        $data['agence_nom'] ?? null,
+        $aff['localisation'] ?? null,
+        $data['localisation'] ?? null,
+    ] as $value) {
+        $value = trim((string) $value);
+        if ($value !== '') {
+            return $value;
+        }
+    }
+
+    return 'Non spécifié';
+}
+
+private function resolvePosteAffecteFromTransition(array $data): string
+{
+    $aff = $data['affectation_data'] ?? $data['affectation_simple'] ?? [];
+
+    foreach ([
+        $aff['position'] ?? null,
+        $data['poste_affecte'] ?? null,
+        $aff['poste_affecte'] ?? null,
+        $data['receptionnaire_fonction'] ?? null,
+        $aff['receptionnaire_fonction'] ?? null,
+    ] as $value) {
+        $value = trim((string) $value);
+        if ($value !== '') {
+            return $value;
+        }
+    }
+
+    return 'Non spécifié';
+}
+
+private function resolveLocalisationFromTransition(array $data): ?string
+{
+    $aff = $data['affectation_data'] ?? $data['affectation_simple'] ?? [];
+
+    foreach ([
+        $aff['localisation'] ?? null,
+        $data['localisation'] ?? null,
+        $data['destination'] ?? null,
+        $data['agence_nom'] ?? null,
+    ] as $value) {
+        $value = trim((string) $value);
+        if ($value !== '') {
+            return $value;
+        }
+    }
+
+    return null;
+}
+
 private function extractUserName($affectationData)
 {
     // Priorité 1 : Chercher par user_id dans la base de données
@@ -2556,21 +2665,26 @@ public function simpleAffectation(Request $request, Equipment $equipment)
  */
 private function processSimpleAffectation(Equipment $equipment, array $data, TransitionApproval $approval)
 {
-    // Mettre à jour l'équipement
+    $departement = $this->resolveDepartementFromTransition($data);
+    $posteAffecte = $this->resolvePosteAffecteFromTransition($data);
+    $localisation = $this->resolveLocalisationFromTransition($data);
+
     $equipment->update([
         'statut' => 'parc',
-        'departement' => $data['departement'],
-        'poste_staff' => $data['poste_affecte'],
+        'nom' => $this->resolveEquipmentNomFromTransition($data, $equipment),
+        'departement' => $departement,
+        'poste_staff' => $posteAffecte,
         'date_mise_service' => $data['date_affectation'],
         'notes' => $data['affectation_reason'] ?? $equipment->notes,
     ]);
 
-    // Créer l'entrée dans le parc
     Parc::create([
         'numero_serie' => $equipment->numero_serie,
         'utilisateur_id' => $data['utilisateur_id'],
-        'departement' => $data['departement'],
-        'poste_affecte' => $data['poste_affecte'],
+        'departement' => $departement,
+        'poste_affecte' => $posteAffecte,
+        'position' => $posteAffecte,
+        'localisation' => $localisation,
         'date_affectation' => $data['date_affectation'],
         'statut_usage' => 'actif',
         'notes_affectation' => $data['affectation_reason'] ?? 'Affectation simple',

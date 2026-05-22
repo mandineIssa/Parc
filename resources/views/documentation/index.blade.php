@@ -21,16 +21,32 @@
         <div class="doc-box-cofina mb-8 doc-toc">
             <h2 class="text-lg font-semibold text-[#7A0C1A] mb-2">Sommaire rapide</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
-                <a href="{{ route('documentation.show', 'utilisateur') }}">1. Guide utilisateur</a>
-                <a href="{{ route('documentation.show', 'agent-it') }}">2. Guide agent IT</a>
-                <a href="{{ route('documentation.show', 'admin') }}">3. Guide administrateur</a>
-                <a href="{{ route('documentation.show', 'api') }}">4. Documentation technique</a>
-                <a href="{{ route('documentation.show', 'installation') }}">5. Installation</a>
-                <span class="text-gray-500">6. Téléchargements (ci-dessous)</span>
+                <a href="{{ route('documentation.show', 'manuel-complet') }}" class="font-semibold text-[#7A0C1A]">★ Manuel complet (tous scénarios + captures)</a>
+                <a href="{{ route('documentation.show', 'utilisateur') }}">Guide utilisateur</a>
+                <a href="{{ route('documentation.show', 'agent-it') }}">Guide agent IT</a>
+                <a href="{{ route('documentation.show', 'admin') }}">Guide administrateur</a>
+                <a href="{{ route('documentation.show', 'api') }}">Documentation technique</a>
+                <a href="{{ route('documentation.show', 'installation') }}">Installation</a>
+                <span class="text-gray-500">Téléchargements (ci-dessous)</span>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <a href="{{ route('documentation.show', 'manuel-complet') }}"
+               class="bg-gradient-to-br from-[#fdf2f3] to-white dark:from-gray-800 dark:to-gray-800 p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-2 border-[#A61B29]/40 md:col-span-2 lg:col-span-3">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-book-open text-[#A61B29] text-4xl mr-4"></i>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Manuel d'utilisation complet</h2>
+                        <p class="text-sm text-[#7A0C1A] font-medium mt-1">Recommandé — 43 scénarios illustrés</p>
+                    </div>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    Parc, stocks, transitions, approbations, Change, EOD, incidents, contrôles, infrastructure et configuration.
+                    Emplacements pour captures d'écran intégrés.
+                </p>
+            </a>
+
             <a href="{{ route('documentation.show', 'utilisateur') }}"
                class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transition duration-300 border border-transparent hover:border-[#A61B29]/30">
                 <div class="flex items-center mb-4">
@@ -92,9 +108,12 @@
                     <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Téléchargements</h2>
                 </div>
                 <div class="space-y-3 text-sm">
-                    <a href="{{ route('documentation.download', 'pdf') }}" class="flex items-center text-[#A61B29] hover:underline">
-                        <i class="fas fa-file-pdf mr-2"></i>Documentation PDF
-                        <span class="text-gray-400 ml-1">(si fichier disponible)</span>
+                    <a href="{{ route('documentation.manuel.pdf') }}" class="flex items-center font-semibold text-[#A61B29] hover:underline">
+                        <i class="fas fa-file-pdf mr-2"></i>Manuel complet PDF (avec illustrations)
+                    </a>
+                    <a href="{{ route('documentation.download', 'pdf') }}" class="flex items-center text-gray-600 hover:underline">
+                        <i class="fas fa-file-pdf mr-2"></i>Archive PDF stockée
+                        <span class="text-gray-400 ml-1">(si disponible)</span>
                     </a>
                     <a href="{{ route('equipment.import.template') }}" class="flex items-center text-[#A61B29] hover:underline">
                         <i class="fas fa-file-csv mr-2"></i>Template import équipements

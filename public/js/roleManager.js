@@ -197,6 +197,7 @@ class RoleManager {
         if (entity === 'eod') return true;              // ← AJOUT
         if (!this.hasPermission('canUpdate')) return false;
         if (this.hasRole('agent_it')) {
+            if (entity === 'profile') return true;
             if (entity === 'equipment') return this.hasPermission('canManageEquipmentCRUD');
             if (entity === 'assignment') return this.hasPermission('canManageAssignmentCRUD');
             return false;
@@ -523,9 +524,16 @@ class RoleManager {
         });
     }
 
+    isProfileForm(form) {
+        const formAction = form.getAttribute('action') || '';
+        return formAction.includes('/profile')
+            || form.classList.contains('profile-form');
+    }
+
     isFormAuthorized(form) {
         const formAction = form.getAttribute('action') || '';
         if (formAction.includes('/logout')) return true;
+        if (this.isProfileForm(form)) return true;
         if (formAction.includes('/change')) return true;
         if (formAction.includes('/eod')) return true;
         if (formAction.includes('/passwords')) return true;
@@ -533,9 +541,9 @@ class RoleManager {
         if (formAction.includes('/licences')) return true;
         if (formAction.includes('/controls')) return true;
         if (formAction.includes('/incidents')) return true;
-        if (this.hasRole('user')) return formAction.includes('/profile') || form.classList.contains('profile-form');
+        if (this.hasRole('user')) return true;
         if (this.hasRole('agent_it')) {
-            return formAction.includes('/equipment') 
+            return formAction.includes('/equipment')
                 || formAction.includes('/maintenance')
                 || formAction.includes('/assignments')
                 || formAction.includes('/assignment')

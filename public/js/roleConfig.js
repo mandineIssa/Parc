@@ -247,7 +247,8 @@ const RoleConfig = {
             maintenance: ['create', 'read', 'update', 'delete'],
             report: ['read', 'export'],
             change: ['create', 'read', 'update', 'delete'],
-            eod: ['create', 'read', 'update', 'delete'],    // ← AJOUT
+            eod: ['create', 'read', 'update', 'delete'],
+            profile: ['read', 'update'],
             user: ['read']
         },
         

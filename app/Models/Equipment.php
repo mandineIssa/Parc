@@ -17,7 +17,8 @@ class Equipment extends Model
 {
     use HasFactory, Auditable;
     protected $fillable = [
-        'numero_serie', 
+        'numero_serie',
+        'nom',
         'type', 
         'categorie', 
         'sous_categorie',
@@ -33,6 +34,8 @@ class Equipment extends Model
         'etat', 
         'adresse_mac', 
         'statut',
+        'departement',
+        'poste_staff',
         'notes',
         'date_mise_service',
         'date_amortissement'

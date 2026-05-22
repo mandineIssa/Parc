@@ -115,6 +115,18 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     require base_path('routes/web/v01_verified_equipment_parc.php');
 });
 
+// Documentation (auth seul — évite blocage si email non vérifié)
+Route::middleware(['auth'])->prefix('documentation')->name('documentation.')->group(function (): void {
+    Route::get('/', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('index');
+    Route::get('/pdf/manuel', [\App\Http\Controllers\DocumentationController::class, 'downloadManuelPdf'])->name('manuel.pdf');
+    Route::get('/download/{format}', [\App\Http\Controllers\DocumentationController::class, 'download'])
+        ->name('download')
+        ->where('format', 'pdf|zip');
+    Route::get('/{section}', [\App\Http\Controllers\DocumentationController::class, 'show'])
+        ->name('show')
+        ->where('section', 'utilisateur|admin|agent-it|manuel-complet|api|installation');
+});
+
 require base_path('routes/web/v02a_verified_approvals_primary.php');
 require base_path('routes/web/v02b_verified_attachments.php');
 require base_path('routes/web/v02c_transition_reject_post.php');

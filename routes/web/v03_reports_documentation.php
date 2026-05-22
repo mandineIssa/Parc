@@ -75,8 +75,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
 });
 
-Route::middleware(['auth', 'verified'])->prefix('documentation')->name('documentation.')->group(function () {
-    Route::get('/', [App\Http\Controllers\DocumentationController::class, 'index'])->name('index');
-    Route::get('/{section}', [App\Http\Controllers\DocumentationController::class, 'show'])->name('show');
-    Route::get('/download/{format}', [App\Http\Controllers\DocumentationController::class, 'download'])->name('download');
-});
+// Documentation : routes définies dans routes/web.php

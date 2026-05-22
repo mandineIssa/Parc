@@ -34,6 +34,14 @@ Variables utiles :
 
 ---
 
+## Manuel utilisateur
+
+- **Manuel complet (web)** : après connexion → [Documentation](http://127.0.0.1:8000/documentation) → *Manuel d'utilisation complet* (`/documentation/manuel-complet`).
+- **Markdown** : `docs/MANUEL_UTILISATION_COMPLET.md`.
+- **Captures d'écran** : déposer les PNG dans `public/doc-captures/` (ne pas utiliser `public/documentation/` — conflit avec l’URL `/documentation`).
+
+---
+
 ## Architecture des routes
 
 - **`routes/web.php`** : point d’entrée (accueil, profil, `register`, inclusion `auth.php`, admin utilisateurs partiels), puis inclusion **ordonnée** des fichiers métier ci‑dessous.

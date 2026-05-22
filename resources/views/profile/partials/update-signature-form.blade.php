@@ -35,7 +35,7 @@
         method="post"
         action="{{ route('profile.signature.store') }}"
         enctype="multipart/form-data"
-        class="mt-6 space-y-4 max-w-lg"
+        class="profile-form mt-6 space-y-4 max-w-lg"
         id="profile-signature-form"
     >
         @csrf
