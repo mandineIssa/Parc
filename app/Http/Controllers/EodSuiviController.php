@@ -4,6 +4,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EodSuivi;
+use App\Services\EodSuiviNotifier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,10 @@ use Illuminate\Support\Facades\Storage;
 
 class EodSuiviController extends Controller
 {
+    public function __construct(
+        private readonly EodSuiviNotifier $eodNotifier
+    ) {}
+
     // ==================== N+1 (créateur) ====================
 
     public function n1Index()
@@ -353,10 +358,13 @@ class EodSuiviController extends Controller
         $fiche->updated_by = Auth::id();
         $fiche->save();
 
+        $fiche = $fiche->fresh();
         $this->finalizeDualSign($fiche);
+        $fiche = $fiche->fresh();
+        $this->notifyAfterSignature($fiche, 'CONTROLLER');
 
         return redirect()->route('eod.controller.edit', $fiche)
-            ->with('success', $fiche->fresh()->status === 'CLOSED'
+            ->with('success', $fiche->status === 'CLOSED'
                 ? 'Fiche clôturée. Vous pouvez générer le PDF.'
                 : 'Signature enregistrée. En attente de la signature N+3.');
     }
@@ -540,10 +548,13 @@ class EodSuiviController extends Controller
         $fiche->updated_by = Auth::id();
         $fiche->save();
 
+        $fiche = $fiche->fresh();
         $this->finalizeDualSign($fiche);
+        $fiche = $fiche->fresh();
+        $this->notifyAfterSignature($fiche, 'N3');
 
         return redirect()->route('eod.n3.show', $fiche)
-            ->with('success', $fiche->fresh()->status === 'CLOSED'
+            ->with('success', $fiche->status === 'CLOSED'
                 ? 'Fiche clôturée. Vous pouvez générer le PDF.'
                 : 'Signature N+3 enregistrée. En attente du Controller.');
     }
@@ -783,6 +794,8 @@ class EodSuiviController extends Controller
         $fiche->updated_by = Auth::id();
         $fiche->save();
 
+        $this->eodNotifier->notifySubmittedForSignatures($fiche->fresh());
+
         return redirect()->route($redirectIndexRoute)
             ->with('success', 'Fiche transmise à N+3 et au Controller pour signature.');
     }
@@ -801,6 +814,27 @@ class EodSuiviController extends Controller
                 'at' => now()->format('d/m/Y H:i:s'),
             ]]);
             $fiche->save();
+        }
+    }
+
+    private function notifyAfterSignature(EodSuivi $fiche, string $signedRole): void
+    {
+        if ($fiche->status === 'CLOSED') {
+            $this->eodNotifier->notifyClosed($fiche);
+
+            return;
+        }
+
+        if ($fiche->status !== 'PENDING_N3_CONTROLLER') {
+            return;
+        }
+
+        $signerId = Auth::id();
+
+        if ($signedRole === 'N3' && ! $fiche->controller_validated_at) {
+            $this->eodNotifier->notifyWaitingControllerSignature($fiche, $signerId);
+        } elseif ($signedRole === 'CONTROLLER' && ! $fiche->n3_validated_at) {
+            $this->eodNotifier->notifyWaitingN3Signature($fiche, $signerId);
         }
     }
 

@@ -107,8 +107,15 @@ class DashboardsController extends Controller
      */
     private function getRecentSubmissions($user, $isSuperAdmin, $request)
     {
-        $query = TransitionApproval::with(['equipment', 'submitter', 'approver'])
-            ->orderBy('created_at', 'desc');
+        $query = TransitionApproval::query()
+            ->forList()
+            ->with([
+                'equipment:id,nom,numero_serie',
+                'submitter:id,name',
+                'approver:id,name',
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
 
         // Si pas Super Admin, seulement ses soumissions
         if (!$isSuperAdmin) {
@@ -299,8 +306,15 @@ class DashboardsController extends Controller
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
             || $user->email === 'superadmin@cofina.sn';
 
-        $query = TransitionApproval::with(['equipment', 'submitter', 'approver'])
-            ->orderBy('created_at', 'desc');
+        $query = TransitionApproval::query()
+            ->forList()
+            ->with([
+                'equipment:id,nom,numero_serie',
+                'submitter:id,name',
+                'approver:id,name',
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
 
         if (!$isSuperAdmin) {
             $query->where('submitted_by', $user->id);
@@ -404,13 +418,15 @@ class DashboardsController extends Controller
         $stats = $this->getDashboardStats($user, $isSuperAdmin, $request);
 
         // Soumissions urgentes (en attente depuis plus de 2 jours)
-        $urgentSubmissions = TransitionApproval::with(['equipment'])
+        $urgentSubmissions = TransitionApproval::query()
+            ->forList()
+            ->with(['equipment:id,nom,numero_serie'])
             ->where('status', 'pending')
             ->where('created_at', '<=', Carbon::now()->subDays(2))
             ->when(!$isSuperAdmin, function ($q) use ($user) {
                 $q->where('submitted_by', $user->id);
             })
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at')
             ->limit(5)
             ->get();
 

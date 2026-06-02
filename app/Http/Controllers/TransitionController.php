@@ -18,9 +18,14 @@ use App\Models\Stock;
 use App\Models\Deceler;
 use App\Models\Ceceler;
 use App\Support\SecureLog;
+use App\Services\TransitionApprovalNotifier;
+
 class TransitionController extends Controller
 {
-    
+    public function __construct(
+        private readonly TransitionApprovalNotifier $notifier
+    ) {}
+
     /**
      * Afficher le formulaire de transition
      */
@@ -1502,29 +1507,19 @@ private function extractUserName($affectationData)
         ];
     }
 
-    private function notifySuperAdmins($approval)
+    private function notifySuperAdmins($approval): void
     {
-        $superAdmins = User::where('role', 'super_admin')->get();
-
-        foreach ($superAdmins as $admin) {
-            Log::info("Notification à Super Admin: {$admin->email} - Approbation #{$approval->id}");
-        }
+        $this->notifier->notifySuperAdminsPending($approval);
     }
 
-    private function notifyUserApproval($approval, $user)
+    private function notifyUserApproval($approval, $user): void
     {
-        if ($user) {
-            Log::info("Notification d'approbation à: {$user->email} - Approbation #{$approval->id}");
-        }
+        $this->notifier->notifyUserApproval($approval, $user);
     }
 
-    private function notifyUserRejection($approval)
+    private function notifyUserRejection($approval): void
     {
-        $user = User::find($approval->submitted_by);
-
-        if ($user) {
-            Log::info("Notification de rejet à: {$user->email} - Approbation #{$approval->id}");
-        }
+        $this->notifier->notifySubmitterRejected($approval, 'Transition');
     }
 
     // ======================================================================
@@ -3021,27 +3016,17 @@ public function rejectHorsService(Request $request, TransitionApproval $approval
 /**
  * Notifier l'agent que sa demande hors service est approuvée
  */
-private function notifyAgentHorsServiceApproved($approval)
+private function notifyAgentHorsServiceApproved($approval): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification approbation hors service à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterApproved($approval, 'Mise hors service');
 }
 
 /**
  * Notifier l'agent que sa demande hors service est rejetée
  */
-private function notifyAgentHorsServiceRejected($approval)
+private function notifyAgentHorsServiceRejected($approval): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification rejet hors service à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterRejected($approval, 'Mise hors service');
 }
 
 /**
@@ -3532,51 +3517,25 @@ public function rejectMaintenance(Request $request, TransitionApproval $approval
 /**
  * Notifier les Super Admins pour une demande maintenance
  */
-private function notifySuperAdminsMaintenance($approval)
+private function notifySuperAdminsMaintenance($approval): void
 {
-    $superAdmins = User::where('role', 'super_admin')->get();
-
-    foreach ($superAdmins as $admin) {
-        Log::info("Notification maintenance à Super Admin: {$admin->email} - Approbation #{$approval->id}");
-        // Ici vous pouvez implémenter l'envoi d'email ou notification
-    }
+    $this->notifier->notifySuperAdminsPending($approval, 'maintenance');
 }
 
 /**
  * Notifier l'utilisateur concerné par la maintenance
  */
-private function notifyUserMaintenance($approval)
+private function notifyUserMaintenance($approval): void
 {
-    $data = json_decode($approval->data, true);
-    
-    // Si l'équipement était affecté à un utilisateur
-    if (isset($data['parc_info']['utilisateur_id'])) {
-        $user = User::find($data['parc_info']['utilisateur_id']);
-        
-        if ($user) {
-            Log::info("Notification maintenance à utilisateur: {$user->email} - Approbation #{$approval->id}");
-            // Envoyer une notification ou email à l'utilisateur
-        }
-    }
-    
-    // Notifier aussi l'agent IT qui a soumis la demande
-    $agent = User::find($approval->submitted_by);
-    if ($agent) {
-        Log::info("Notification approbation maintenance à agent: {$agent->email} - Approbation #{$approval->id}");
-    }
+    $this->notifier->notifyMaintenanceStakeholders($approval);
 }
 
 /**
  * Notifier l'utilisateur que sa demande maintenance est rejetée
  */
-private function notifyUserMaintenanceRejected($approval)
+private function notifyUserMaintenanceRejected($approval): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification rejet maintenance à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterRejected($approval, 'Envoi en maintenance');
 }
 /**
  * Lister les approbations de maintenance
@@ -3943,40 +3902,25 @@ public function rejectPerdu(Request $request, TransitionApproval $approval)
 /**
  * Notifier les Super Admins pour une déclaration de perte
  */
-private function notifySuperAdminsPerdu($approval)
+private function notifySuperAdminsPerdu($approval): void
 {
-    $superAdmins = User::where('role', 'super_admin')->get();
-
-    foreach ($superAdmins as $admin) {
-        Log::info("Notification perte à Super Admin: {$admin->email} - Approbation #{$approval->id}");
-        // Ici vous pouvez implémenter l'envoi d'email ou notification
-    }
+    $this->notifier->notifySuperAdminsPending($approval, 'perte');
 }
 
 /**
  * Notifier l'agent que sa déclaration de perte est approuvée
  */
-private function notifyAgentPerduApproved($approval)
+private function notifyAgentPerduApproved($approval): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification approbation perte à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterApproved($approval, 'Déclaration de perte');
 }
 
 /**
  * Notifier l'agent que sa déclaration de perte est rejetée
  */
-private function notifyAgentPerduRejected($approval)
+private function notifyAgentPerduRejected($approval): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification rejet perte à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterRejected($approval, 'Déclaration de perte');
 }
 
 /**
@@ -4385,17 +4329,15 @@ public function approveParcHorsService(Request $request, TransitionApproval $app
 /**
  * Notifier l'utilisateur affecté
  */
-private function notifyUserHorsService(Equipment $equipment, array $data)
+private function notifyUserHorsService(Equipment $equipment, array $data): void
 {
-    if (isset($data['parc_info']['utilisateur_email'])) {
-        $userEmail = $data['parc_info']['utilisateur_email'];
-        $userName = $data['parc_info']['utilisateur_nom'];
-        
-        Log::info("Notification hors service à l'utilisateur: {$userEmail} - Équipement: {$equipment->numero_serie}");
-        
-        // Ici vous pouvez implémenter l'envoi d'email
-        // Mail::to($userEmail)->send(new EquipmentHorsServiceMail($equipment, $data));
-    }
+    $email = $data['parc_info']['utilisateur_email'] ?? null;
+
+    $this->notifier->notifyEquipmentUserByEmail(
+        $equipment,
+        'Mise hors service de votre équipement',
+        is_string($email) ? $email : null
+    );
 }
 
 /**
@@ -4404,25 +4346,19 @@ private function notifyUserHorsService(Equipment $equipment, array $data)
 /**
  * Notifier les Super Admins pour une demande hors service
  */
-private function notifySuperAdminsHorsService($approval, $origine = null)
+private function notifySuperAdminsHorsService($approval, $origine = null): void
 {
-    $superAdmins = User::where('role', 'super_admin')->get();
-    
-    // Déterminer le message en fonction de l'origine
     $originesMessages = [
         'stock' => 'depuis le stock',
         'parc' => 'depuis le parc',
-        'maintenance' => 'depuis la maintenance'
+        'maintenance' => 'depuis la maintenance',
     ];
-    
-    $origineMessage = $origine && isset($originesMessages[$origine]) 
-        ? " ({$originesMessages[$origine]})" 
-        : '';
 
-    foreach ($superAdmins as $admin) {
-        Log::info("Notification hors service{$origineMessage} à Super Admin: {$admin->email} - Approbation #{$approval->id}");
-        // Ici vous pouvez implémenter l'envoi d'email ou notification
-    }
+    $origineMessage = $origine && isset($originesMessages[$origine])
+        ? $originesMessages[$origine]
+        : null;
+
+    $this->notifier->notifySuperAdminsPending($approval, $origineMessage);
 }
 
 /**
@@ -4532,14 +4468,9 @@ private function processRejection(Request $request, TransitionApproval $approval
 /**
  * Notifier l'agent du rejet
  */
-private function notifyAgentRejection($approval, $type)
+private function notifyAgentRejection($approval, $type): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification rejet hors service ({$type}) à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterRejected($approval, "Mise hors service ({$type})");
 }
 
 /**
@@ -4909,40 +4840,25 @@ public function rejectMaintenanceToStock(Request $request, TransitionApproval $a
 /**
  * Notifier les Super Admins pour une demande maintenance→stock
  */
-private function notifySuperAdminsMaintenanceToStock($approval)
+private function notifySuperAdminsMaintenanceToStock($approval): void
 {
-    $superAdmins = User::where('role', 'super_admin')->get();
-
-    foreach ($superAdmins as $admin) {
-        Log::info("Notification maintenance→stock à Super Admin: {$admin->email} - Approbation #{$approval->id}");
-        // Ici vous pouvez implémenter l'envoi d'email ou notification
-    }
+    $this->notifier->notifySuperAdminsPending($approval, 'maintenance → stock');
 }
 
 /**
  * Notifier l'agent que sa demande maintenance→stock est approuvée
  */
-private function notifyAgentMaintenanceToStockApproved($approval)
+private function notifyAgentMaintenanceToStockApproved($approval): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification approbation maintenance→stock à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterApproved($approval, 'Retour maintenance → stock');
 }
 
 /**
  * Notifier l'agent que sa demande maintenance→stock est rejetée
  */
-private function notifyAgentMaintenanceToStockRejected($approval)
+private function notifyAgentMaintenanceToStockRejected($approval): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification rejet maintenance→stock à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterRejected($approval, 'Retour maintenance → stock');
 }
 
 /**
@@ -5416,40 +5332,25 @@ public function rejectMaintenanceToHorsService(Request $request, TransitionAppro
 /**
  * Notifier les Super Admins pour une demande hors service depuis maintenance
  */
-private function notifySuperAdminsMaintenanceHorsService($approval)
+private function notifySuperAdminsMaintenanceHorsService($approval): void
 {
-    $superAdmins = User::where('role', 'super_admin')->get();
-
-    foreach ($superAdmins as $admin) {
-        Log::info("Notification maintenance hors service à Super Admin: {$admin->email} - Approbation #{$approval->id}");
-        // Ici vous pouvez implémenter l'envoi d'email ou notification
-    }
+    $this->notifier->notifySuperAdminsPending($approval, 'maintenance → hors service');
 }
 
 /**
  * Notifier l'agent que sa demande hors service depuis maintenance est approuvée
  */
-private function notifyAgentMaintenanceHorsServiceApproved($approval)
+private function notifyAgentMaintenanceHorsServiceApproved($approval): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification approbation maintenance hors service à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterApproved($approval, 'Mise hors service (maintenance)');
 }
 
 /**
  * Notifier l'agent que sa demande hors service depuis maintenance est rejetée
  */
-private function notifyAgentMaintenanceHorsServiceRejected($approval)
+private function notifyAgentMaintenanceHorsServiceRejected($approval): void
 {
-    $agent = User::find($approval->submitted_by);
-    
-    if ($agent) {
-        Log::info("Notification rejet maintenance hors service à: {$agent->email} - Approbation #{$approval->id}");
-        // Envoyer une notification ou email
-    }
+    $this->notifier->notifySubmitterRejected($approval, 'Mise hors service (maintenance)');
 }
 
 /**

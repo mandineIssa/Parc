@@ -116,6 +116,30 @@ class TransitionApproval extends Model
     }
 
     /**
+     * Colonnes légères pour listes / dashboard (évite SELECT * et gros JSON au tri).
+     */
+    public const LIST_COLUMNS = [
+        'id',
+        'equipment_id',
+        'from_status',
+        'to_status',
+        'type',
+        'submitted_by',
+        'approved_by',
+        'rejected_by',
+        'status',
+        'approved_at',
+        'rejected_at',
+        'created_at',
+        'updated_at',
+    ];
+
+    public function scopeForList($query)
+    {
+        return $query->select(self::LIST_COLUMNS);
+    }
+
+    /**
      * Scopes
      */
     public function scopePending($query)
