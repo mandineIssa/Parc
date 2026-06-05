@@ -234,6 +234,8 @@ class EodSuiviController extends Controller
 
         $fiche->update($data);
 
+        $this->eodNotifier->notifyValidatedByN2($fiche->fresh(), $request->validation_note);
+
         return redirect()->route('eod.n2.edit', $fiche)
             ->with('success', 'Validation N+2 enregistrée. Fiche transmise au Controller pour signature.');
     }
@@ -253,6 +255,8 @@ class EodSuiviController extends Controller
         ]]);
         $fiche->updated_by = Auth::id();
         $fiche->save();
+
+        $this->eodNotifier->notifyRejected($fiche->fresh(), $request->rejet_note);
 
         return redirect()->route('eod.n2.index')
             ->with('success', 'Fiche rejetée.');
@@ -365,7 +369,7 @@ class EodSuiviController extends Controller
 
         return redirect()->route('eod.controller.edit', $fiche)
             ->with('success', $fiche->status === 'CLOSED'
-                ? 'Fiche clôturée. Vous pouvez générer le PDF.'
+                ? 'Fiche validée et clôturée. Un e-mail de confirmation a été envoyé à l\'auteur.'
                 : 'Signature enregistrée. En attente de la signature N+3.');
     }
 
@@ -555,7 +559,7 @@ class EodSuiviController extends Controller
 
         return redirect()->route('eod.n3.show', $fiche)
             ->with('success', $fiche->status === 'CLOSED'
-                ? 'Fiche clôturée. Vous pouvez générer le PDF.'
+                ? 'Fiche validée et clôturée. Un e-mail de confirmation a été envoyé à l\'auteur.'
                 : 'Signature N+3 enregistrée. En attente du Controller.');
     }
 
@@ -796,8 +800,10 @@ class EodSuiviController extends Controller
 
         $this->eodNotifier->notifySubmittedForSignatures($fiche->fresh());
 
+        $authorEmail = Auth::user()->email ?? 'votre adresse enregistrée';
+
         return redirect()->route($redirectIndexRoute)
-            ->with('success', 'Fiche transmise à N+3 et au Controller pour signature.');
+            ->with('success', "Fiche transmise à N+3 et au Controller pour signature. Un e-mail de confirmation a été envoyé à : {$authorEmail}");
     }
 
     private function finalizeDualSign(EodSuivi $fiche): void
@@ -820,7 +826,7 @@ class EodSuiviController extends Controller
     private function notifyAfterSignature(EodSuivi $fiche, string $signedRole): void
     {
         if ($fiche->status === 'CLOSED') {
-            $this->eodNotifier->notifyClosed($fiche);
+            $this->eodNotifier->notifyValidated($fiche);
 
             return;
         }
@@ -857,6 +863,8 @@ class EodSuiviController extends Controller
         ]]);
 
         $fiche->update($data);
+
+        $this->eodNotifier->notifyValidated($fiche->fresh());
 
         return redirect()->route('eod.controller.edit', $fiche)
             ->with('success', 'Validation Controller enregistrée (flux historique).');

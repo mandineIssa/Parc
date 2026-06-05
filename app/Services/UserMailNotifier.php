@@ -124,13 +124,26 @@ class UserMailNotifier
         ?string $actionLabel
     ): bool {
         try {
-            Mail::to($user->email, trim($user->name . ' ' . ($user->prenom ?? '')))
-                ->send(new GpiNotificationMail($subject, $title, $message, $actionUrl, $actionLabel));
+            $recipientName = trim((string) $user->prenom . ' ' . (string) $user->name);
+            if ($recipientName === '') {
+                $recipientName = (string) $user->email;
+            }
+
+            Mail::to($user->email, $recipientName)
+                ->send(new GpiNotificationMail(
+                    $subject,
+                    $title,
+                    $message,
+                    $recipientName,
+                    $actionUrl,
+                    $actionLabel
+                ));
 
             Log::info('Notification GPI envoyée.', [
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'subject' => $subject,
+                'title' => $title,
             ]);
 
             return true;

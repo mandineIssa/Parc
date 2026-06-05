@@ -31,10 +31,15 @@ class TransitionApprovalNotifier
         $this->mail->notifyUser(
             $approval->submitted_by,
             "[GPI] Demande approuvée — {$contextLabel}",
-            'Votre demande a été approuvée',
+            'Votre demande a été validée',
             "Votre demande « {$contextLabel} » a été validée.\nRéférence : #{$approval->id}\n{$this->equipmentLine($approval)}",
             $this->approvalUrl($approval)
         );
+    }
+
+    public function notifySubmitterApprovedByType(TransitionApproval $approval): void
+    {
+        $this->notifySubmitterApproved($approval, $this->typeLabel($approval));
     }
 
     public function notifySubmitterRejected(TransitionApproval $approval, string $contextLabel): void

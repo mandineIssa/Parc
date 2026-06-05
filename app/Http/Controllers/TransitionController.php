@@ -741,6 +741,7 @@ public function show(TransitionApproval $approval)
             DB::commit();
 
             $this->generateFinalDocuments($approval, $validated, $hasInstallationForm);
+            $this->notifier->notifySubmitterApprovedByType($approval);
             $this->notifyUserApproval($approval, $targetUser);
 
             return redirect()->route('admin.approvals')

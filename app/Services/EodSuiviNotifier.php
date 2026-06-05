@@ -86,21 +86,71 @@ class EodSuiviNotifier
     }
 
     /**
-     * Fiche clôturée (deux signatures complètes) → notifier l'auteur.
+     * Fiche clôturée ou validée → notifier l'auteur.
      */
     public function notifyClosed(EodSuivi $fiche): void
     {
+        $this->notifyValidated($fiche);
+    }
+
+    /**
+     * Demande EOD validée (signatures complètes ou flux historique Controller).
+     */
+    public function notifyValidated(EodSuivi $fiche): void
+    {
+        $fiche->loadMissing('creator');
         $reference = $fiche->reference ?? "#{$fiche->id}";
         $date = $fiche->date_traitement?->format('d/m/Y') ?? '—';
 
         $this->mail->notifyUser(
             $fiche->created_by,
-            "[GPI] Fiche EOD clôturée — {$reference}",
-            'Fiche EOD clôturée',
-            "Votre fiche EOD du {$date} est clôturée (signatures N+3 et Controller complètes).\n"
+            "[GPI] Demande validée — {$reference}",
+            'Votre demande a été validée',
+            "Votre fiche EOD du {$date} a été validée avec succès.\n"
+            . "Référence : {$reference}\n"
+            . "Statut : demande validée et clôturée.",
+            $this->authorEditUrl($fiche),
+            'Voir ma fiche'
+        );
+    }
+
+    /**
+     * Demande EOD rejetée → notifier l'auteur.
+     */
+    public function notifyRejected(EodSuivi $fiche, ?string $reason = null): void
+    {
+        $reference = $fiche->reference ?? "#{$fiche->id}";
+        $date = $fiche->date_traitement?->format('d/m/Y') ?? '—';
+        $reasonLine = $reason ? "\nMotif : {$reason}" : '';
+
+        $this->mail->notifyUser(
+            $fiche->created_by,
+            "[GPI] Demande rejetée — {$reference}",
+            'Votre demande a été rejetée',
+            "Votre fiche EOD du {$date} a été rejetée.{$reasonLine}\n"
             . "Référence : {$reference}",
             $this->authorEditUrl($fiche),
-            'Voir la fiche'
+            'Voir ma fiche'
+        );
+    }
+
+    /**
+     * Validation intermédiaire N+2 (flux historique).
+     */
+    public function notifyValidatedByN2(EodSuivi $fiche, ?string $note = null): void
+    {
+        $reference = $fiche->reference ?? "#{$fiche->id}";
+        $date = $fiche->date_traitement?->format('d/m/Y') ?? '—';
+        $noteLine = $note ? "\nCommentaire : {$note}" : '';
+
+        $this->mail->notifyUser(
+            $fiche->created_by,
+            "[GPI] Demande validée par N+2 — {$reference}",
+            'Votre demande a été validée',
+            "Votre fiche EOD du {$date} a été validée par N+2 et transmise au Controller pour signature.{$noteLine}\n"
+            . "Référence : {$reference}",
+            $this->authorEditUrl($fiche),
+            'Voir ma fiche'
         );
     }
 
