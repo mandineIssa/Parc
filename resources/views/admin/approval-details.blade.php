@@ -9,14 +9,6 @@
     <div class="mb-8">
         <div class="flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold text-cofina-red mb-2">
-                    📋 Détails de l'approbation
-                </h1>
-                <p class="text-gray-600">
-                    Demande #{{ str_pad($approval->id, 6, '0', STR_PAD_LEFT) }}
-                </p>
-            </div>
-            <div>
                 <a href="{{ route('admin.approvals') }}" class="btn-cofina-outline">
                     ← Retour aux approbations
                 </a>

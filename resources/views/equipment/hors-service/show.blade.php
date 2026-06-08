@@ -3,7 +3,6 @@
 @section('content')
 <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Détails Hors Service</h1>
         <div>
             @if(!$horsService->date_traitement)
                 <button type="button" onclick="openTraiterModal()" 

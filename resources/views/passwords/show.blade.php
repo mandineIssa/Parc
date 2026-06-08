@@ -11,20 +11,6 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             </a>
             <div>
-                <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    {{ $password->nom }}
-                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full
-                        @switch($password->categorie)
-                            @case('Serveur') bg-blue-100 text-blue-700 @break
-                            @case('Réseau') bg-purple-100 text-purple-700 @break
-                            @case('Base de données') bg-green-100 text-green-700 @break
-                            @case('Sécurité électronique') bg-orange-100 text-orange-700 @break
-                            @case('Active Directory') bg-indigo-100 text-indigo-700 @break
-                            @case('Modem/WiFi') bg-teal-100 text-teal-700 @break
-                            @case('Imprimante') bg-cyan-100 text-cyan-800 @break
-                            @default bg-gray-100 text-gray-700
-                        @endswitch">{{ $password->categorie }}</span>
-                </h1>
                 <p class="text-sm text-gray-500 mt-0.5">{{ $password->site ?? '—' }} · Créée par {{ $password->creator?->name }}</p>
             </div>
         </div>

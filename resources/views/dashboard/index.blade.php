@@ -6,11 +6,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <!-- En-tête -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Tableau de Bord</h1>
-            <p class="text-gray-600 mt-2">Vue d'ensemble de votre parc d'équipements</p>
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div class="flex gap-3 mt-4 md:mt-0">
             <div class="text-sm text-gray-500">
                 Mis à jour à {{ now()->format('H:i') }}

@@ -2,8 +2,6 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8 max-w-2xl">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Modifier la Déclaration Hors Service</h1>
-    
     <form action="{{ route('hors-service.update', $horsService->id) }}" method="POST" enctype="multipart/form-data" 
           class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
         @csrf

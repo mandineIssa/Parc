@@ -9,9 +9,6 @@
         <div class="mb-6">
             <div class="flex justify-between items-start">
                 <div>
-                    <h1 class="text-2xl font-bold text-cofina-red mb-2">
-                        🔧→❌ Déclaration d'irréparabilité
-                    </h1>
                     <p class="text-gray-600">
                         Demande #{{ $approval->id }} - 
                         {{ $approval->created_at->format('d/m/Y H:i') }}

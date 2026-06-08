@@ -401,15 +401,6 @@
 <div class="container mx-auto px-4 py-8">
     <!-- En-tête -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <div>
-            <h1 class="text-3xl font-bold text-[#C8102E]">Validation - Fiche du {{ $fiche->date_traitement->format('d/m/Y') }}</h1>
-            <p class="text-gray-600 mt-2">
-                {{ $fiche->reference }} · 
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $fiche->status_class }}">
-                    {{ $fiche->status_label }}
-                </span>
-            </p>
-        </div>
         @if($fiche->status === 'VALIDATED')
         <a href="{{ route('eod.n2.pdf', $fiche) }}" target="_blank"
            class="mt-4 md:mt-0 px-6 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold rounded-lg transition-colors inline-flex items-center">

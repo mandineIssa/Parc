@@ -7,7 +7,6 @@
     {{-- ── En-tête ── --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Fiches Incident</h1>
             <p class="text-sm text-gray-500 mt-1">
                 Workflow N+1 → N+2 → N+3 — COFINA Mobile
                 @if($user->role_change)

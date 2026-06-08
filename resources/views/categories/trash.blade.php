@@ -5,11 +5,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <!-- En-tête -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Corbeille des Catégories</h1>
-            <p class="text-gray-600 mt-2">Catégories supprimées pouvant être restaurées</p>
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div class="flex gap-3 mt-4 md:mt-0">
             <a href="{{ route('categories.index') }}" 
                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center">

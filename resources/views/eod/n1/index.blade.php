@@ -7,11 +7,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <!-- En-tête avec bouton nouvelle fiche -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Mes fiches de suivi EOD</h1>
-            <p class="text-gray-600 mt-2">Gérez vos fiches de traitement de fin de journée</p>
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div class="flex gap-3 mt-4 md:mt-0">
             <a href="{{ route('eod.n1.create') }}" class="bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -13,7 +13,6 @@
             </svg>
         </a>
         <div>
-            <h1 class="text-xl font-bold text-gray-800">Nouvelle licence</h1>
             <p class="text-sm text-gray-500">Fortinet · FAI · Certificat · Office 365</p>
         </div>
     </div>

@@ -7,11 +7,8 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <!-- En-tête avec navigation -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-[#C8102E]">
-                {{ isset($ticket) ? ($ticket->titre ?: 'Modifier le formulaire') : 'Nouveau formulaire de changement' }}
-            </h1>
             @if(isset($ticket))
                 <p class="text-gray-600 mt-2">
                     {{ $ticket->ticket_id }} · 
@@ -31,7 +28,7 @@
             @else
                 <p class="text-gray-600 mt-2">Créez une nouvelle demande de changement</p>
             @endif
-        </div>
+    </div>
     </div>
 
     @if(session('success'))

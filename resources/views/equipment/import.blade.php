@@ -7,8 +7,6 @@
     
         {{-- En-tête --}}
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">📥 Importer des Équipements</h1>
-            <p class="text-gray-600">Importez plusieurs équipements en une seule fois via un fichier CSV</p>
         </div>
 
         {{-- Messages --}}

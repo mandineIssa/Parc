@@ -9,7 +9,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
         </a>
-        <h1 class="text-xl font-bold text-gray-800">Ajouter une entrée réseau</h1>
     </div>
     @if($errors->any())
     <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-600">

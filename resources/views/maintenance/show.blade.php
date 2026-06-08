@@ -3,7 +3,6 @@
 @section('content')
 <div class="w-full px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Détails de la Maintenance</h1>
         <div>
             @if($maintenance->statut == 'en_cours')
                 <button type="button" onclick="openTerminerModal()" 

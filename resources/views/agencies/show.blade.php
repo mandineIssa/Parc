@@ -14,7 +14,6 @@
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
         <div class="px-6 py-4 bg-gray-50 border-b">
             <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-gray-800">{{ $agency->nom }}</h1>
                 <div class="space-x-2">
                     <a href="{{ route('agencies.edit', $agency) }}" class="text-green-600 hover:text-green-900">
                         Modifier

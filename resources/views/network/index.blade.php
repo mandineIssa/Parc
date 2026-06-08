@@ -8,12 +8,6 @@
 
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
-                </svg>
-                Plan d'Adressage Réseau
-            </h1>
             <p class="text-sm text-gray-500 mt-1">COFINA Sénégal — Toutes agences</p>
         </div>
         <a href="{{ route('network.create') }}"

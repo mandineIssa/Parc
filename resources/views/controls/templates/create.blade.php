@@ -6,7 +6,6 @@
 <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Créer un template de contrôle</h1>
             <p class="text-gray-500 mt-1">Définissez un modèle réutilisable pour vos contrôles</p>
         </div>
         <a href="{{ route('controls.templates.index') }}" class="text-gray-600 hover:text-gray-800 flex items-center gap-2">

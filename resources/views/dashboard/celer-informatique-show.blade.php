@@ -6,11 +6,7 @@
     <div class="container mx-auto px-4">
         <!-- En-tête avec actions -->
         <div class="mb-6">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Stock Celer - Informatique</h1>
-                    <p class="text-gray-600">{{ $stock->equipment->marque }} {{ $stock->equipment->modele }}</p>
-                </div>
+            <div class="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
                 <div class="flex flex-wrap gap-2">
                     <a href="{{ route('dashboard.celer-informatique') }}" class="btn-cofina-outline">
                         ↩️ Retour

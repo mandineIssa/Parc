@@ -13,7 +13,6 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Validation Controller — {{ $fiche->reference }}</h1>
             <p class="text-sm text-gray-600 mt-1">Signataire connecté : <strong>{{ $ctrlName }}</strong></p>
             @if($pendingDual && !$fiche->n3_validated_at)
                 <p class="text-sm text-amber-700 mt-2">La signature N+3 n’est pas encore enregistrée. Vous pouvez signer en parallèle ; la fiche sera clôturée lorsque les deux signatures seront complètes.</p>

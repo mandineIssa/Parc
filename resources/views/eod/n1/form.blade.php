@@ -359,9 +359,6 @@
     <!-- En-tête avec navigation -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-[#C8102E]">
-                {{ isset($fiche) ? 'Fiche du ' . $fiche->date_traitement->format('d/m/Y') : 'Nouvelle fiche de suivi EOD' }}
-            </h1>
             @if(isset($fiche))
                 <p class="text-gray-600 mt-2">
                     {{ $fiche->reference }} · 

@@ -3,7 +3,6 @@
 @section('content')
 <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Détails de l'Affectation</h1>
         <div>
             <a href="{{ route('parc.edit', $parc->id) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">
                 Modifier

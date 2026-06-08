@@ -3,7 +3,6 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Gestion des Maintenances</h1>
         <div class="space-x-2">
             <a href="{{ route('maintenance.retard') }}" class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded">
                 Retards ({{ $stats['retard'] }})

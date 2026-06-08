@@ -9,7 +9,6 @@
     <div class="card-cofina">
         <!-- En-tête -->
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-cofina-red mb-2">🔧 Demandes de maintenance</h1>
             <p class="text-gray-600">Liste des équipements demandés pour maintenance en attente de validation</p>
         </div>
 

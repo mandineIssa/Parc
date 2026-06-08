@@ -9,20 +9,6 @@
     <!-- En-tête -->
     <div class="mb-8">
         <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-cofina-red mb-2 flex items-center">
-                    <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clip-rule="evenodd"></path>
-                    </svg>
-                    Approbations en attente
-                </h1>
-                <p class="text-gray-600">
-                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                    </svg>
-                    Total: <span class="font-bold text-cofina-red">{{ $approvals->total() }}</span> demandes
-                </p>
-            </div>
             <div class="text-right">
                 <a href="{{ route('admin.dashboard') }}" class="btn-cofina-outline flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

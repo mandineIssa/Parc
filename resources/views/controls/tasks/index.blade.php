@@ -6,7 +6,6 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Mes Tâches de Contrôle</h1>
             <p class="text-gray-500 mt-1">Gérez et réalisez vos contrôles assignés</p>
         </div>
         <a href="{{ route('controls.dashboard') }}" class="text-gray-600 hover:text-gray-800 flex items-center gap-2">

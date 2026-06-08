@@ -17,7 +17,6 @@
                          alt="Cofina Logo" 
                          class="h-16 w-auto">
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800">Créer un compte</h1>
                 <p class="text-gray-600 mt-2">Rejoignez la plateforme de gestion du parc</p>
             </div>
 

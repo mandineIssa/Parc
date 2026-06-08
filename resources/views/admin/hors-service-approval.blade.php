@@ -5,8 +5,6 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white rounded-lg shadow-lg p-6">
-        <h1 class="text-2xl font-bold text-cofina-red mb-6">Approbation de mise hors service</h1>
-        
         <div class="mb-8">
             <h2 class="text-lg font-bold mb-4">Informations de l'équipement</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

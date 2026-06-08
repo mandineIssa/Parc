@@ -7,7 +7,6 @@
     <div class="flex justify-between items-start mb-6">
         <div>
             <div class="flex items-center gap-3 mb-2">
-                <h1 class="text-2xl font-bold text-gray-800">{{ $task->title }}</h1>
                 <span class="px-2 py-1 text-xs rounded-full
                     @if($task->status == 'pending') bg-yellow-100 text-yellow-800
                     @elseif($task->status == 'in_progress') bg-blue-100 text-blue-800

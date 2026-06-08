@@ -8,8 +8,6 @@
 <div class="container-fluid px-4 py-6">
     <!-- En-tête -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-cofina-red mb-2">👤 Mon Espace Utilisateur</h1>
-        <p class="text-gray-600">Bienvenue {{ auth()->user()->name }}! Gestion de vos équipements et demandes</p>
     </div>
 
     <!-- Mes équipements -->

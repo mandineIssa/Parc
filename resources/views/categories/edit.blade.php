@@ -3,9 +3,8 @@
 @section('content')
 <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <!-- En-tête -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Modifier la catégorie</h1>
             <div class="flex items-center mt-2">
                 @if($category->type == 'réseaux')
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mr-3">
@@ -32,7 +31,7 @@
                 <span class="text-sm text-gray-500">
                     ID: <span class="font-mono text-gray-700">#{{ $category->id }}</span>
                 </span>
-            </div>
+    </div>
         </div>
         <div class="flex gap-3 mt-4 md:mt-0">
             <a href="{{ route('categories.show', $category) }}" 

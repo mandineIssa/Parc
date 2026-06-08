@@ -4,7 +4,6 @@
 <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="mb-6 flex justify-between items-center">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Importation d'agences</h1>
             <p class="text-gray-600 mt-2">Importez des agences depuis un fichier Excel</p>
         </div>
         <a href="{{ route('agencies.index') }}" class="text-blue-600 hover:text-blue-900 inline-flex items-center">

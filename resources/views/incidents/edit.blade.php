@@ -18,7 +18,6 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-gray-900">Modifier la fiche incident</h1>
                 <p class="text-sm text-gray-500 font-mono">{{ $incident->reference }}</p>
             </div>
         </div>

@@ -13,7 +13,6 @@
             </svg>
         </a>
         <div>
-            <h1 class="text-xl font-bold text-gray-800">Modifier — {{ $licence->nom }}</h1>
             <p class="text-sm text-gray-500">{{ $licence->type }} · {{ $licence->site_agence ?? '—' }}</p>
         </div>
     </div>

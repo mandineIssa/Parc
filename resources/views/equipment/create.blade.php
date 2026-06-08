@@ -4,8 +4,6 @@
 @section('content')
 <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8">Ajouter un Équipement</h1>
-
         <!-- ÉTAPE 1: Sélection Type, Catégorie, Sous-Catégorie -->
         <div class="mb-8 bg-white rounded-lg shadow-lg p-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-6">1. Classification de l'équipement</h2>

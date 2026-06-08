@@ -7,11 +7,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <!-- En-tête avec bouton rafraîchir -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Mes fiches EOD &amp; validations</h1>
-            <p class="text-gray-600 mt-2">Créez une fiche, soumettez-la à N+3 et au Controller. Les fiches « ancien flux » (en attente N+2) restent visibles pour validation.</p>
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
             <a href="{{ route('eod.n2.create') }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

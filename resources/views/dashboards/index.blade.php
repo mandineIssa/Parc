@@ -9,11 +9,6 @@
     <!-- En-tête avec filtres -->
     <div class="mb-8">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <div>
-                <h1 class="text-3xl font-bold text-cofina-red mb-2">📊 Dashboard des Soumissions</h1>
-                <p class="text-gray-600">Visualisez et gérez toutes les soumissions de transitions</p>
-            </div>
-            
             <!-- Boutons d'action -->
             <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
                 <button onclick="refreshDashboard()" class="btn-cofina-outline">

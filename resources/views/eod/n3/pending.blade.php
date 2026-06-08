@@ -7,21 +7,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">
-                @if($isCtrl)
-                    Fiches en attente de votre signature (Controller)
-                @else
-                    Fiches en attente de votre signature
-                @endif
-            </h1>
-            @if($isCtrl)
-                <p class="text-gray-600 mt-2">Après votre signature avec N+3, la fiche peut être clôturée et le PDF généré.</p>
-            @else
-                <p class="text-gray-600 mt-2">Après votre signature, le Controller doit également signer pour clôturer la fiche et générer le PDF.</p>
-            @endif
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8 gap-4">
         @if(!$isCtrl)
             <a href="{{ route('eod.n3.index') }}" class="text-sm font-medium text-[#C8102E] hover:text-[#a00d24]">← Supervision EOD</a>
         @else

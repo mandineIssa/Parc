@@ -12,8 +12,6 @@
     </div>
 
     <div class="bg-white shadow-md rounded-lg p-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Créer une nouvelle agence</h1>
-
         <form action="{{ route('agencies.store') }}" method="POST">
             @csrf
             

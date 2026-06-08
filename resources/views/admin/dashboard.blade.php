@@ -10,20 +10,6 @@
     <div class="mb-8">
         <div class="bg-gradient-to-r from-red-600 to-red-800 rounded-lg shadow-lg p-6 text-white">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 class="text-3xl font-bold mb-2 flex items-center">
-                        <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
-                        </svg>
-                        Tableau de Bord Super Admin
-                    </h1>
-                    <p class="opacity-90 flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ auth()->user()->name }} {{ auth()->user()->prenom }} | {{ auth()->user()->fonction }}
-                    </p>
-                </div>
                 <div class="text-right">
                     <div class="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 rounded-lg">
                         <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">

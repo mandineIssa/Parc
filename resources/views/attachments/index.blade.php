@@ -6,10 +6,6 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">
-                    <i class="fas fa-paperclip me-2"></i>
-                    Fichiers attachés - Approbation #{{ $approval->id }}
-                </h1>
                 <div>
                     <a href="{{ url()->previous() }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Retour

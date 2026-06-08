@@ -6,11 +6,7 @@
 @section('content')
 <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <!-- En-tête -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Gestion des Maintenances</h1>
-            <p class="text-gray-600 mt-2">Suivez l'état de toutes les interventions de maintenance</p>
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div class="flex gap-3 mt-4 md:mt-0">
             @if($stats['retard'] > 0)
             <a href="{{ route('maintenance.retard') }}" 

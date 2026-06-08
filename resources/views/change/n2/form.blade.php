@@ -12,27 +12,7 @@
 @endphp
 <div class="container mx-auto px-4 py-8">
     <!-- En-tête avec navigation -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-[#C8102E]">{{ $ticket->titre }}</h1>
-            <p class="text-gray-600 mt-2">
-                {{ $ticket->ticket_id }} · 
-                @if($ticket->ticket_number)
-                    <span class="text-gray-500 mr-2">N°: {{ $ticket->ticket_number }}</span>
-                @endif
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    @if($ticket->status === 'PENDING_N2') bg-yellow-100 text-yellow-800
-                    @elseif($ticket->status === 'AT_N2_AFTER_N3') bg-teal-100 text-teal-800
-                    @elseif($ticket->status === 'PENDING_N3') bg-blue-100 text-blue-800
-                    @elseif($ticket->status === 'PENDING_N1_REVIEW') bg-amber-100 text-amber-800
-                    @elseif($ticket->status === 'REJECTED') bg-red-100 text-red-800
-                    @elseif($ticket->status === 'CLOSED') bg-purple-100 text-purple-800
-                    @else bg-gray-100 text-gray-800
-                    @endif">
-                    {{ $ticket->status_label }}
-                </span>
-            </p>
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
     </div>
 
     @if(session('success'))

@@ -3,7 +3,6 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Maintenances en Retard de Retour</h1>
         <a href="{{ route('maintenance.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
             Retour à la liste
         </a>

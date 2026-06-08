@@ -5,16 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\Parc;
 use App\Models\Equipment;
 use App\Models\EquipmentDetail;
+use App\Models\Agency;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\ParcAssignmentNotifier;
 use App\Services\ParcMassExcelExport;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ParcController extends Controller
 {
+    public function __construct(
+        private readonly ParcAssignmentNotifier $parcNotifier
+    ) {}
     /**
      * Display a listing of the resource.
      */
@@ -160,12 +165,27 @@ class ParcController extends Controller
      */
     public function create()
     {
-        $equipments = Equipment::where('statut', '!=', 'hors_service')
-            ->orderBy('numero_serie')
-            ->get();
-        $users = User::orderBy('name')->get();
-        
-        return view('equipment.parc.create', compact('equipments', 'users'));
+        $suppliers = Supplier::orderBy('nom')->get();
+        $agencies = Agency::orderBy('nom')->get();
+
+        $positions = [
+            'Directeur', 'Manager', 'Chef de Projet', 'Technicien', 'Développeur',
+            'Analyste', 'Consultant', 'Administrateur', 'Assistant', 'Agent',
+            'Stagiaire', 'CC', 'RH', 'Finance', 'Caissier', 'recouvrement',
+            'juridique', 'CAF', 'Logistique', 'marketing', 'Autre',
+        ];
+
+        $affectationReasons = [
+            'Nouvelle embauche',
+            "Remplacement d'équipement",
+            'Changement de poste',
+            'Besoins opérationnels',
+            'Mise à niveau',
+            'Dotation temporaire',
+            'Autre',
+        ];
+
+        return view('equipment.parc.create', compact('suppliers', 'agencies', 'positions', 'affectationReasons'));
     }
 
     /**
@@ -173,62 +193,124 @@ class ParcController extends Controller
      */
 public function store(Request $request)
 {
-    // Validation étendue pour tous les champs du formulaire
     $validated = $request->validate([
-        'numero_serie' => 'required|exists:equipment,numero_serie',
-        
-        // Champs de base
+        'type' => 'required|in:Réseau,Informatique,Électronique,Logiciel',
+        'categorie' => 'required|string|max:255',
+        'sous_categorie' => 'required|string|max:255',
+        'numero_serie' => 'required|string|max:255',
+        'nom' => 'required|string|max:255',
+        'marque' => 'required|string|max:255',
+        'modele' => 'required|string|max:255',
+        'fournisseur_id' => 'required|exists:suppliers,id',
+        'garantie' => 'required|string|max:100',
+        'date_livraison' => 'required|date',
+        'prix' => 'required|numeric|min:0',
+        'reference_facture' => 'nullable|string|max:255',
+        'agency_id' => 'nullable|exists:agencies,id',
+        'etat' => 'required|in:neuf,bon,moyen,mauvais',
+        'adresse_mac' => 'nullable|string|max:255',
+        'adresse_ip' => 'nullable|string|max:255',
+        'utilisateur_id' => 'nullable|exists:users,id',
         'utilisateur_nom' => 'required|string|max:100',
         'utilisateur_prenom' => 'required|string|max:100',
         'departement' => 'required|string|max:100',
         'poste_affecte' => 'required|string|max:100',
         'position' => 'required|in:Directeur,Manager,Chef de Projet,Technicien,Développeur,Analyste,Consultant,Administrateur,Assistant,Agent,Stagiaire,CC,RH,Finance,Caissier,recouvrement,juridique,CAF,Logistique,marketing,Autre',
-        
-        // Dates
         'date_affectation' => 'required|date',
         'date_retour_prevue' => 'nullable|date|after_or_equal:date_affectation',
-        
-        // Raison d'affectation
         'affectation_reason' => 'nullable|in:Nouvelle embauche,Remplacement d\'équipement,Changement de poste,Besoins opérationnels,Mise à niveau,Dotation temporaire,Autre',
         'affectation_reason_detail' => 'nullable|string|max:500',
-        
-        // Informations complémentaires
         'localisation' => 'nullable|string|max:200',
         'telephone' => 'nullable|string|max:20',
         'email' => 'nullable|email|max:100',
-        
-        // Statut
         'statut_usage' => 'required|in:actif,inactif,en_pret',
         'notes_affectation' => 'nullable|string|max:500',
-        
-        // Champs cachés
-        'form_type' => 'required|in:affectation_simple',
-        'transition_type' => 'required|in:stock_to_parc',
-        'equipment_id' => 'required|exists:equipment,id',
     ]);
-    
-    // Vérifier si l'équipement n'est pas déjà affecté
-    $existing = Parc::where('numero_serie', $request->numero_serie)->first();
-    if ($existing) {
-        return redirect()->back()
-            ->withInput()
-            ->withErrors(['numero_serie' => 'Cet équipement est déjà affecté.']);
+
+    if (Parc::where('numero_serie', $validated['numero_serie'])->exists()) {
+        return back()->withInput()->withErrors([
+            'numero_serie' => 'Cet équipement est déjà affecté au parc.',
+        ]);
     }
-    
-    // Ajouter les champs de tracking
-    $validated['affecte_par'] = auth()->id();
-    $validated['derniere_modification'] = now();
-    $validated['numero_bon_affectation'] = 'AFF-' . strtoupper(uniqid());
-    
-    // Créer l'affectation dans la table parc
-    $parc = Parc::create($validated);
-    
-    // Mettre à jour le statut de l'équipement
-    Equipment::where('numero_serie', $request->numero_serie)
-        ->update(['statut' => 'parc']);
-    
-    return redirect()->route('parc.index')
-        ->with('success', 'Affectation créée avec succès. Numéro de bon : ' . $validated['numero_bon_affectation']);
+
+    try {
+        DB::beginTransaction();
+
+        $equipment = Equipment::query()->where('numero_serie', $validated['numero_serie'])->first();
+
+        $agencyName = null;
+        if (! empty($validated['agency_id'])) {
+            $agencyName = Agency::query()->whereKey($validated['agency_id'])->value('nom');
+        }
+
+        $equipmentLocalisation = $agencyName
+            ?? ($validated['localisation'] ?? null)
+            ?? 'Non spécifié';
+
+        $equipmentData = [
+            'type' => $validated['type'],
+            'numero_serie' => $validated['numero_serie'],
+            'nom' => $validated['nom'],
+            'marque' => $validated['marque'],
+            'modele' => $validated['modele'],
+            'fournisseur_id' => $validated['fournisseur_id'],
+            'garantie' => $validated['garantie'],
+            'date_livraison' => $validated['date_livraison'],
+            'prix' => $validated['prix'],
+            'reference_facture' => $validated['reference_facture'] ?? null,
+            'agency_id' => $validated['agency_id'] ?? null,
+            'localisation' => $equipmentLocalisation,
+            'etat' => $validated['etat'],
+            'adresse_mac' => $validated['adresse_mac'] ?? null,
+            'adresse_ip' => $validated['adresse_ip'] ?? null,
+            'statut' => 'parc',
+            'date_mise_service' => $validated['date_affectation'],
+        ];
+
+        if ($equipment) {
+            if ($equipment->statut === 'hors_service') {
+                throw new \RuntimeException('Cet équipement est hors service.');
+            }
+            $equipment->update($equipmentData);
+        } else {
+            $equipment = Equipment::create($equipmentData);
+        }
+
+        EquipmentDetail::updateOrCreate(
+            ['equipment_id' => $equipment->id],
+            [
+                'categorie' => $validated['categorie'],
+                'sous_categorie' => $validated['sous_categorie'],
+            ]
+        );
+
+        $parcData = collect($validated)->only([
+            'numero_serie', 'utilisateur_id', 'utilisateur_nom', 'utilisateur_prenom',
+            'departement', 'poste_affecte', 'position', 'date_affectation', 'date_retour_prevue',
+            'affectation_reason', 'affectation_reason_detail', 'localisation', 'telephone',
+            'email', 'statut_usage', 'notes_affectation',
+        ])->merge([
+            'affecte_par' => auth()->id(),
+            'derniere_modification' => now(),
+            'numero_bon_affectation' => 'AFF-' . strtoupper(uniqid()),
+        ])->all();
+
+        $parc = Parc::create($parcData);
+
+        DB::commit();
+
+        $this->parcNotifier->notifyCreated($parc->fresh(), $equipment->fresh());
+
+        return redirect()->route('parc.index')
+            ->with('success', 'Équipement ajouté au parc. Bon : ' . $parc->numero_bon_affectation);
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        Log::error('Parc store error: ' . $e->getMessage());
+
+        return back()->withInput()->withErrors([
+            'numero_serie' => 'Erreur lors de l\'enregistrement : ' . $e->getMessage(),
+        ]);
+    }
 }
 
     /**

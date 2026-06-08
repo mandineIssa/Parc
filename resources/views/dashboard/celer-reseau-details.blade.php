@@ -3,7 +3,6 @@
 @section('content')
 <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Détails Équipement Réseau Celer</h1>
         <a href="{{ route('dashboard.celer-reseau') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
             Retour au dashboard
         </a>

@@ -3,11 +3,7 @@
 @section('content')
 <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <!-- En-tête -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Stock Celer - Électronique</h1>
-            <p class="text-gray-600 mt-2">Gestion des équipements électroniques en stock Celer</p>
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div class="flex gap-3 mt-4 md:mt-0">
             <a href="{{ route('dashboard.celer-electronique.export') }}" 
                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center">

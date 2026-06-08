@@ -18,7 +18,6 @@
                 </svg>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-gray-900">📋 NOUVEL INCIDENT ITIL</h1>
                 <p class="text-sm text-gray-500">Formulaire conforme à la norme ITIL — Workflow N+1 → N+2 → N+3</p>
             </div>
         </div>

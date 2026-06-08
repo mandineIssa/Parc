@@ -684,7 +684,10 @@ document.addEventListener('DOMContentLoaded', function () {
         var chevron = header ? header.querySelector('.sidebar-chevron') : null;
         var isOpen = body && body.classList.contains('open');
 
-        if (opts.toggle && isOpen && subKey !== 'stocks') {
+        if (opts.toggle && isOpen) {
+            if (subKey === 'stocks') {
+                closeAllStockBranches();
+            }
             closePanel(body, chevron, header);
             return;
         }
@@ -863,7 +866,10 @@ document.addEventListener('DOMContentLoaded', function () {
             var body = sub.querySelector(':scope > .sidebar-subsection-body');
             var isOpen = body && body.classList.contains('open');
 
-            if (isOpen && subKey !== 'stocks') {
+            if (isOpen) {
+                if (subKey === 'stocks') {
+                    closeAllStockBranches();
+                }
                 closePanel(body, btn.querySelector('.sidebar-chevron'), btn);
                 return;
             }

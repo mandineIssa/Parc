@@ -6,7 +6,6 @@
 <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Validation du contrôle</h1>
             <p class="text-gray-500 mt-1">{{ $task->control->name }}</p>
         </div>
         <a href="{{ route('controls.tasks.show', $task) }}" class="text-gray-600 hover:text-gray-800">

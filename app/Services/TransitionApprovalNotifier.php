@@ -126,14 +126,35 @@ class TransitionApprovalNotifier
 
     private function equipmentLine(TransitionApproval $approval): string
     {
-        $approval->loadMissing('equipment');
+        $approval->loadMissing('equipment.fournisseur', 'equipment.agence');
         $equipment = $approval->equipment;
 
         if (! $equipment) {
             return 'Équipement : non renseigné';
         }
 
-        return "Équipement : {$equipment->nom} (N° série : {$equipment->numero_serie})";
+        $fournisseur = $equipment->fournisseur?->nom ?? '—';
+        $emplacement = $equipment->agence?->nom ?? ($equipment->localisation ?: '—');
+        $dateLivraison = $equipment->date_livraison?->format('d/m/Y') ?? '—';
+        $prix = $equipment->prix !== null
+            ? number_format((float) $equipment->prix, 0, ',', ' ') . ' FCFA'
+            : '—';
+
+        return implode("\n", [
+            'Informations de base :',
+            "N° série : {$equipment->numero_serie}",
+            "Marque : {$equipment->marque}",
+            "Modèle : {$equipment->modele}",
+            "Fournisseur : {$fournisseur}",
+            "Garantie : {$equipment->garantie}",
+            "Date livraison : {$dateLivraison}",
+            "Prix : {$prix}",
+            'N° facture : ' . ($equipment->reference_facture ?: '—'),
+            "Emplacement : {$emplacement}",
+            'État : ' . ($equipment->etat ?: '—'),
+            'Adresse MAC : ' . ($equipment->adresse_mac ?: '—'),
+            'Adresse IP : ' . ($equipment->adresse_ip ?: '—'),
+        ]);
     }
 
     private function typeLabel(TransitionApproval $approval): string

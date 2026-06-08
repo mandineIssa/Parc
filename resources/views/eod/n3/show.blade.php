@@ -18,16 +18,7 @@
 @endphp
 <div class="container mx-auto px-4 py-8">
     <!-- En-tête -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Fiche de suivi {{ $fiche->reference }}</h1>
-            <p class="text-gray-600 mt-2">
-                {{ $fiche->date_traitement->format('d/m/Y') }} · 
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $fiche->status_class }}">
-                    {{ $fiche->status_label }}
-                </span>
-            </p>
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div class="flex gap-3 mt-4 md:mt-0">
             @if(in_array($fiche->status, ['CLOSED', 'VALIDATED'], true))
             <a href="{{ route('eod.n2.pdf', $fiche) }}" target="_blank" class="bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">

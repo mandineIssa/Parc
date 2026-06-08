@@ -8,7 +8,6 @@
     <div class="flex justify-between items-start mb-6">
         <div>
             <div class="flex items-center gap-3 mb-2">
-                <h1 class="text-2xl font-bold text-gray-800">{{ $control->name }}</h1>
                 <span class="px-2 py-1 text-xs rounded-full {{ $control->status == 'actif' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
                     {{ $control->status == 'actif' ? 'Actif' : 'Inactif' }}
                 </span>

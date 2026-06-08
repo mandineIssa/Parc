@@ -8,10 +8,6 @@
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                <i class="fas fa-book mr-3 text-[#A61B29]"></i>
-                Documentation complète
-            </h1>
             <p class="text-gray-600 dark:text-gray-400 max-w-3xl">
                 Guide d'utilisation et documentation technique du système de gestion du parc informatique COFINA.
                 Sélectionnez une section ci-dessous.

@@ -6,15 +6,14 @@
 <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
 
     {{-- En-tête --}}
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div class="flex items-center gap-4">
             <div class="h-12 w-12 bg-indigo-100 rounded-xl flex items-center justify-center">
                 <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-            </div>
+    </div>
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Historique des Réaffectations</h1>
                 <p class="text-gray-500 mt-0.5">Suivi complet de tous les transferts d'équipements</p>
             </div>
         </div>

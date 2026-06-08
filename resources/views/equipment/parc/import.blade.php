@@ -4,7 +4,6 @@
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-md-12">
-            <h1 class="h3 mb-0">Import d'équipements vers le parc</h1>
             <p class="text-muted">Importez directement des équipements dans le parc avec leurs affectations</p>
         </div>
     </div>

@@ -13,7 +13,6 @@
             </svg>
         </a>
         <div>
-            <h1 class="text-xl font-bold text-gray-800">Modifier une entrée réseau</h1>
             <p class="text-sm text-gray-500">{{ $network->site }} · {{ $network->type === 'plan_adressage' ? "Plan d'adressage" : 'Branchement local' }}</p>
         </div>
     </div>

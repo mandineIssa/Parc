@@ -3,11 +3,7 @@
 @section('content')
 <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
     <!-- En-tête -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800">Créer une nouvelle catégorie</h1>
-            <p class="text-gray-600 mt-2">Ajoutez une nouvelle catégorie pour organiser vos équipements</p>
-        </div>
+    <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <a href="{{ route('categories.index') }}" 
            class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition flex items-center mt-4 md:mt-0">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

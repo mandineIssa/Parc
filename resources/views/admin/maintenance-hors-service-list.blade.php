@@ -9,7 +9,6 @@
     <div class="card-cofina">
         <!-- En-tête -->
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-cofina-red mb-2">🔧→❌ Équipements irréparables</h1>
             <p class="text-gray-600">Liste des équipements déclarés irréparables en maintenance</p>
         </div>
 
