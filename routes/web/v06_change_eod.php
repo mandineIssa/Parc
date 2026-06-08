@@ -109,6 +109,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [EodSuiviController::class, 'n1Store'])->name('store');
         Route::get('/{fiche}', [EodSuiviController::class, 'n1Edit'])->name('edit');
         Route::put('/{fiche}', [EodSuiviController::class, 'n1Update'])->name('update');
+        Route::delete('/{fiche}', [EodSuiviController::class, 'n1Destroy'])->name('destroy');
         Route::post('/{fiche}/submit', [EodSuiviController::class, 'n1SubmitToN3Controller'])->name('submit');
     });
 
@@ -120,6 +121,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{fiche}/pdf', [EodSuiviController::class, 'generatePdf'])->name('pdf');
         Route::get('/{fiche}', [EodSuiviController::class, 'n2Edit'])->name('edit');
         Route::put('/{fiche}', [EodSuiviController::class, 'n2Update'])->name('update');
+        Route::delete('/{fiche}', [EodSuiviController::class, 'n2Destroy'])->name('destroy');
         Route::post('/{fiche}/submit', [EodSuiviController::class, 'n2SubmitToN3Controller'])->name('submit');
         Route::post('/{fiche}/validate', [EodSuiviController::class, 'n2Validate'])->name('validate');
         Route::post('/{fiche}/reject', [EodSuiviController::class, 'n2Reject'])->name('reject');

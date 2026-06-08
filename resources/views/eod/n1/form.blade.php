@@ -378,9 +378,13 @@
         </div>
     @endif
 
-    @if(isset($fiche) && $fiche->status === 'PENDING_N3_CONTROLLER')
+    @if(isset($fiche) && $fiche->isValidatedOrClosed())
+        <div class="mb-6 bg-green-50 border border-green-200 text-green-900 px-4 py-3 rounded-lg text-sm">
+            Cette fiche a été <strong>validée</strong>. Elle est en lecture seule et ne peut plus être modifiée ni supprimée.
+        </div>
+    @elseif(isset($fiche) && ! $fiche->authorCanModify())
         <div class="mb-6 bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 rounded-lg text-sm">
-            Cette fiche est en attente des signatures <strong>N+3</strong> et <strong>Controller</strong>. Vous ne pouvez plus la modifier.
+            Cette fiche ne peut plus être modifiée dans son état actuel.
         </div>
     @endif
 
@@ -409,8 +413,8 @@
 
     @php
         $eodRoutePrefix = $eodRoutePrefix ?? 'eod.n1';
-        $isEditable = !isset($fiche) || $fiche->status === 'DRAFT' || $fiche->status === 'REJECTED';
-        $isReadOnly = isset($fiche) && $fiche->status === 'PENDING_N3_CONTROLLER';
+        $isEditable = !isset($fiche) || $fiche->authorCanModify();
+        $isReadOnly = isset($fiche) && ! $fiche->authorCanModify();
         $isValidated = isset($fiche) && in_array($fiche->status, ['CLOSED', 'VALIDATED'], true);
         $user = auth()->user();
         $responsableBatchDisplay = isset($fiche)

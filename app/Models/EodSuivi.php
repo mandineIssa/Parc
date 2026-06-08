@@ -112,4 +112,31 @@ class EodSuivi extends Model
     {
         return $this->controller_validated_at !== null;
     }
+
+    public function isValidatedOrClosed(): bool
+    {
+        if (in_array($this->status, ['CLOSED', 'VALIDATED'], true)) {
+            return true;
+        }
+
+        return $this->n3Signed() || $this->controllerSigned();
+    }
+
+    public function authorCanModify(): bool
+    {
+        if ($this->isValidatedOrClosed()) {
+            return false;
+        }
+
+        if (in_array($this->status, ['PENDING_CONTROLLER'], true)) {
+            return false;
+        }
+
+        return in_array($this->status, ['DRAFT', 'REJECTED', 'PENDING_N2', 'PENDING_N3_CONTROLLER'], true);
+    }
+
+    public function authorCanDelete(): bool
+    {
+        return $this->authorCanModify();
+    }
 }

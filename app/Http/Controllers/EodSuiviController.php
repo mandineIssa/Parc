@@ -72,19 +72,15 @@ class EodSuiviController extends Controller
         $this->authorizeRole('N1');
         $this->authorizeOwner($fiche);
 
-        if (! in_array($fiche->status, ['DRAFT', 'REJECTED'], true)) {
-            return back()->with('error', 'Cette fiche ne peut plus être modifiée.');
-        }
+        return $this->persistAuthorUpdate($request, $fiche, 'eod.n1.index');
+    }
 
-        $data = $this->validatedEodPayload($request);
-        $data['updated_by'] = Auth::id();
-        $data['responsable_batch'] = $this->currentUserFullName();
+    public function n1Destroy(EodSuivi $fiche)
+    {
+        $this->authorizeRole('N1');
+        $this->authorizeOwner($fiche);
 
-        $fiche->update($data);
-        $this->attachEmargementSignature($request, $fiche);
-        $this->attachEodFiles($request, $fiche);
-
-        return $this->submitFicheToN3AndController($fiche->fresh(), 'eod.n1.index');
+        return $this->destroyAuthorFiche($fiche, 'eod.n1.index');
     }
 
     public function n1SubmitToN3Controller(Request $request, EodSuivi $fiche)
@@ -154,19 +150,15 @@ class EodSuiviController extends Controller
         $this->authorizeRole('N2');
         $this->authorizeOwner($fiche);
 
-        if (! in_array($fiche->status, ['DRAFT', 'REJECTED'], true)) {
-            return back()->with('error', 'Cette fiche ne peut plus être modifiée.');
-        }
+        return $this->persistAuthorUpdate($request, $fiche, 'eod.n2.index');
+    }
 
-        $data = $this->validatedEodPayload($request);
-        $data['updated_by'] = Auth::id();
-        $data['responsable_batch'] = $this->currentUserFullName();
+    public function n2Destroy(EodSuivi $fiche)
+    {
+        $this->authorizeRole('N2');
+        $this->authorizeOwner($fiche);
 
-        $fiche->update($data);
-        $this->attachEmargementSignature($request, $fiche);
-        $this->attachEodFiles($request, $fiche);
-
-        return $this->submitFicheToN3AndController($fiche->fresh(), 'eod.n2.index');
+        return $this->destroyAuthorFiche($fiche, 'eod.n2.index');
     }
 
     public function n2SubmitToN3Controller(Request $request, EodSuivi $fiche)
@@ -667,12 +659,13 @@ class EodSuiviController extends Controller
         return view('eod.n1.form', compact('fiche', 'batchData', 'incidentsData', 'eodRoutePrefix'));
     }
 
-    private function persistAuthorUpdate(Request $request, EodSuivi $fiche)
+    private function persistAuthorUpdate(Request $request, EodSuivi $fiche, string $indexRoute)
     {
-        if (! in_array($fiche->status, ['DRAFT', 'REJECTED'], true)) {
+        if (! $fiche->authorCanModify()) {
             return back()->with('error', 'Cette fiche ne peut plus être modifiée.');
         }
 
+        $previousStatus = $fiche->status;
         $data = $this->validatedEodPayload($request);
         $data['updated_by'] = Auth::id();
         $data['responsable_batch'] = $this->currentUserFullName();
@@ -681,7 +674,38 @@ class EodSuiviController extends Controller
         $this->attachEmargementSignature($request, $fiche);
         $this->attachEodFiles($request, $fiche);
 
-        return back()->with('success', 'Fiche mise à jour avec succès.');
+        if (in_array($previousStatus, ['DRAFT', 'REJECTED'], true)) {
+            return $this->submitFicheToN3AndController($fiche->fresh(), $indexRoute);
+        }
+
+        return redirect()->route($indexRoute)->with('success', 'Fiche mise à jour avec succès.');
+    }
+
+    private function destroyAuthorFiche(EodSuivi $fiche, string $indexRoute)
+    {
+        if (! $fiche->authorCanDelete()) {
+            return back()->with('error', 'Cette fiche ne peut pas être supprimée.');
+        }
+
+        $reference = $fiche->reference;
+        $this->purgeFicheFiles($fiche);
+        $fiche->delete();
+
+        return redirect()->route($indexRoute)
+            ->with('success', "Fiche {$reference} supprimée avec succès.");
+    }
+
+    private function purgeFicheFiles(EodSuivi $fiche): void
+    {
+        $this->deletePathIfSet($fiche->emargement_signature_path);
+        $this->deletePathIfSet($fiche->n3_signature_path);
+        $this->deletePathIfSet($fiche->controller_signature_path);
+
+        if (is_array($fiche->attachments)) {
+            foreach ($fiche->attachments as $attachment) {
+                $this->deletePathIfSet($attachment['path'] ?? null);
+            }
+        }
     }
 
     private function validatedEodPayload(Request $request): array
