@@ -519,7 +519,6 @@ label[class*="border-"] {
     cursor: pointer;
     transition: all 0.2s ease;
 }
-
 label[class*="border-"]:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);

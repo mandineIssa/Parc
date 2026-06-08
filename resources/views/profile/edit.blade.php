@@ -28,13 +28,6 @@
                     @include('profile.partials.update-password-form')
                 </div>
             </div>
-
-            <!-- Supprimer le compte -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
         </div>
     </div>
 </div>
