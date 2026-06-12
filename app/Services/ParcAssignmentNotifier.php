@@ -46,31 +46,6 @@ class ParcAssignmentNotifier
 
     public function equipmentDetailsBlock(Equipment $equipment): string
     {
-        $equipment->loadMissing(['fournisseur', 'agence', 'detail']);
-        $fournisseur = $equipment->fournisseur?->nom ?? '—';
-        $emplacement = $equipment->agence?->nom ?? ($equipment->localisation ?: '—');
-        $dateLivraison = $equipment->date_livraison?->format('d/m/Y') ?? '—';
-        $prix = $equipment->prix !== null
-            ? number_format((float) $equipment->prix, 0, ',', ' ') . ' FCFA'
-            : '—';
-
-        return implode("\n", [
-            'Informations de base :',
-            "N° série : {$equipment->numero_serie}",
-            'Nom : ' . ($equipment->nom ?: '—'),
-            "Marque : {$equipment->marque}",
-            "Modèle : {$equipment->modele}",
-            'Catégorie : ' . ($equipment->detail?->categorie ?: '—'),
-            'Sous-catégorie : ' . ($equipment->detail?->sous_categorie ?: '—'),
-            "Fournisseur : {$fournisseur}",
-            "Garantie : {$equipment->garantie}",
-            "Date livraison : {$dateLivraison}",
-            "Prix : {$prix}",
-            'N° facture : ' . ($equipment->reference_facture ?: '—'),
-            "Emplacement : {$emplacement}",
-            'État : ' . ($equipment->etat ?: '—'),
-            'Adresse MAC : ' . ($equipment->adresse_mac ?: '—'),
-            'Adresse IP : ' . ($equipment->adresse_ip ?: '—'),
-        ]);
+        return 'N°' . ($equipment->numero_serie ?: '—');
     }
 }
