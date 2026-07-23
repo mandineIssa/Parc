@@ -80,7 +80,7 @@ class SuperAdminController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
         
         return in_array($role, ['super_admin', 'admin'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
     }
     // Dans votre contrôleur AdminController
 public function destroyApproval(TransitionApproval $approval)

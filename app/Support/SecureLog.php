@@ -19,6 +19,9 @@ final class SecureLog
         'secret',
         'api_key',
         'csrf_token',
+        // Données nominatives (RGPD) — traçabilité via hash côté ingest
+        'utilisateursession',
+        'utilisateur_session',
     ];
 
     /**

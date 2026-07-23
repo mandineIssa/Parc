@@ -2,6 +2,7 @@
 <aside id="sidebar" class="fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 shadow-xl transform -translate-x-full lg:translate-x-0 transition-all duration-300 ease-in-out z-40 flex flex-col">
 
         @php
+            $auditsPostesOpen = request()->routeIs('audits-postes.*');
             $rapportsMenuOpen = request()->routeIs('reports.*');
             $gestionMenuOpen = request()->routeIs('parc.*', 'maintenance.*', 'hors-service.*', 'perdu.*', 'approvals.*');
             $equipementsMenuOpen = request()->routeIs('equipment.*');
@@ -10,6 +11,8 @@
             $stockBranchDecelerOpen = request()->routeIs('dashboard.deceler-*');
             $parcSectionOpen = $rapportsMenuOpen || $gestionMenuOpen || $equipementsMenuOpen || $stocksMenuOpen
                 || request()->routeIs('documentation.*');
+            $configurationSectionOpen = $auditsPostesOpen
+                || request()->routeIs('agencies.*', 'categories.*', 'suppliers.*', 'admin.users.*', 'audits.*');
             $activeParcSubsection = match (true) {
                 $rapportsMenuOpen => 'rapports',
                 $gestionMenuOpen => 'gestion',
@@ -295,6 +298,11 @@
                         <a href="{{ route('eod.n3.pending') }}" class="sidebar-item {{ request()->routeIs('eod.n3.pending') ? 'sidebar-active' : '' }}">Fiches à signer (N+3)</a>
                         <a href="{{ route('eod.n3.index') }}" class="sidebar-item {{ request()->routeIs('eod.n3.index') ? 'sidebar-active' : '' }}">Supervision EOD</a>
                     @endif
+                    @if($eodN3 || $eodCtrl || auth()->user()?->role === 'super_admin')
+                        <a href="{{ route('eod.planning.index') }}" class="sidebar-item {{ request()->routeIs('eod.planning.*') ? 'sidebar-active' : '' }}">Planification batch</a>
+                    @elseif($eodN1 || $eodN2)
+                        <a href="{{ route('eod.planning.index') }}" class="sidebar-item {{ request()->routeIs('eod.planning.*') ? 'sidebar-active' : '' }}">Mon planning batch</a>
+                    @endif
                     @if($eodCtrl)
                         <a href="{{ route('eod.controller.index') }}" class="sidebar-item {{ request()->routeIs('eod.controller.*') ? 'sidebar-active' : '' }}">Validation Controller</a>
                     @endif
@@ -306,16 +314,17 @@
 
         {{-- Configuration --}}
         <div class="sidebar-section" data-section="configuration">
-            <button type="button" class="sidebar-section-header" data-section="configuration">
+            <button type="button" class="sidebar-section-header {{ $configurationSectionOpen ? 'is-active' : '' }}" data-section="configuration">
                     <span class="font-medium">Configuration</span>
-                <span class="sidebar-chevron" aria-hidden="true"></span>
+                <span class="sidebar-chevron {{ $configurationSectionOpen ? 'open' : '' }}" aria-hidden="true"></span>
             </button>
-            <div class="sidebar-section-body">
+            <div class="sidebar-section-body {{ $configurationSectionOpen ? 'open' : '' }}">
                 <a href="{{ route('agencies.index') }}" class="sidebar-item {{ request()->routeIs('agencies.*') ? 'sidebar-active' : '' }}">Agences</a>
                 <a href="{{ route('categories.index') }}" class="sidebar-item {{ request()->routeIs('categories.*') ? 'sidebar-active' : '' }}">Catégories</a>
                 <a href="{{ route('suppliers.index') }}" class="sidebar-item {{ request()->routeIs('suppliers.*') ? 'sidebar-active' : '' }}">Fournisseurs</a>
                 <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : '' }}">Administration</a>
                 <div class="sidebar-divider"></div>
+                <a href="{{ route('audits-postes.index') }}" class="sidebar-item {{ request()->routeIs('audits-postes.*') ? 'sidebar-active' : '' }}">Audits postes</a>
                 <a href="{{ route('audits.index') }}" class="sidebar-item {{ request()->routeIs('audits.*') ? 'sidebar-active' : '' }}">Journal d'activité</a>
             </div>
         </div>
@@ -620,7 +629,7 @@ document.addEventListener('DOMContentLoaded', function () {
         { section: 'controls', patterns: ['controls'] },
         { section: 'incidents', patterns: ['incidents'] },
         { section: 'eod', patterns: ['eod'] },
-        { section: 'configuration', patterns: ['agencies', 'categories', 'suppliers', 'users', 'audits'] },
+        { section: 'configuration', patterns: ['audits-postes', 'agencies', 'categories', 'suppliers', 'users', '/audits'] },
     ];
 
     var subsectionMap = [

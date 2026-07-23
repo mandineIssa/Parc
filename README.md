@@ -26,11 +26,61 @@ npm install && npm run build
 php artisan serve
 ```
 
+### Production (queue, planification, sauvegarde)
+
+Les e-mails GPI passent par la **file d'attente** (`GpiNotificationMail` + `Mail::queue`). Configurez :
+
+```bash
+# .env
+QUEUE_CONNECTION=database   # ou redis en production
+php artisan queue:table && php artisan migrate
+php artisan queue:work --tries=3
+```
+
+Planification (cron `* * * * * php artisan schedule:run`) :
+
+| Commande | Fréquence |
+|----------|-----------|
+| `gpi:backup-database` | Quotidien 02:00 |
+| `gpi:remind-pending-approvals` | Jours ouvrés 08:30 |
+| `audits:purge --days=365` | Mensuel |
+
+Sauvegardes SQLite : `storage/app/backups/`. En MySQL, compléter avec `mysqldump`.
+
+### API REST (lecture seule)
+
+Endpoints authentifiés sous `/api/v1` :
+
+- `GET /api/v1/parc` — liste parc
+- `GET /api/v1/parc/{numeroSerie}` — détail
+- `GET /api/v1/stock` — liste stock
+
+### Notifications in-app & recherche
+
+- Cloche dans la barre de navigation → `/notifications`
+- Recherche globale : **Ctrl+K** ou icône loupe (`/search/global`)
+
 Variables utiles :
 
 | Variable | Rôle |
 |----------|------|
 | `SUPER_ADMIN_EMAILS` | Liste (virgules) des emails ayant un bypass équivalent `super_admin` dans les Gates (`config/cofina.php`). À réduire en prod au profit des rôles/permissions. |
+| `AUDIT_API_KEY` | Clé secrète pour `POST /api/audit` (scripts PowerShell). Rotation via `AUDIT_API_KEY_PREVIOUS`. |
+| `AUDIT_API_RATE_LIMIT` | Limite de requêtes/minute/IP sur la collecte (défaut 60). |
+| `QUEUE_CONNECTION` | `sync` (dev), `database` ou `redis` (prod) pour les e-mails GPI |
+| `MAIL_*` | SMTP — ne jamais committer de secrets réels |
+
+Commandes clés API : `php artisan audit:api-key status|generate|rotate|finalize` (voir `scripts/audit-poste/DEPLOY-GPO.md`).
+
+### Collecte audits postes (PowerShell → API)
+
+- **POST** `/api/audit` — ingestion JSON (header `X-API-Key` ou `Authorization: Bearer`), upsert par `hostname` + `numeroSerie`, historique dans `poste_audits`.
+- **GET** `/api/audit` — liste paginée + filtres (session auth).
+- **GET** `/api/audit/{id}` — détail + historique utilisateurs.
+- **GET** `/api/audit/export` — export Excel (mêmes filtres).
+- **UI** : menu **Contrôles IT → Audits postes** (`/audits-postes`).
+- **Script** : `scripts/audit-poste/Collecte-AuditPoste.ps1` (voir `scripts/audit-poste/README.md`).
+- Config : `config/audit_collecte.php` ; tables : `postes`, `poste_audits` (la table `audits` reste réservée au journal applicatif).
 
 ---
 

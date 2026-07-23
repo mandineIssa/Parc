@@ -573,7 +573,15 @@ class EquipmentController extends Controller
                 $specificData = json_decode($equipment->detail->specific_data, true) ?? [];
             }
             
-            return view('equipment.show', compact('equipment', 'specificData'));
+            $auditHistory = \App\Models\Audit::query()
+                ->with('user')
+                ->where('model_type', Equipment::class)
+                ->where('model_id', $equipment->id)
+                ->orderByDesc('created_at')
+                ->limit(30)
+                ->get();
+
+            return view('equipment.show', compact('equipment', 'specificData', 'auditHistory'));
             
         } catch (\Exception $e) {
             Log::error('Erreur affichage équipement: ' . $e->getMessage());

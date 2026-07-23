@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TransitionApproval;
 use App\Models\Equipment;
 use App\Models\User;
+use App\Models\GpiUserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -27,7 +28,7 @@ class DashboardsController extends Controller
 
         // Déterminer ce que l'utilisateur peut voir
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         // Statistiques globales
         $stats = $this->getDashboardStats($user, $isSuperAdmin, $request);
@@ -38,7 +39,41 @@ class DashboardsController extends Controller
         // Graphiques
         $charts = $this->getChartsData($user, $isSuperAdmin, $request);
 
-        return view('dashboards.index', compact('stats', 'recentSubmissions', 'charts'));
+        $systemStats = null;
+        $urgentApprovals = collect();
+
+        if ($isSuperAdmin) {
+            $systemStats = $this->getSystemStats();
+            $urgentApprovals = TransitionApproval::with(['equipment', 'submitter'])
+                ->where('status', 'pending')
+                ->where('created_at', '<=', Carbon::now()->subDays(2))
+                ->orderBy('created_at')
+                ->limit(10)
+                ->get();
+        }
+
+        return view('dashboards.index', compact(
+            'stats',
+            'recentSubmissions',
+            'charts',
+            'systemStats',
+            'urgentApprovals',
+            'isSuperAdmin'
+        ));
+    }
+
+    private function getSystemStats(): array
+    {
+        return [
+            'total_equipments' => Equipment::count(),
+            'stock_count' => Equipment::where('statut', 'stock')->count(),
+            'parc_count' => Equipment::where('statut', 'parc')->count(),
+            'maintenance_count' => Equipment::where('statut', 'maintenance')->count(),
+            'hors_service_count' => Equipment::where('statut', 'hors_service')->count(),
+            'perdu_count' => Equipment::where('statut', 'perdu')->count(),
+            'total_users' => User::count(),
+            'pending_notifications' => GpiUserNotification::whereNull('read_at')->count(),
+        ];
     }
 
     /**
@@ -247,7 +282,7 @@ class DashboardsController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         $stats = $this->getDashboardStats($user, $isSuperAdmin, $request);
 
@@ -266,7 +301,7 @@ class DashboardsController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         $submissions = $this->getRecentSubmissions($user, $isSuperAdmin, $request);
 
@@ -285,7 +320,7 @@ class DashboardsController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         $charts = $this->getChartsData($user, $isSuperAdmin, $request);
 
@@ -304,7 +339,7 @@ class DashboardsController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         $query = TransitionApproval::query()
             ->forList()
@@ -412,7 +447,7 @@ class DashboardsController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         // Statistiques simplifiées
         $stats = $this->getDashboardStats($user, $isSuperAdmin, $request);

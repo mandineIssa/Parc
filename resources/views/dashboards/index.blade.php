@@ -83,6 +83,49 @@
         </div>
     </div>
 
+    @if(!empty($systemStats))
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+        <div class="bg-white rounded-xl shadow p-4 border-l-4 border-[#C8102E]">
+            <p class="text-xs text-gray-500">Équipements</p>
+            <p class="text-2xl font-bold">{{ $systemStats['total_equipments'] }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4 border-l-4 border-blue-500">
+            <p class="text-xs text-gray-500">Stock</p>
+            <p class="text-2xl font-bold">{{ $systemStats['stock_count'] }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4 border-l-4 border-green-500">
+            <p class="text-xs text-gray-500">Parc</p>
+            <p class="text-2xl font-bold">{{ $systemStats['parc_count'] }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4 border-l-4 border-yellow-500">
+            <p class="text-xs text-gray-500">Maintenance</p>
+            <p class="text-2xl font-bold">{{ $systemStats['maintenance_count'] }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4 border-l-4 border-gray-500">
+            <p class="text-xs text-gray-500">Hors service</p>
+            <p class="text-2xl font-bold">{{ $systemStats['hors_service_count'] }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4 border-l-4 border-purple-500">
+            <p class="text-xs text-gray-500">Utilisateurs</p>
+            <p class="text-2xl font-bold">{{ $systemStats['total_users'] }}</p>
+        </div>
+    </div>
+
+    @if(isset($urgentApprovals) && $urgentApprovals->isNotEmpty())
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8">
+        <h2 class="text-lg font-bold text-amber-900 mb-4">Approbations en attente (&gt; 2 jours)</h2>
+        <ul class="space-y-2">
+            @foreach($urgentApprovals as $approval)
+            <li class="flex justify-between items-center text-sm">
+                <span>#{{ $approval->id }} — {{ $approval->type }} — {{ $approval->equipment?->numero_serie ?? 'N/A' }}</span>
+                <a href="{{ route('transitions.approval.show', $approval) }}" class="text-[#C8102E] font-medium">Traiter</a>
+            </li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+    @endif
+
     <!-- Cartes de statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Total -->

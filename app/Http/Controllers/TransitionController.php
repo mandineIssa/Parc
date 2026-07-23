@@ -19,11 +19,13 @@ use App\Models\Deceler;
 use App\Models\Ceceler;
 use App\Support\SecureLog;
 use App\Services\TransitionApprovalNotifier;
+use App\Services\TransitionAuditLogger;
 
 class TransitionController extends Controller
 {
     public function __construct(
-        private readonly TransitionApprovalNotifier $notifier
+        private readonly TransitionApprovalNotifier $notifier,
+        private readonly TransitionAuditLogger $transitionAudit
     ) {}
 
     /**
@@ -103,7 +105,7 @@ class TransitionController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isAuthorized = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         if (!$isAuthorized) {
             abort(403, "Accès réservé aux administrateurs.");
@@ -143,7 +145,7 @@ class TransitionController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $canView = in_array($role, ['super_admin', 'responsable_approbation', 'agent_it', 'admin'])
-            || $user->email === 'superadmin@cofina.sn'
+            || $user->hasBootstrapSuperAccess()
             || $approval->submitted_by === $user->id;
 
         if (!$canView) {
@@ -171,7 +173,7 @@ public function showApprovalDetails(TransitionApproval $approval)
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canView = in_array($role, ['super_admin', 'responsable_approbation', 'agent_it', 'admin'])
-        || $user->email === 'superadmin@cofina.sn'
+        || $user->hasBootstrapSuperAccess()
         || $approval->submitted_by === $user->id;
 
     if (!$canView) {
@@ -378,7 +380,7 @@ public function show(TransitionApproval $approval)
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canView = in_array($role, ['super_admin', 'responsable_approbation', 'agent_it', 'admin'])
-        || $user->email === 'superadmin@cofina.sn'
+        || $user->hasBootstrapSuperAccess()
         || $approval->submitted_by === $user->id;
 
     if (!$canView) {
@@ -601,7 +603,7 @@ public function show(TransitionApproval $approval)
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $canApprove = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         if (!$canApprove) {
             abort(403, "Seuls les super admins peuvent approuver des transitions.");
@@ -740,6 +742,7 @@ public function show(TransitionApproval $approval)
 
             DB::commit();
 
+            $this->transitionAudit->logApproval($approval->fresh());
             $this->generateFinalDocuments($approval, $validated, $hasInstallationForm);
             $this->notifier->notifySubmitterApprovedByType($approval);
             $this->notifyUserApproval($approval, $targetUser);
@@ -764,7 +767,8 @@ public function show(TransitionApproval $approval)
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $canReject = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess()
+            || $user->canApproveTransitions();
 
         if (!$canReject) {
             abort(403, "Seuls les super admins peuvent rejeter des transitions.");
@@ -781,6 +785,7 @@ public function show(TransitionApproval $approval)
             'rejection_reason' => $validated['raison_rejet'],
         ]);
 
+        $this->transitionAudit->logRejection($approval->fresh(), $validated['raison_rejet']);
         $this->notifyUserRejection($approval);
 
         return redirect()->route('admin.approvals')
@@ -797,7 +802,7 @@ public function show(TransitionApproval $approval)
         try {
             $user = auth()->user();
             $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
-                || $user->email === 'superadmin@cofina.sn';
+                || $user->hasBootstrapSuperAccess();
 
             $formType = $request->form_type;
 
@@ -969,7 +974,7 @@ public function show(TransitionApproval $approval)
         try {
             $user = auth()->user();
             $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
-                || $user->email === 'superadmin@cofina.sn';
+                || $user->hasBootstrapSuperAccess();
 
             $validated = $request->validate([
                 'installation' => 'required|array',
@@ -2572,7 +2577,7 @@ public function simpleAffectation(Request $request, Equipment $equipment)
         $user = User::find($validated['user_id']);
         $agent = auth()->user();
         $isSuperAdmin = strtolower(trim((string) ($agent->role ?? ''))) === 'super_admin'
-            || $agent->email === 'superadmin@cofina.sn';
+            || $agent->hasBootstrapSuperAccess();
 
         // Préparer les données pour l'approbation
         $data = [
@@ -2744,7 +2749,7 @@ public function submitHorsService(Request $request)
         $equipment = Equipment::findOrFail($validated['equipment_id']);
         $user = auth()->user();
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         // Vérifier que l'équipement est en stock
         if ($equipment->statut !== 'stock') {
@@ -2928,7 +2933,7 @@ public function approveHorsService(Request $request, TransitionApproval $approva
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canApprove = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canApprove) {
         abort(403, "Seuls les super admins peuvent approuver des transitions.");
@@ -2986,7 +2991,7 @@ public function rejectHorsService(Request $request, TransitionApproval $approval
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canReject = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canReject) {
         abort(403, "Seuls les super admins peuvent rejeter des transitions.");
@@ -3040,7 +3045,7 @@ public function showHorsServiceApproval(TransitionApproval $approval)
 
     // Vérifier les permissions
     $canView = in_array($role, ['super_admin', 'responsable_approbation', 'agent_it', 'admin'])
-        || $user->email === 'superadmin@cofina.sn'
+        || $user->hasBootstrapSuperAccess()
         || $approval->submitted_by === $user->id;
 
     if (!$canView) {
@@ -3087,7 +3092,7 @@ public function listHorsServiceApprovals(Request $request)
 
     // Vérifier les autorisations
     $isAuthorized = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$isAuthorized) {
         abort(403, "Accès réservé aux administrateurs.");
@@ -3159,7 +3164,7 @@ public function submitMaintenance(Request $request)
         $equipment = Equipment::findOrFail($validated['equipment_id']);
         $user = auth()->user();
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         // Vérifier que l'équipement est au parc
         if ($equipment->statut !== 'parc') {
@@ -3433,7 +3438,7 @@ public function approveMaintenance(Request $request, TransitionApproval $approva
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canApprove = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canApprove) {
         abort(403, "Seuls les super admins peuvent approuver des transitions.");
@@ -3492,7 +3497,7 @@ public function rejectMaintenance(Request $request, TransitionApproval $approval
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canReject = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canReject) {
         abort(403, "Seuls les super admins peuvent rejeter des transitions.");
@@ -3548,7 +3553,7 @@ public function listMaintenanceApprovals(Request $request)
 
     // Vérifier les autorisations
     $isAuthorized = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$isAuthorized) {
         abort(403, "Accès réservé aux administrateurs.");
@@ -3594,7 +3599,7 @@ public function showMaintenanceApproval(TransitionApproval $approval)
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canView = in_array($role, ['super_admin', 'responsable_approbation', 'agent_it', 'admin'])
-        || $user->email === 'superadmin@cofina.sn'
+        || $user->hasBootstrapSuperAccess()
         || $approval->submitted_by === $user->id;
 
     if (!$canView) {
@@ -3649,7 +3654,7 @@ public function submitPerdu(Request $request)
         $equipment = Equipment::findOrFail($validated['equipment_id']);
         $user = auth()->user();
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         // Vérifier que l'équipement est en parc
         if ($equipment->statut !== 'parc') {
@@ -3819,7 +3824,7 @@ public function approvePerdu(Request $request, TransitionApproval $approval)
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canApprove = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canApprove) {
         abort(403, "Seuls les super admins peuvent approuver des transitions.");
@@ -3877,7 +3882,7 @@ public function rejectPerdu(Request $request, TransitionApproval $approval)
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canReject = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canReject) {
         abort(403, "Seuls les super admins peuvent rejeter des transitions.");
@@ -3934,7 +3939,7 @@ public function listPerduApprovals(Request $request)
 
     // Vérifier les autorisations
     $isAuthorized = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$isAuthorized) {
         abort(403, "Accès réservé aux administrateurs.");
@@ -3977,7 +3982,7 @@ public function showPerduApproval(TransitionApproval $approval)
 
     // Vérifier les autorisations
     $canView = in_array($role, ['super_admin', 'responsable_approbation', 'agent_it', 'admin'])
-        || $user->email === 'superadmin@cofina.sn'
+        || $user->hasBootstrapSuperAccess()
         || $approval->submitted_by === $user->id;
 
     if (!$canView) {
@@ -4012,7 +4017,7 @@ public function showPerduApproval(TransitionApproval $approval)
     
     // Vérifier si l'utilisateur peut approuver
     $canApprove = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
     
     // Préparer les données pour la vue
     $viewData = [
@@ -4022,7 +4027,7 @@ public function showPerduApproval(TransitionApproval $approval)
         'destinataireLabels' => $destinataireLabels,
         'checklistData' => $checklistData,
         'canApprove' => $canApprove,
-        'isSuperAdmin' => $role === 'super_admin' || $user->email === 'superadmin@cofina.sn',
+        'isSuperAdmin' => $role === 'super_admin' || $user->hasBootstrapSuperAccess(),
     ];
     
     return view('admin.perdu-approval', $viewData);
@@ -4071,7 +4076,7 @@ public function submitParcHorsService(Request $request)
 
         $user = auth()->user();
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         // Récupérer les informations du parc - CORRECTION UNIQUE
         $parcInfo = null;
@@ -4269,7 +4274,7 @@ public function approveParcHorsService(Request $request, TransitionApproval $app
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canApprove = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canApprove) {
         abort(403, "Seuls les super admins peuvent approuver des transitions.");
@@ -4392,7 +4397,7 @@ private function showHorsServiceDetails(TransitionApproval $approval, $type)
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canView = in_array($role, ['super_admin', 'responsable_approbation', 'agent_it', 'admin'])
-        || $user->email === 'superadmin@cofina.sn'
+        || $user->hasBootstrapSuperAccess()
         || $approval->submitted_by === $user->id;
 
     if (!$canView) {
@@ -4443,7 +4448,7 @@ private function processRejection(Request $request, TransitionApproval $approval
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canReject = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canReject) {
         abort(403, "Seuls les super admins peuvent rejeter des transitions.");
@@ -4529,7 +4534,7 @@ public function submitMaintenanceToStock(Request $request)
         $equipment = Equipment::findOrFail($validated['equipment_id']);
         $user = auth()->user();
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         // Vérifier que l'équipement est en maintenance
         if ($equipment->statut !== 'maintenance') {
@@ -4750,7 +4755,7 @@ public function approveMaintenanceToStock(Request $request, TransitionApproval $
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canApprove = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canApprove) {
         abort(403, "Seuls les super admins peuvent approuver des transitions.");
@@ -4815,7 +4820,7 @@ public function rejectMaintenanceToStock(Request $request, TransitionApproval $a
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canReject = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canReject) {
         abort(403, "Seuls les super admins peuvent rejeter des transitions.");
@@ -4872,7 +4877,7 @@ public function listMaintenanceToStockApprovals(Request $request)
 
     // Vérifier les autorisations
     $isAuthorized = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$isAuthorized) {
         abort(403, "Accès réservé aux administrateurs.");
@@ -4913,7 +4918,7 @@ public function showApprovalMaintenanceToStock(TransitionApproval $approval)
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canView = in_array($role, ['super_admin', 'responsable_approbation', 'agent_it', 'admin'])
-        || $user->email === 'superadmin@cofina.sn'
+        || $user->hasBootstrapSuperAccess()
         || $approval->submitted_by === $user->id;
 
     if (!$canView) {
@@ -5060,7 +5065,7 @@ public function submitMaintenanceHorsService(Request $request)
         $equipment = Equipment::findOrFail($validated['equipment_id']);
         $user = auth()->user();
         $isSuperAdmin = strtolower(trim((string) ($user->role ?? ''))) === 'super_admin'
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         // Vérifier que l'équipement est en maintenance
         if ($equipment->statut !== 'maintenance') {
@@ -5246,7 +5251,7 @@ public function approveMaintenanceHorsService(Request $request, TransitionApprov
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canApprove = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canApprove) {
         abort(403, "Seuls les super admins peuvent approuver des transitions.");
@@ -5307,7 +5312,7 @@ public function rejectMaintenanceToHorsService(Request $request, TransitionAppro
     $role = strtolower(trim((string) ($user->role ?? '')));
 
     $canReject = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$canReject) {
         abort(403, "Seuls les super admins peuvent rejeter des transitions.");
@@ -5364,7 +5369,7 @@ public function listMaintenanceHorsServiceApprovals(Request $request)
 
     // Vérifier les autorisations
     $isAuthorized = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-        || $user->email === 'superadmin@cofina.sn';
+        || $user->hasBootstrapSuperAccess();
 
     if (!$isAuthorized) {
         abort(403, "Accès réservé aux administrateurs.");

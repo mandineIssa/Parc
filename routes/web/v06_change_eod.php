@@ -29,6 +29,7 @@ use App\Http\Controllers\EquipmentImportController;
 use App\Http\Controllers\AgencyImportController;
 use App\Http\Controllers\ChangeTicketController;
 use App\Http\Controllers\EodSuiviController;
+use App\Http\Controllers\EodBatchPlanningController;
 use App\Http\Controllers\ReaffectationController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\NetworkAddressController;
@@ -142,5 +143,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/export/{format}', [EodSuiviController::class, 'n3Export'])->name('export');
         Route::post('/{fiche}/sign', [EodSuiviController::class, 'n3Sign'])->name('sign');
         Route::get('/{fiche}', [EodSuiviController::class, 'n3Show'])->name('show');
+    });
+
+    // Planification batch hebdomadaire EOD
+    Route::prefix('eod/planning')->name('eod.planning.')->group(function () {
+        Route::get('/', [EodBatchPlanningController::class, 'index'])->name('index');
+        Route::post('/', [EodBatchPlanningController::class, 'store'])->name('store');
+        Route::post('/publish', [EodBatchPlanningController::class, 'publish'])->name('publish');
+        Route::get('/settings', [EodBatchPlanningController::class, 'settings'])->name('settings');
+        Route::post('/settings', [EodBatchPlanningController::class, 'updateSettings'])->name('settings.update');
+        Route::post('/remind/{assignment}', [EodBatchPlanningController::class, 'remindNow'])->name('remind');
     });
 });

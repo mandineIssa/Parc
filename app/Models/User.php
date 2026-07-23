@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -189,9 +190,41 @@ class User extends Authenticatable
     /**
      * Vérifier si l'utilisateur est Super Admin
      */
-    public function isSuperAdmin()
+    public function isSuperAdmin(): bool
     {
-        return $this->role === 'super_admin';
+        return $this->role === 'super_admin' || $this->hasBootstrapSuperAccess();
+    }
+
+    public function hasBootstrapSuperAccess(): bool
+    {
+        if ($this->role === 'super_admin') {
+            return true;
+        }
+
+        $email = strtolower(trim((string) $this->email));
+
+        return $email !== '' && in_array($email, config('cofina.super_admin_emails', []), true);
+    }
+
+    public function canApproveTransitions(): bool
+    {
+        $role = strtolower(trim((string) ($this->role ?? '')));
+
+        return in_array($role, ['super_admin', 'responsable_approbation', 'admin'], true)
+            || $this->hasBootstrapSuperAccess();
+    }
+
+    public function isDashboardAdmin(): bool
+    {
+        $role = strtolower(trim((string) ($this->role ?? '')));
+
+        return in_array($role, ['super_admin', 'admin', 'responsable_approbation'], true)
+            || $this->hasBootstrapSuperAccess();
+    }
+
+    public function gpiNotifications(): HasMany
+    {
+        return $this->hasMany(GpiUserNotification::class);
     }
     
     /**
@@ -298,8 +331,7 @@ class User extends Authenticatable
         $role = strtolower(trim((string) ($this->role ?? '')));
         
         // Vérifier les rôles autorisés
-        $isAuthorized = in_array($role, ['super_admin', 'responsable_approbation', 'admin'])
-            || $this->email === 'superadmin@cofina.sn';
+        $isAuthorized = $this->canApproveTransitions();
         
         // Si une approbation est fournie, vérifier des conditions supplémentaires
         if ($approval) {

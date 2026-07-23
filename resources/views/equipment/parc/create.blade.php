@@ -1,24 +1,24 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
 <div class="w-full max-w-4xl mx-auto px-4 sm:px-6 py-8">
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8 gap-4">
         <a href="{{ route('parc.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50">
-            Retour au parc
-        </a>
+                Retour au parc
+            </a>
     </div>
 
     @if ($errors->any())
     <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
         <ul class="list-disc list-inside text-red-700 text-sm">
             @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-        </ul>
+                </ul>
     </div>
     @endif
 
     <form action="{{ route('parc.store') }}" method="POST" id="parc-form" class="bg-white rounded-xl shadow-md overflow-hidden">
         @csrf
-
+        
         <div class="px-6 py-4 bg-gradient-to-r from-[#C8102E] to-[#a00d24]">
             <h2 class="text-lg font-semibold text-white">Nouvelle entrée parc</h2>
             <p class="text-red-100 text-sm mt-1">Une notification sera envoyée après enregistrement</p>
@@ -37,15 +37,15 @@
                             <option value="">-- Sélectionner --</option>
                             @foreach(['Informatique', 'Réseau', 'Électronique', 'Logiciel'] as $t)
                                 <option value="{{ $t }}" {{ old('type') === $t ? 'selected' : '' }}>{{ $t }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    @endforeach
+                </select>
+            </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Catégorie <span class="text-red-500">*</span></label>
                         <select name="categorie" id="categorie" required onchange="updateSousCategories()" disabled
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
                             <option value="">-- Sélectionner le type d'abord --</option>
-                        </select>
+                    </select>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Sous-Catégorie <span class="text-red-500">*</span></label>
@@ -65,7 +65,7 @@
                         <label class="block text-sm font-bold text-gray-700 mb-1">N° Série <span class="text-red-500">*</span></label>
                         <input type="text" name="numero_serie" value="{{ old('numero_serie') }}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                    </div>
+                        </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Nom équipement <span class="text-red-500">*</span></label>
                         <input type="text" name="nom" value="{{ old('nom') }}" required placeholder="Ex: PC Bureau DELL"
@@ -75,12 +75,12 @@
                         <label class="block text-sm font-bold text-gray-700 mb-1">Marque <span class="text-red-500">*</span></label>
                         <input type="text" name="marque" value="{{ old('marque') }}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                    </div>
+                </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Modèle <span class="text-red-500">*</span></label>
                         <input type="text" name="modele" value="{{ old('modele') }}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                    </div>
+            </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Fournisseur <span class="text-red-500">*</span></label>
                         <select name="fournisseur_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
@@ -89,7 +89,7 @@
                                 <option value="{{ $supplier->id }}" {{ old('fournisseur_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->nom }}</option>
                             @endforeach
                         </select>
-                    </div>
+                        </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Garantie <span class="text-red-500">*</span></label>
                         <input type="text" name="garantie" value="{{ old('garantie') }}" required placeholder="Ex: 3 ans"
@@ -99,12 +99,12 @@
                         <label class="block text-sm font-bold text-gray-700 mb-1">Date Livraison <span class="text-red-500">*</span></label>
                         <input type="date" name="date_livraison" value="{{ old('date_livraison', date('Y-m-d')) }}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                    </div>
+                </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Prix (FCFA) <span class="text-red-500">*</span></label>
                         <input type="number" name="prix" step="0.01" min="0" value="{{ old('prix') }}" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                    </div>
+                        </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">N° Facture</label>
                         <input type="text" name="reference_facture" value="{{ old('reference_facture') }}"
@@ -118,7 +118,7 @@
                                 <option value="{{ $agency->id }}" {{ old('agency_id') == $agency->id ? 'selected' : '' }}>{{ $agency->nom }}</option>
                             @endforeach
                         </select>
-                    </div>
+                </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">État <span class="text-red-500">*</span></label>
                         <select name="etat" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
@@ -127,12 +127,12 @@
                                 <option value="{{ $val }}" {{ old('etat') === $val ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
-                    </div>
+            </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Adresse MAC</label>
                         <input type="text" name="adresse_mac" value="{{ old('adresse_mac') }}" placeholder="00:11:22:33:44:55"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                    </div>
+                        </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Adresse IP</label>
                         <input type="text" name="adresse_ip" value="{{ old('adresse_ip') }}" placeholder="192.168.1.10"
@@ -155,18 +155,18 @@
                             <label class="block text-sm font-semibold text-gray-700">Prénom <span class="text-red-500">*</span></label>
                             <input type="text" name="utilisateur_prenom" id="utilisateur_prenom" value="{{ old('utilisateur_prenom') }}" required
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                        </div>
+                    </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700">E-mail</label>
                             <input type="email" name="email" id="email" value="{{ old('email') }}"
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                        </div>
+                </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700">Téléphone</label>
                             <input type="text" name="telephone" id="telephone" value="{{ old('telephone') }}"
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                        </div>
-                        <div>
+                            </div>
+                            <div>
                             <label class="block text-sm font-semibold text-gray-700">Département <span class="text-red-500">*</span></label>
                             <input type="text" name="departement" id="departement" value="{{ old('departement') }}" required
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
@@ -175,8 +175,8 @@
                             <label class="block text-sm font-semibold text-gray-700">Poste affecté <span class="text-red-500">*</span></label>
                             <input type="text" name="poste_affecte" id="poste_affecte" value="{{ old('poste_affecte') }}" required
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                        </div>
-                        <div>
+                            </div>
+                            <div>
                             <label class="block text-sm font-semibold text-gray-700">Position / grade <span class="text-red-500">*</span></label>
                             <select name="position" required class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
                                 <option value="">— Choisir —</option>
@@ -189,8 +189,8 @@
                             <label class="block text-sm font-semibold text-gray-700">Localisation bureau</label>
                             <input type="text" name="localisation" value="{{ old('localisation') }}"
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                        </div>
-                        <div>
+                            </div>
+                            <div>
                             <label class="block text-sm font-semibold text-gray-700">Date d'affectation <span class="text-red-500">*</span></label>
                             <input type="date" name="date_affectation" value="{{ old('date_affectation', date('Y-m-d')) }}" required
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
@@ -199,7 +199,7 @@
                             <label class="block text-sm font-semibold text-gray-700">Date retour prévue</label>
                             <input type="date" name="date_retour_prevue" value="{{ old('date_retour_prevue') }}"
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
-                        </div>
+                </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700">Motif d'affectation</label>
                             <select name="affectation_reason" class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
@@ -208,7 +208,7 @@
                                     <option value="{{ $reason }}" {{ old('affectation_reason') === $reason ? 'selected' : '' }}>{{ $reason }}</option>
                                 @endforeach
                             </select>
-                        </div>
+            </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700">Statut d'usage <span class="text-red-500">*</span></label>
                             <select name="statut_usage" required class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
@@ -216,12 +216,12 @@
                                 <option value="inactif" {{ old('statut_usage') === 'inactif' ? 'selected' : '' }}>Inactif</option>
                                 <option value="en_pret" {{ old('statut_usage') === 'en_pret' ? 'selected' : '' }}>En prêt</option>
                             </select>
-                        </div>
+            </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700">Détail du motif</label>
                         <textarea name="affectation_reason_detail" rows="2" class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">{{ old('affectation_reason_detail') }}</textarea>
-                    </div>
+                        </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700">Notes</label>
                         <textarea name="notes_affectation" rows="3" class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">{{ old('notes_affectation') }}</textarea>
@@ -239,70 +239,11 @@
     </form>
 </div>
 
+<script src="{{ asset('js/equipment-categories.js') }}"></script>
 <script>
-const categoriesData = {
-    'Réseau': {
-        'Connectivité & Transmission': ['Switches (L2/L3) 🖧', 'Routeurs 🛣️', 'Points d\'accès Wi-Fi / Contrôleurs Wi-Fi 📶', 'Modems 🌐', 'Convertisseurs Fibre (SFP, GBIC, Media converter) 🔄'],
-        'Sécurité Réseau': ['Pare-feu (Firewall) 🛡️', 'UTM / Appliances de sécurité 🛡️', 'Passerelles VPN 🔐', 'IDS/IPS 🚨'],
-        'Infrastructure & Support': ['Baies et armoires réseau 🗄️', 'Panneaux de brassage 🔌', 'Câblage RJ45 / Fibre optique 🔌', 'Onduleurs (UPS) ⚡', 'PDU (Multiprises intelligentes) 🔌']
-    },
-    'Électronique': {
-        'Vidéosurveillance (CCTV)': ['Caméras IP (fixes, PTZ, dôme) 🎥', 'NVR / DVR 📼', 'Serveurs d\'archivage vidéos 🗄️', 'Moniteurs de contrôle 🖥️'],
-        'Contrôle d\'accès': ['Badges / Lecteurs RFID 🪪', 'Serrures électroniques 🔐', 'Tourniquets / Portillons 🚪', 'Unités de contrôle et software 🧠'],
-        'Systèmes d\'alarme': ['Alarmes anti-intrusion 🚨', 'Détecteurs de mouvement 🕵️', 'Détecteurs d\'ouverture 🚪', 'Centrale d\'alarme 🧠']
-    },
-    'Informatique': {
-        'Postes Utilisateurs': ['Ordinateurs de bureau', 'Ordinateurs portables', 'Écrans', 'Claviers / Souris'],
-        'Périphériques': ['Imprimantes 🖨️', 'Scanners 📠', 'Onduleurs individuels 🔋', 'Projecteurs / Écrans interactifs 📽️'],
-        'Serveurs & Stockage': ['Serveurs physiques (Rack / Tour) 🖥️', 'NAS / SAN 🗄️', 'Baies de stockage 🧱', 'Solutions de backup (Tape library, disque dur externe) 💾'],
-        'Matériel d\'Administration & Support': ['Outils de diagnostic (IT / Réseau) 🧰', 'KVM (Keyboard Video Mouse) 🖥️', 'Barras de test (câblage) 🧪', 'Logiciels systèmes et outils métiers 💻']
-    },
-    'Logiciel': {
-        'Logiciels': ['Système d\'exploitation', 'Antivirus', 'Bureautique', 'Sécurité', 'Utilitaire', 'Métier']
-    }
-};
-
-function updateCategories() {
-    const type = document.getElementById('type').value;
-    const categorieSelect = document.getElementById('categorie');
-    const sousCategorieSelect = document.getElementById('sous_categorie');
-
-    categorieSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
-    sousCategorieSelect.innerHTML = '<option value="">-- Sélectionner la catégorie d\'abord --</option>';
-    sousCategorieSelect.disabled = true;
-
-    if (type && categoriesData[type]) {
-        Object.keys(categoriesData[type]).forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat;
-            option.textContent = cat;
-            categorieSelect.appendChild(option);
-        });
-        categorieSelect.disabled = false;
-    } else {
-        categorieSelect.disabled = true;
-    }
-}
-
-function updateSousCategories() {
-    const type = document.getElementById('type').value;
-    const categorie = document.getElementById('categorie').value;
-    const sousCategorieSelect = document.getElementById('sous_categorie');
-
-    sousCategorieSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
-
-    if (type && categorie && categoriesData[type] && categoriesData[type][categorie]) {
-        categoriesData[type][categorie].forEach(souscat => {
-            const option = document.createElement('option');
-            option.value = souscat;
-            option.textContent = souscat;
-            sousCategorieSelect.appendChild(option);
-        });
-        sousCategorieSelect.disabled = false;
-    } else {
-        sousCategorieSelect.disabled = true;
-    }
-}
+const updateCategories = window.updateCategoriesParc;
+const updateSousCategories = window.updateSousCategoriesParc;
+const categoriesData = window.categoriesData;
 
 function restoreCategorySelection() {
     const oldType = @json(old('type'));

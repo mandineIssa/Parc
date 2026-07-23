@@ -4927,29 +4927,9 @@
     </div>
 </div>
 
-<script>  
-    // Données de mapping Type -> Catégories -> Sous-catégories
-const categoriesData = {
-    'Réseau': {
-        'Connectivité & Transmission': ['Switches (L2/L3) 🖧', 'Routeurs 🛣️', 'Points d\'accès Wi-Fi / Contrôleurs Wi-Fi 📶', 'Modems 🌐', 'Convertisseurs Fibre (SFP, GBIC, Media converter) 🔄'],
-        'Sécurité Réseau': ['Pare-feu (Firewall) 🛡️', 'UTM / Appliances de sécurité 🛡️', 'Passerelles VPN 🔐', 'IDS/IPS 🚨'],
-        'Infrastructure & Support': ['Baies et armoires réseau 🗄️', 'Panneaux de brassage 🔌', 'Câblage RJ45 / Fibre optique 🔌', 'Onduleurs (UPS) ⚡', 'PDU (Multiprises intelligentes) 🔌']
-    },
-    'Électronique': {
-        'Vidéosurveillance (CCTV)': ['Caméras IP (fixes, PTZ, dôme) 🎥', 'NVR / DVR 📼', 'Serveurs d\'archivage vidéos 🗄️', 'Moniteurs de contrôle 🖥️'],
-        'Contrôle d\'accès': ['Badges / Lecteurs RFID 🪪', 'Serrures électroniques 🔐', 'Tourniquets / Portillons 🚪', 'Unités de contrôle et software 🧠'],
-        'Systèmes d\'alarme': ['Alarmes anti-intrusion 🚨', 'Détecteurs de mouvement 🕵️', 'Détecteurs d\'ouverture 🚪', 'Centrale d\'alarme 🧠']
-    },
-    'Informatique': {
-        'Postes Utilisateurs': ['Ordinateurs de bureau', 'Ordinateurs portables', 'Écrans', 'Claviers / Souris'],
-        'Périphériques': ['Imprimantes 🖨️', 'Scanners 📠', 'Onduleurs individuels 🔋', 'Projecteurs / Écrans interactifs 📽️'],
-        'Serveurs & Stockage': ['Serveurs physiques (Rack / Tour) 🖥️', 'NAS / SAN 🗄️', 'Baies de stockage 🧱', 'Solutions de backup (Tape library, disque dur externe) 💾'],
-        'Matériel d\'Administration & Support': ['Outils de diagnostic (IT / Réseau) 🧰', 'KVM (Keyboard Video Mouse) 🖥️', 'Barras de test (câblage) 🧪', 'Logiciels systèmes et outils métiers 💻']
-    },
-    'Logiciel': {
-        'Logiciels': ['Système d\'exploitation', 'Antivirus', 'Bureautique', 'Sécurité', 'Utilitaire', 'Métier']
-    }
-};
+<script src="{{ asset('js/equipment-categories.js') }}"></script>
+<script>
+const categoriesData = window.categoriesData;
 
 // Mapping Type vers section d'affichage
 const typeSectionMap = {

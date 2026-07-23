@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Mail\GpiNotificationMail;
 use App\Models\User;
+use App\Services\InAppNotificationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -13,6 +14,10 @@ use Illuminate\Support\Facades\Mail;
  */
 class UserMailNotifier
 {
+    public function __construct(
+        private readonly InAppNotificationService $inApp
+    ) {}
+
     public function notifyUser(
         User|int|null $user,
         string $subject,
@@ -82,11 +87,20 @@ class UserMailNotifier
      */
     public function superAdmins(): Collection
     {
+        $bootstrapEmails = config('cofina.super_admin_emails', []);
+
         return User::query()
-            ->where('role', 'super_admin')
             ->whereNotNull('email')
             ->where('email', '!=', '')
-            ->get();
+            ->where(function ($q) use ($bootstrapEmails) {
+                $q->where('role', 'super_admin');
+                if (! empty($bootstrapEmails)) {
+                    $q->orWhereIn('email', $bootstrapEmails);
+                }
+            })
+            ->get()
+            ->unique('id')
+            ->values();
     }
 
     private function resolveUser(User|int|null $user): ?User
@@ -130,7 +144,7 @@ class UserMailNotifier
             }
 
             Mail::to($user->email, $recipientName)
-                ->send(new GpiNotificationMail(
+                ->queue(new GpiNotificationMail(
                     $subject,
                     $title,
                     $message,
@@ -138,6 +152,14 @@ class UserMailNotifier
                     $actionUrl,
                     $actionLabel
                 ));
+
+            $this->inApp->notify(
+                $user,
+                $title,
+                $message,
+                $actionUrl,
+                $actionLabel
+            );
 
             Log::info('Notification GPI envoyée.', [
                 'user_id' => $user->id,

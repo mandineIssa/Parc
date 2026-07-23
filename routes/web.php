@@ -87,16 +87,6 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-// Route temporaire pour tester
-Route::get('/register', function () {
-    return view('auth.register');
-})->middleware('guest')->name('register');
-
-Route::post('/register', function (Request $request) {
-    // Logique d'inscription temporaire
-    return redirect('/login');
-})->middleware('guest');
-
 // ✅ MODIFICATION 2 : Routes utilisateurs avec préfixe /admin
 // Routes pour la gestion des utilisateurs (protégées par authentification)
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
@@ -112,6 +102,19 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
 */
 Route::middleware(['auth', 'verified'])->group(function (): void {
     require base_path('routes/web/v01_verified_equipment_parc.php');
+
+    Route::get('/search/global', [\App\Http\Controllers\GlobalSearchController::class, 'search'])->name('search.global');
+    Route::get('/notifications', [\App\Http\Controllers\GpiNotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\GpiNotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\GpiNotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::get('/equipment/{equipment}/label', [\App\Http\Controllers\EquipmentLabelController::class, 'pdf'])->name('equipment.label');
+
+    // Audits postes (collecte PowerShell)
+    Route::prefix('audits-postes')->name('audits-postes.')->group(function (): void {
+        Route::get('/', [\App\Http\Controllers\PosteAuditController::class, 'index'])->name('index');
+        Route::get('/export', [\App\Http\Controllers\PosteAuditController::class, 'export'])->name('export');
+        Route::get('/{poste}', [\App\Http\Controllers\PosteAuditController::class, 'show'])->name('show');
+    });
 });
 
 // Documentation (auth seul — évite blocage si email non vérifié)
@@ -134,10 +137,12 @@ require base_path('routes/web/v02e_equipment_transition_prefix.php');
 require base_path('routes/web/v02f_admin_users_manage.php');
 
 require base_path('routes/web/v03_reports_documentation.php');
-require base_path('routes/web/v04_workflow_transitions.php');
-require base_path('routes/web/v05_dashboards.php');
+Route::middleware(['auth', 'verified'])->group(function (): void {
+    require base_path('routes/web/v04_workflow_transitions.php');
+    require base_path('routes/web/v06_change_eod.php');
+});
 
-require base_path('routes/web/v06_change_eod.php');
+require base_path('routes/web/v05_dashboards.php');
 require base_path('routes/web/v07_passwords_network_licences.php');
 require base_path('routes/web/v08_controls.php');
 require base_path('routes/web/v09_incidents.php');

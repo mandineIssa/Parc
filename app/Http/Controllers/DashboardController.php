@@ -27,7 +27,7 @@ class DashboardController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         // Déterminer le dashboard approprié
-        if (in_array($role, ['super_admin', 'admin', 'responsable_approbation']) || $user->email === 'superadmin@cofina.sn') {
+        if ($user->isDashboardAdmin()) {
             return redirect()->route('dashboards.index');
         } elseif (in_array($role, ['agent_it', 'technicien', 'user'])) {
             return redirect()->route('dashboards.agent');
@@ -45,7 +45,7 @@ class DashboardController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         // Vérifier les autorisations
-        if (!in_array($role, ['super_admin', 'admin', 'responsable_approbation']) && $user->email !== 'superadmin@cofina.sn') {
+        if (!$user->isDashboardAdmin()) {
             abort(403, 'Accès non autorisé');
         }
 
@@ -149,7 +149,7 @@ class DashboardController extends Controller
 
         // Déterminer ce que l'utilisateur peut voir
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         $isAgent = in_array($role, ['agent_it', 'technicien', 'user']);
 
@@ -571,7 +571,7 @@ class DashboardController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         $stats = $this->getSuperAdminStats($user, $request);
 
@@ -590,7 +590,7 @@ class DashboardController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         $submissions = $this->getRecentSubmissions($user, $isSuperAdmin, $request);
 
@@ -609,7 +609,7 @@ class DashboardController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         $charts = $this->getSuperAdminCharts($user, $request);
 
@@ -628,7 +628,7 @@ class DashboardController extends Controller
         $role = strtolower(trim((string) ($user->role ?? '')));
 
         $isSuperAdmin = in_array($role, ['super_admin', 'admin', 'responsable_approbation'])
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
 
         $query = TransitionApproval::with(['equipment', 'submitter', 'approver'])
             ->orderBy('created_at', 'desc');

@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @auth
     <meta name="profile-signature-url" content="{{ route('profile.signature.show') }}">
+    <meta name="global-search-url" content="{{ route('search.global') }}">
     @endauth
     
     <!-- META TAGS POUR ROLE MANAGER -->
@@ -332,6 +333,20 @@
     </script>
     
     <script src="{{ asset('js/signature-canvas.js') }}"></script>
+    @auth
+    <div id="global-search-modal" class="hidden fixed inset-0 z-[9999] flex items-start justify-center pt-[15vh] px-4 bg-black/50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden">
+            <div class="flex items-center border-b px-4">
+                <i class="fas fa-search text-gray-400 mr-3"></i>
+                <input id="global-search-input" type="search" class="flex-1 py-4 outline-none text-gray-800" placeholder="Rechercher équipement, utilisateur… (Ctrl+K)" autocomplete="off">
+                <button type="button" data-close class="p-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="global-search-results" class="max-h-80 overflow-y-auto"></div>
+        </div>
+    </div>
+    <script src="{{ asset('js/global-search.js') }}"></script>
+    <script src="{{ asset('js/theme-toggle.js') }}"></script>
+    @endauth
     @stack('scripts')
 
 </body>

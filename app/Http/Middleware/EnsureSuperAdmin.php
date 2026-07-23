@@ -21,7 +21,7 @@ class EnsureSuperAdmin
         // Accepte plusieurs formats de rôle
         $role = strtolower(trim($user->role ?? ''));
         $isSuperAdmin = in_array($role, ['super_admin', 'superadmin', 'admin']) 
-            || $user->email === 'superadmin@cofina.sn';
+            || $user->hasBootstrapSuperAccess();
         
         if (!$isSuperAdmin) {
             abort(403, "Accès réservé aux super administrateurs. Votre rôle: '{$user->role}'");

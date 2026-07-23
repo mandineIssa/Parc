@@ -20,9 +20,22 @@
                 </a>
             </div>
 
-            <!-- User -->
-            <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- Recherche, notifications, thème -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
                 @auth
+                <button type="button" id="global-search-open" class="p-2 text-gray-600 hover:text-[#C8102E] rounded-lg" title="Recherche (Ctrl+K)">
+                    <i class="fas fa-search"></i>
+                </button>
+                @php $unreadNotifs = auth()->user()->gpiNotifications()->whereNull('read_at')->count(); @endphp
+                <a href="{{ route('notifications.index') }}" class="relative p-2 text-gray-600 hover:text-[#C8102E] rounded-lg" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    @if($unreadNotifs > 0)
+                        <span class="absolute -top-0.5 -right-0.5 bg-[#C8102E] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">{{ $unreadNotifs > 9 ? '9+' : $unreadNotifs }}</span>
+                    @endif
+                </a>
+                <button type="button" id="theme-toggle" class="p-2 text-gray-600 hover:text-[#C8102E] rounded-lg" title="Mode sombre">
+                    <i class="fas fa-moon"></i>
+                </button>
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open"
                             @click.away="open = false"

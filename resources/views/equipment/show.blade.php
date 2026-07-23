@@ -15,6 +15,9 @@
                     <a href="{{ route('equipment.edit', $equipment) }}" class="btn-cofina-outline bg-blue-50 border-blue-200 hover:bg-blue-100">
                         ✏️ Modifier
                     </a>
+                    <a href="{{ route('equipment.label', $equipment) }}" class="btn-cofina-outline" target="_blank">
+                        🏷️ Étiquette PDF
+                    </a>
                     <a href="{{ route('equipment.transitions.', $equipment) }}" class="btn-cofina-primary">
                         🔄 Changer statut
                     </a>
@@ -566,6 +569,27 @@
                 </div>
             </div>
         </div>
+
+        @if(isset($auditHistory) && $auditHistory->isNotEmpty())
+        <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                <h2 class="text-lg font-semibold text-gray-800">Historique des actions</h2>
+            </div>
+            <div class="divide-y divide-gray-100">
+                @foreach($auditHistory as $entry)
+                <div class="px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <div>
+                        <span class="text-sm font-medium text-gray-800">{{ $entry->action ?? '—' }}</span>
+                        @if($entry->user)
+                            <span class="text-xs text-gray-500 ml-2">par {{ $entry->user->name }}</span>
+                        @endif
+                    </div>
+                    <time class="text-xs text-gray-500">{{ $entry->created_at?->format('d/m/Y H:i') }}</time>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endsection
