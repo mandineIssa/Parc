@@ -200,15 +200,15 @@ Route::get('equipment/parc/export', [ParcController::class, 'export'])->name('pa
 // ============================================
 
 Route::resource('equipment', EquipmentController::class)
-    ->whereNumber('equipment'); // ✅ SÉCURITÉ EN PLUS
+    ->only(['show'])
+    ->whereNumber('equipment'); // show uniquement : le CRUD est déjà défini plus haut
 
     // Routes pour l'import du parc
 Route::prefix('parc')->name('parc.')->group(function () {
-    // ... autres routes existantes ...
-    
-    Route::get('/import', [ParcController::class, 'showImportForm'])->name('import');
+    // Import parc (chemins /parc/import*) — noms distincts de equipment/parc/import
+    Route::get('/import', [ParcController::class, 'showImportForm'])->name('import.page');
     Route::post('/import', [ParcController::class, 'processImport'])->name('import.process');
-    Route::get('/import/template', [ParcController::class, 'downloadTemplate'])->name('import.template');
+    Route::get('/import/template', [ParcController::class, 'downloadTemplate'])->name('import.template.page');
 });
     Route::get('/reports', function () {
         return view('reports.index');

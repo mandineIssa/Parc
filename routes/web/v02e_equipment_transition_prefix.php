@@ -42,6 +42,6 @@ use App\Http\Controllers\IncidentFicheController;
 Route::prefix('equipment/{equipment}/transition')->name('transitions.')->group(function () {
     Route::get('/', [TransitionController::class, 'showTransitionForm'])->name('show');
     Route::post('/execute', [TransitionController::class, 'executeTransition'])->name('execute');
-    Route::post('/submit', [TransitionController::class, 'submitForm'])->name('submit');
+    Route::post('/submit', [TransitionController::class, 'submitForm'])->name('submit-form');
     Route::post('/submitAll', [TransitionController::class, 'submitAllForms'])->name('submitAll'); // AJOUTER CETTE LIGNE
 });

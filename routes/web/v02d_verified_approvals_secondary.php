@@ -67,12 +67,8 @@ Route::get(
 )->name('transitions.fiche-mouvement.download')
 ->middleware(['auth', 'verified']);
 
-// Route pour télécharger le document complet
-Route::get(
-    '/transitions/approval/{id}/download',
-    [TransitionController::class, 'downloadApproval']
-)->name('transitions.approval.download')
-->middleware(['auth', 'verified']);
+// Route pour télécharger le document complet ({approval} déjà défini plus haut — pas de doublon de nom)
+// Route::get('/transitions/approval/{id}/download', ...)->name('transitions.approval.download');
     Route::get('/admin/approvals', [TransitionController::class, 'pendingApprovals'])
         ->name('admin.approvals');
     
@@ -84,8 +80,8 @@ Route::get(
     Route::post('/transitions/approval/{approval}/approve', [TransitionController::class, 'approveTransition'])
         ->name('transitions.approve');
         
-    Route::get('/transitions/approval/{approval}', [TransitionController::class, 'show'])
-    ->name('transitions.approval.show');
+    // showApproval déjà nommé transitions.approval.show dans v02a — ne pas redéclarer ici
+    // Route::get('/transitions/approval/{approval}', ...)->name('transitions.approval.show');
 
     // Rejeter la transition (toujours avec transitions.reject pour compatibilité)
     Route::post('/transitions/approval/{approval}/reject', [TransitionController::class, 'rejectTransition'])
@@ -106,5 +102,5 @@ Route::get(
     Route::get('/admin/stats', [SuperAdminController::class, 'stats'])
         ->name('admin.stats');
         
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    // users.index déjà défini sous /admin/users (v02f)
 });

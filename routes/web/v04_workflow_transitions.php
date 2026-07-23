@@ -62,7 +62,7 @@ Route::get('/admin/maintenance-approvals', [TransitionController::class, 'listMa
     ->middleware('auth');
 // Cette route devrait déjà exister
 Route::get('/approvals/{approval}', [TransitionController::class, 'showApprovalDetails'])
-    ->name('transitions.approval.show')
+    ->name('transitions.approval.details')
     ->middleware('auth');
 
     Route::get('/admin/approvals/{approval}/maintenance', 
