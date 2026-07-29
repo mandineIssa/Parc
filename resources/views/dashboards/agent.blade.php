@@ -91,7 +91,7 @@
     <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-lg font-bold text-gray-800">Mes soumissions récentes</h2>
-            <a href="{{ route('transitions.create') }}" class="btn-cofina text-sm">
+            <a href="{{ route('equipment.index') }}" class="btn-cofina text-sm">
                 + Nouvelle soumission
             </a>
         </div>
@@ -180,7 +180,7 @@
             <div class="text-4xl mb-4">📭</div>
             <p class="text-lg">Aucune soumission pour le moment</p>
             <p class="text-sm mt-2">Créez votre première soumission pour commencer</p>
-            <a href="{{ route('transitions.create') }}" class="btn-cofina mt-4 inline-block">
+            <a href="{{ route('equipment.index') }}" class="btn-cofina mt-4 inline-block">
                 Créer une soumission
             </a>
         </div>
@@ -216,17 +216,25 @@
             <h2 class="text-lg font-bold text-gray-800 mb-4">🔧 Maintenances à suivre</h2>
             <div class="space-y-4">
                 @foreach($equipmentsToManage['maintenance_equipments'] as $equipment)
+                @php $latestMaintenance = $equipment->maintenance->first(); @endphp
                 <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
                     <div>
                         <div class="font-medium">{{ $equipment->nom }}</div>
                         <div class="text-sm text-gray-500">
-                            Retour: {{ $equipment->maintenance->date_retour_prevue->format('d/m/Y') }}
+                            Retour: {{ $latestMaintenance?->date_retour_prevue?->format('d/m/Y') ?? 'N/A' }}
                         </div>
                     </div>
-                    <a href="{{ route('maintenance.show', $equipment->maintenance) }}" 
+                    @if($latestMaintenance)
+                    <a href="{{ route('maintenance.show', $latestMaintenance) }}" 
                        class="btn-cofina-outline text-xs">
                         Suivre
                     </a>
+                    @else
+                    <a href="{{ route('equipment.show', $equipment) }}" 
+                       class="btn-cofina-outline text-xs">
+                        Voir
+                    </a>
+                    @endif
                 </div>
                 @endforeach
             </div>

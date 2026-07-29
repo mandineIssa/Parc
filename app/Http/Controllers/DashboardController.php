@@ -288,10 +288,8 @@ class DashboardController extends Controller
             $query->where('utilisateur_id', $user->id);
         })->count();
 
-        // Maintenances en cours que je gère
-        $maintenancesManaged = Maintenance::where('technicien_id', $user->id)
-            ->whereIn('statut', ['en_cours', 'diagnostic'])
-            ->count();
+        // Maintenances en cours (pas de technicien_id en base — on compte les équipements en maintenance)
+        $maintenancesManaged = Equipment::where('statut', 'maintenance')->count();
 
         return [
             'my_total_submissions' => $myTotal,
@@ -451,10 +449,12 @@ class DashboardController extends Controller
         // Équipements en maintenance qui nécessitent attention
         $maintenanceEquipments = Equipment::where('statut', 'maintenance')
             ->whereHas('maintenance', function ($query) {
-                $query->whereIn('statut', ['diagnostic', 'en_cours'])
+                $query->whereIn('statut', ['en_cours', 'en_attente'])
                       ->where('date_retour_prevue', '<=', Carbon::now()->addDays(3));
             })
-            ->with('maintenance')
+            ->with(['maintenance' => function ($query) {
+                $query->orderByDesc('date_depart');
+            }])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
@@ -488,7 +488,7 @@ class DashboardController extends Controller
         $lateMaintenance = Equipment::where('statut', 'maintenance')
             ->whereHas('maintenance', function ($query) {
                 $query->where('date_retour_prevue', '<', Carbon::now())
-                      ->whereIn('statut', ['diagnostic', 'en_cours']);
+                      ->whereIn('statut', ['en_cours', 'en_attente']);
             })
             ->count();
 
@@ -497,7 +497,7 @@ class DashboardController extends Controller
                 'icon' => '⚠️',
                 'title' => 'Maintenances en retard',
                 'description' => $lateMaintenance . ' maintenance(s) en retard',
-                'action' => route('maintenance.index', ['statut' => 'en_retard']),
+                'action' => route('maintenance.retard'),
                 'color' => 'red'
             ];
         }
@@ -512,7 +512,7 @@ class DashboardController extends Controller
                 'icon' => '⏳',
                 'title' => 'Soumissions en attente',
                 'description' => $pendingSubmissions . ' demande(s) en attente',
-                'action' => route('transitions.my-submissions'),
+                'action' => route('dashboard.agent'),
                 'color' => 'yellow'
             ];
         }
