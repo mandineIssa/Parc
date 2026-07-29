@@ -249,13 +249,28 @@
             @endphp
             @if(count($existingAttachments) > 0)
                 <div class="space-y-2">
-                    @foreach($existingAttachments as $att)
-                        <a href="{{ asset('storage/' . ($att['path'] ?? '')) }}" target="_blank" class="block p-3 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-sm">
-                            <span class="font-medium text-gray-800">{{ $att['name'] ?? 'Fichier joint' }}</span>
-                            @if(!empty($att['uploaded_at']))
-                                <span class="text-gray-500"> — {{ $att['uploaded_at'] }}</span>
-                            @endif
-                        </a>
+                    @foreach($existingAttachments as $idx => $att)
+                        @php
+                            $attName = $att['name'] ?? 'Fichier joint';
+                            $viewUrl = route('eod.attachments.show', ['fiche' => $fiche, 'index' => $idx]);
+                            $downloadUrl = route('eod.attachments.show', ['fiche' => $fiche, 'index' => $idx, 'download' => 1]);
+                            $ext = strtolower(pathinfo($attName, PATHINFO_EXTENSION));
+                            $isPreviewable = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'xlsx', 'xls', 'csv'], true);
+                        @endphp
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg border border-gray-200 bg-gray-50">
+                            <div class="min-w-0">
+                                <span class="font-medium text-gray-800">{{ $attName }}</span>
+                                @if(!empty($att['uploaded_at']))
+                                    <span class="text-gray-500 text-sm"> — {{ $att['uploaded_at'] }}</span>
+                                @endif
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                @if($isPreviewable)
+                                    <a href="{{ $viewUrl }}" class="px-3 py-1.5 text-sm font-semibold rounded-lg border border-gray-300 bg-white hover:bg-gray-100 text-gray-700">Visualiser</a>
+                                @endif
+                                <a href="{{ $downloadUrl }}" class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-[#C8102E] hover:bg-[#a00d24] text-white">Télécharger</a>
+                            </div>
+                        </div>
                     @endforeach
                 </div>
             @else

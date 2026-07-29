@@ -135,6 +135,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{fiche}/sign', [EodSuiviController::class, 'controllerSign'])->name('sign');
     });
 
+    // Pièces jointes EOD (stream authentifié — évite le 403 /storage)
+    Route::get('/eod/{fiche}/attachments/{index}', [EodSuiviController::class, 'attachment'])
+        ->whereNumber('index')
+        ->name('eod.attachments.show');
+
     // N+3 Routes (NOUVEAU)
     Route::prefix('eod/n3')->name('eod.n3.')->group(function () {
         Route::get('/', [EodSuiviController::class, 'n3Index'])->name('index');

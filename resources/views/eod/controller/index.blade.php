@@ -7,7 +7,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex items-center justify-between mb-6">
         <div>
-            <p class="text-sm text-gray-600">Le PDF final n'est disponible qu'après votre validation.</p>
+            <p class="text-sm text-gray-600">Pièces jointes, aperçu PDF et signatures disponibles sur chaque fiche.</p>
         </div>
     </div>
 
@@ -23,17 +23,20 @@
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Référence</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Date</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">N+2</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Agent IT</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Statut</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Action</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($fiches as $fiche)
+                @php
+                    $demandeur = trim(($fiche->creator?->prenom ?? '') . ' ' . ($fiche->creator?->name ?? ''));
+                @endphp
                 <tr>
                     <td class="px-4 py-3 font-mono text-sm text-[#C8102E]">{{ $fiche->reference }}</td>
                     <td class="px-4 py-3 text-sm">{{ $fiche->date_traitement?->format('d/m/Y') }}</td>
-                    <td class="px-4 py-3 text-sm">{{ $fiche->validator?->name ?? '—' }}</td>
+                    <td class="px-4 py-3 text-sm font-medium">{{ $demandeur !== '' ? $demandeur : '—' }}</td>
                     <td class="px-4 py-3 text-sm">
                         <span class="px-2 py-1 rounded-full text-xs {{ $fiche->status_class }}">{{ $fiche->status_label }}</span>
                     </td>

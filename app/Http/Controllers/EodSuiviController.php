@@ -281,7 +281,7 @@ class EodSuiviController extends Controller
             }
         }
 
-        $fiches = $query->paginate(15)->withQueryString();
+        $fiches = $query->with(['creator', 'validator'])->paginate(15)->withQueryString();
 
         return view('eod.controller.index', compact('fiches'));
     }
@@ -293,6 +293,8 @@ class EodSuiviController extends Controller
         if (! in_array($fiche->status, ['PENDING_N3_CONTROLLER', 'PENDING_CONTROLLER', 'CLOSED', 'VALIDATED'], true)) {
             abort(404);
         }
+
+        $fiche->loadMissing(['creator', 'n3Validator', 'controllerValidator']);
 
         $batchData = json_decode($fiche->batch_data ?? '[]', true) ?: [];
         $incidentsData = json_decode($fiche->incidents_data ?? '[]', true) ?: [];
@@ -597,7 +599,7 @@ class EodSuiviController extends Controller
         return redirect()->back()->with('error', 'Format non supporté');
     }
 
-    public function generatePdf(EodSuivi $fiche)
+    public function generatePdf(Request $request, EodSuivi $fiche)
     {
         $user = Auth::user();
         $isAuthor = in_array($user->role_change, ['N1', 'N2'], true)
@@ -609,12 +611,18 @@ class EodSuiviController extends Controller
             abort(403, 'Non autorisé');
         }
 
+        $isFinal = in_array($fiche->status, ['CLOSED', 'VALIDATED'], true);
+        $isControllerPreview = $isSupervisor
+            && in_array($fiche->status, ['PENDING_N3_CONTROLLER', 'PENDING_CONTROLLER'], true);
+
         if ($fiche->status === 'CLOSED') {
             // ok
         } elseif ($fiche->status === 'VALIDATED') {
             if (empty($fiche->controller_validation_visa) && empty($fiche->controller_signature_path)) {
                 return back()->with('error', 'PDF non disponible pour cette fiche.');
             }
+        } elseif ($isControllerPreview) {
+            // Aperçu pour N+3 / Controller pendant la validation (signatures déjà présentes)
         } else {
             return back()->with('error', 'Le PDF est disponible uniquement après clôture complète (ou validation historique).');
         }
@@ -633,6 +641,7 @@ class EodSuiviController extends Controller
             'emargementSigDataUri' => $this->fileToPdfDataUri($fiche->emargement_signature_path),
             'n3SigDataUri' => $this->fileToPdfDataUri($fiche->n3_signature_path),
             'controllerSigDataUri' => $this->fileToPdfDataUri($fiche->controller_signature_path),
+            'isPreview' => ! $isFinal,
         ];
 
         $pdf = Pdf::loadView('eod.pdf.template', $data);
@@ -643,9 +652,92 @@ class EodSuiviController extends Controller
             'isRemoteEnabled' => true,
         ]);
 
-        $filename = 'EOD_' . $fiche->reference . '_' . date('Y-m-d') . '.pdf';
+        $suffix = $isFinal ? '' : '_apercu';
+        $filename = 'EOD_' . $fiche->reference . $suffix . '_' . date('Y-m-d') . '.pdf';
+
+        if ($request->boolean('inline') || $request->boolean('preview')) {
+            return $pdf->stream($filename);
+        }
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Visualiser / télécharger une pièce jointe EOD (accès authentifié, hors /storage public).
+     */
+    public function attachment(Request $request, EodSuivi $fiche, int $index)
+    {
+        $this->authorizeEodAttachmentAccess($fiche);
+
+        $attachments = is_array($fiche->attachments) ? $fiche->attachments : [];
+        if (! array_key_exists($index, $attachments)) {
+            abort(404, 'Pièce jointe introuvable.');
+        }
+
+        $att = $attachments[$index];
+        $path = $att['path'] ?? null;
+        $name = $att['name'] ?? 'piece-jointe';
+
+        if (! $path || ! Storage::disk('public')->exists($path)) {
+            abort(404, 'Fichier introuvable sur le serveur.');
+        }
+
+        $absolute = Storage::disk('public')->path($path);
+        $mime = @mime_content_type($absolute) ?: 'application/octet-stream';
+        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+        if ($request->boolean('download')) {
+            return response()->download($absolute, $name, [
+                'Content-Type' => $mime,
+            ]);
+        }
+
+        if (in_array($ext, ['xlsx', 'xls', 'csv'], true)) {
+            return $this->previewSpreadsheetAttachment($absolute, $name, $ext);
+        }
+
+        return response()->file($absolute, [
+            'Content-Type' => $mime,
+        ]);
+    }
+
+    private function previewSpreadsheetAttachment(string $absolute, string $name, string $ext)
+    {
+        try {
+            if ($ext === 'csv') {
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                $reader->setInputEncoding('UTF-8');
+            } elseif ($ext === 'xls') {
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+            } else {
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+            }
+
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($absolute);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray(null, true, true, false);
+
+            $maxRows = 200;
+            $truncated = count($rows) > $maxRows;
+            $rows = array_slice($rows, 0, $maxRows);
+
+            return response()->view('eod.attachments.spreadsheet-preview', [
+                'name' => $name,
+                'rows' => $rows,
+                'truncated' => $truncated,
+                'maxRows' => $maxRows,
+            ]);
+        } catch (\Throwable $e) {
+            return response(
+                '<!DOCTYPE html><html><body style="font-family:sans-serif;padding:24px">'
+                . '<p>Impossible de prévisualiser ce fichier Excel.</p>'
+                . '<p style="color:#666;font-size:13px">' . e($e->getMessage()) . '</p>'
+                . '</body></html>',
+                200,
+                ['Content-Type' => 'text/html; charset=UTF-8']
+            );
+        }
     }
 
     // ==================== Internes ====================
@@ -988,6 +1080,28 @@ class EodSuiviController extends Controller
             'CONTROLLER' => $user->canSignEodControllerSlot(),
             default => false,
         };
+    }
+
+    private function authorizeEodAttachmentAccess(EodSuivi $fiche): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            abort(403, 'Non autorisé');
+        }
+
+        if ($user->role === 'super_admin') {
+            return;
+        }
+
+        if ((int) $fiche->created_by === (int) $user->id) {
+            return;
+        }
+
+        if ($user->canAccessEodAsN3() || $user->canAccessEodAsController() || $user->canSignEodControllerSlot()) {
+            return;
+        }
+
+        abort(403, 'Non autorisé à accéder à cette pièce jointe.');
     }
 
     private function authorizeOwner(EodSuivi $fiche)

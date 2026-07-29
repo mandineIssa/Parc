@@ -234,7 +234,15 @@
 <div class="page">
 
     {{-- ── HEADER ── --}}
+    @php
+        $demandeurPdf = trim(($fiche->creator?->prenom ?? '') . ' ' . ($fiche->creator?->name ?? ''));
+    @endphp
     <div class="header">
+        @if(!empty($isPreview))
+            <div style="background:#fef3c7;color:#92400e;text-align:center;padding:4px 8px;font-size:8px;font-weight:700;border-bottom:1px solid #f59e0b;">
+                APER&Ccedil;U &mdash; document non cl&ocirc;tur&eacute; (signatures partielles possibles)
+            </div>
+        @endif
         <div class="header-title">
             <h1>Fiche de Suivi &mdash; Traitement de Fin de Journ&eacute;e</h1>
             <div class="sub">{{ $fiche->systeme ?? 'Oracle FLEXCUBE Core Banking' }} &middot; Document interne</div>
@@ -253,6 +261,12 @@
                 <div class="meta-cell">{{ $fiche->date_traitement ? $fiche->date_traitement->format('d/m/Y') : '&nbsp;' }}</div>
                 <div class="meta-cell label">Responsable suivi :</div>
                 <div class="meta-cell">{{ $fiche->responsable_suivi ?? 'Service IT &ndash; Exploitation' }}</div>
+            </div>
+            <div class="meta-row">
+                <div class="meta-cell label">Agent IT :</div>
+                <div class="meta-cell">{{ $demandeurPdf !== '' ? $demandeurPdf : '—' }}</div>
+                <div class="meta-cell label">R&eacute;f&eacute;rence :</div>
+                <div class="meta-cell">{{ $fiche->reference ?? '—' }}</div>
             </div>
         </div>
 
