@@ -10,11 +10,23 @@
 param(
     [string]$ApiUrl,
     [string]$ApiKey,
-    [string]$ConfigPath = (Join-Path $PSScriptRoot 'config.json')
+    [string]$ConfigPath
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# Compatible lancement via .bat (PSScriptRoot parfois vide)
+if (-not $ConfigPath) {
+    $scriptDir = $PSScriptRoot
+    if (-not $scriptDir) {
+        $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
+    if (-not $scriptDir) {
+        $scriptDir = (Get-Location).Path
+    }
+    $ConfigPath = Join-Path $scriptDir 'config.json'
+}
 
 function Get-AuditConfig {
     param(

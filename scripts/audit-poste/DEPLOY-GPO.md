@@ -14,8 +14,14 @@
 
 | Fichier | Rôle |
 |---------|------|
+| `Collecte-AuditPoste.bat` | **Double-clic** : lance la collecte (pour test manuel) |
 | `Collecte-AuditPoste.ps1` | Script de collecte |
 | `config.json` | `ApiUrl` + `ApiKey` (copier depuis `config.prod.example.json`) |
+
+### Test manuel sans GPO
+
+Sur un PC du domaine, ouvrir le partage et **double-cliquer** `Collecte-AuditPoste.bat`.  
+Aucune copie locale du script n’est nécessaire.
 
 ### ACL recommandées sur le dossier
 

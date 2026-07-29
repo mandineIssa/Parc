@@ -107,6 +107,12 @@
                     <a href="{{ route('documentation.manuel.pdf') }}" class="flex items-center font-semibold text-[#A61B29] hover:underline">
                         <i class="fas fa-file-pdf mr-2"></i>Manuel complet PDF (avec illustrations)
                     </a>
+                    <a href="{{ route('documentation.parc-technique.pdf') }}" class="flex items-center font-semibold text-[#A61B29] hover:underline">
+                        <i class="fas fa-file-pdf mr-2"></i>Doc technique Module Parc (PDF)
+                    </a>
+                    <a href="{{ route('documentation.cahier-charges-audits.pdf') }}" class="flex items-center font-semibold text-[#A61B29] hover:underline">
+                        <i class="fas fa-file-pdf mr-2"></i>Cahier des charges Audits postes (PDF)
+                    </a>
                     <a href="{{ route('documentation.download', 'pdf') }}" class="flex items-center text-gray-600 hover:underline">
                         <i class="fas fa-file-pdf mr-2"></i>Archive PDF stockée
                         <span class="text-gray-400 ml-1">(si disponible)</span>

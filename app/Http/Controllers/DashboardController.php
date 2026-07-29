@@ -30,9 +30,11 @@ class DashboardController extends Controller
         if ($user->isDashboardAdmin()) {
             return redirect()->route('dashboards.index');
         } elseif (in_array($role, ['agent_it', 'technicien', 'user'])) {
-            return redirect()->route('dashboards.agent');
+            // Route web définie dans routes/web/v05_dashboards.php : /dashboard/agent => name('dashboard.agent')
+            return redirect()->route('dashboard.agent');
         } else {
-            return redirect()->route('dashboards.user');
+            // Route web définie dans routes/web/v05_dashboards.php : /dashboard/user => name('dashboard.user')
+            return redirect()->route('dashboard.user');
         }
     }
 

@@ -121,6 +121,8 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 Route::middleware(['auth'])->prefix('documentation')->name('documentation.')->group(function (): void {
     Route::get('/', [\App\Http\Controllers\DocumentationController::class, 'index'])->name('index');
     Route::get('/pdf/manuel', [\App\Http\Controllers\DocumentationController::class, 'downloadManuelPdf'])->name('manuel.pdf');
+    Route::get('/pdf/parc-technique', [\App\Http\Controllers\DocumentationController::class, 'downloadParcTechniquePdf'])->name('parc-technique.pdf');
+    Route::get('/pdf/cahier-charges-audits', [\App\Http\Controllers\DocumentationController::class, 'downloadCahierChargesAuditsPdf'])->name('cahier-charges-audits.pdf');
     Route::get('/download/{format}', [\App\Http\Controllers\DocumentationController::class, 'download'])
         ->name('download')
         ->where('format', 'pdf|zip');

@@ -1,18 +1,33 @@
 # Collecte audits postes (PowerShell)
 #
-# Usage rapide (dev local) :
-#   1. Copier config.example.json → config.json et renseigner ApiKey (= AUDIT_API_KEY du .env)
-#   2. php artisan serve
-#   3. .\Collecte-AuditPoste.ps1 -ApiUrl "http://127.0.0.1:8000" -ApiKey "..."
+# ---------------------------------------------------------------
+# USAGE ENTREPRISE (recommande)
+# ---------------------------------------------------------------
+# 1. Sur un PARTAGE reseau (ex. \\SERVEUR\IT$\audit-poste\) deposer :
+#      Collecte-AuditPoste.bat
+#      Collecte-AuditPoste.ps1
+#      config.json   (copier depuis config.prod.example.json)
 #
-# Prévisualiser sans envoyer :
-#   .\Collecte-AuditPoste.ps1 -WhatIf
+# 2. config.json :
+#      {
+#        "ApiUrl": "https://gpi.cofinaonline.com",
+#        "ApiKey": "meme_cle_que_AUDIT_API_KEY_du_serveur"
+#      }
 #
-# Production / GPO :
-#   Voir DEPLOY-GPO.md
-#   - Partage : \\SERVEUR\IT$\audit-poste\ (script + config.json)
-#   - Tâche planifiée SYSTEM → powershell.exe -File "...\Collecte-AuditPoste.ps1"
-#   - Modele XML : Collecte-AuditPoste-Task.xml
-#   - Config prod exemple : config.prod.example.json
+# 3. Sur un poste : double-cliquer Collecte-AuditPoste.bat
+#    (pas besoin de copier les fichiers sur chaque PC)
 #
-# Interface web après envoi : /audits-postes
+# 4. Ou GPO / tache planifiee SYSTEM :
+#      Programme : powershell.exe
+#      Arguments :
+#        -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "\\SERVEUR\IT$\audit-poste\Collecte-AuditPoste.ps1"
+#    Voir DEPLOY-GPO.md
+#
+# ---------------------------------------------------------------
+# DEV LOCAL
+# ---------------------------------------------------------------
+#   Copy-Item config.example.json config.json
+#   .\Collecte-AuditPoste.ps1 -ApiUrl "http://127.0.0.1:8000" -ApiKey "..."
+#   ou double-clic sur Collecte-AuditPoste.bat
+#
+# Interface web : /audits-postes

@@ -57,6 +57,36 @@ class DocumentationController extends Controller
         return $pdf->download($filename);
     }
 
+    public function downloadParcTechniquePdf(\App\Services\DocumentationParcTechniquePdfBuilder $builder)
+    {
+        $pdf = Pdf::loadView('documentation.pdf.parc-technique', [
+            'chapters' => $builder->chapters(),
+            'version' => '1.0',
+            'generatedAt' => now()->format('d/m/Y H:i'),
+        ]);
+
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Doc_Technique_Module_Parc_COFINA_'.now()->format('Y-m-d').'.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function downloadCahierChargesAuditsPdf(\App\Services\CahierDesChargesAuditsPostesBuilder $builder)
+    {
+        $pdf = Pdf::loadView('documentation.pdf.cahier-charges-audits-postes', [
+            'chapters' => $builder->chapters(),
+            'version' => '1.0',
+            'generatedAt' => now()->format('d/m/Y H:i'),
+        ]);
+
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Cahier_Charges_Audits_Postes_COFINA_'.now()->format('Y-m-d').'.pdf';
+
+        return $pdf->download($filename);
+    }
+
     public function download(string $format = 'pdf')
     {
         if ($format === 'pdf') {
