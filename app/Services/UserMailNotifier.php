@@ -24,7 +24,8 @@ class UserMailNotifier
         string $title,
         string $message,
         ?string $actionUrl = null,
-        ?string $actionLabel = null
+        ?string $actionLabel = null,
+        bool $sync = false
     ): bool {
         $recipient = $this->resolveUser($user);
 
@@ -32,7 +33,7 @@ class UserMailNotifier
             return false;
         }
 
-        return $this->send($recipient, $subject, $title, $message, $actionUrl, $actionLabel);
+        return $this->send($recipient, $subject, $title, $message, $actionUrl, $actionLabel, $sync);
     }
 
     public function notifyUserByEmail(
@@ -135,7 +136,8 @@ class UserMailNotifier
         string $title,
         string $message,
         ?string $actionUrl,
-        ?string $actionLabel
+        ?string $actionLabel,
+        bool $sync = false
     ): bool {
         try {
             $recipientName = trim((string) $user->prenom . ' ' . (string) $user->name);
@@ -143,15 +145,21 @@ class UserMailNotifier
                 $recipientName = (string) $user->email;
             }
 
-            Mail::to($user->email, $recipientName)
-                ->queue(new GpiNotificationMail(
-                    $subject,
-                    $title,
-                    $message,
-                    $recipientName,
-                    $actionUrl,
-                    $actionLabel
-                ));
+            $mailable = new GpiNotificationMail(
+                $subject,
+                $title,
+                $message,
+                $recipientName,
+                $actionUrl,
+                $actionLabel
+            );
+
+            // Envoi synchrone pour les notifications critiques (évite la dépendance au queue:work)
+            if ($sync || config('queue.default') === 'sync') {
+                Mail::to($user->email, $recipientName)->send($mailable);
+            } else {
+                Mail::to($user->email, $recipientName)->queue($mailable);
+            }
 
             $this->inApp->notify(
                 $user,
@@ -166,6 +174,7 @@ class UserMailNotifier
                 'email' => $user->email,
                 'subject' => $subject,
                 'title' => $title,
+                'sync' => $sync || config('queue.default') === 'sync',
             ]);
 
             return true;

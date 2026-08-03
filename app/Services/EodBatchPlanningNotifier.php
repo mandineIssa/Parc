@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\EodBatchAssignment;
 use App\Models\EodBatchWeek;
 use App\Models\EodPlanningSetting;
-use App\Models\User;
 
 class EodBatchPlanningNotifier
 {
@@ -13,33 +12,34 @@ class EodBatchPlanningNotifier
         private readonly UserMailNotifier $mail
     ) {}
 
+    /**
+     * Notifie immédiatement (e-mail + in-app) les personnes désignées à la publication.
+     */
     public function notifyWeekPublished(EodBatchWeek $week, EodPlanningSetting $settings): int
     {
-        if (! $settings->notify_on_publish) {
-            return 0;
-        }
-
         $week->loadMissing(['assignments.assignee', 'assignments.supervisor']);
         $sent = 0;
 
         foreach ($week->assignments as $assignment) {
-            if ($this->notifyAssignee($assignment, 'assignment')) {
+            // Toujours notifier l'agent désigné dès la publication
+            if ($this->notifyAssignee($assignment, 'assignment', sync: true)) {
                 $assignment->update(['assignment_notified_at' => now()]);
                 $sent++;
             }
 
             if ($settings->notify_supervisor_on_publish && $assignment->supervisor_user_id) {
-                $this->notifySupervisor($assignment, 'assignment');
-                $sent++;
+                if ($this->notifySupervisor($assignment, 'assignment', sync: true)) {
+                    $sent++;
+                }
             }
         }
 
         return $sent;
     }
 
-    public function notifyAssignee(EodBatchAssignment $assignment, string $type = 'reminder'): bool
+    public function notifyAssignee(EodBatchAssignment $assignment, string $type = 'reminder', bool $sync = false): bool
     {
-        $assignment->loadMissing('assignee');
+        $assignment->loadMissing(['assignee', 'week']);
         $assignee = $assignment->assignee;
 
         if (! $assignee) {
@@ -63,19 +63,23 @@ class EodBatchPlanningNotifier
                 ."Superviseur batch : {$assignment->supervisorDisplayName()}\n\n"
                 .'Consultez le planning pour les détails.';
 
+        $weekParam = $assignment->week?->week_start?->format('Y-m-d')
+            ?? $assignment->scheduled_date->format('Y-m-d');
+
         return $this->mail->notifyUser(
             $assignee,
             $subject,
             $title,
             $message,
-            route('eod.planning.index', ['week' => $assignment->week?->week_start?->format('Y-m-d') ?? $assignment->scheduled_date->format('Y-m-d')]),
-            'Voir le planning'
+            route('eod.planning.index', ['week' => $weekParam]),
+            'Voir le planning',
+            $sync
         );
     }
 
-    public function notifySupervisor(EodBatchAssignment $assignment, string $type = 'assignment'): bool
+    public function notifySupervisor(EodBatchAssignment $assignment, string $type = 'assignment', bool $sync = false): bool
     {
-        $assignment->loadMissing(['assignee', 'supervisor']);
+        $assignment->loadMissing(['assignee', 'supervisor', 'week']);
         $supervisor = $assignment->supervisor;
 
         if (! $supervisor) {
@@ -86,19 +90,23 @@ class EodBatchPlanningNotifier
         $message = "Vous supervisez le traitement batch EOD du {$assignment->dayLabel()}.\n"
             ."Responsable batch : {$assignment->assigneeDisplayName()}";
 
+        $weekParam = $assignment->week?->week_start?->format('Y-m-d')
+            ?? $assignment->scheduled_date->format('Y-m-d');
+
         return $this->mail->notifyUser(
             $supervisor,
             $subject,
             'Supervision batch EOD',
             $message,
-            route('eod.planning.index', ['week' => $assignment->week?->week_start?->format('Y-m-d')]),
-            'Voir le planning'
+            route('eod.planning.index', ['week' => $weekParam]),
+            'Voir le planning',
+            $sync
         );
     }
 
     public function sendReminder(EodBatchAssignment $assignment): bool
     {
-        if ($this->notifyAssignee($assignment, 'reminder')) {
+        if ($this->notifyAssignee($assignment, 'reminder', sync: true)) {
             $assignment->update([
                 'last_reminder_at' => now(),
                 'reminder_count' => $assignment->reminder_count + 1,

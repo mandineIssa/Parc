@@ -59,7 +59,7 @@ class EodBatchPlanningTest extends TestCase
         $sent = $notifier->notifyWeekPublished($week->fresh(['assignments.assignee']), EodPlanningSetting::current());
 
         $this->assertGreaterThan(0, $sent);
-        Mail::assertQueued(GpiNotificationMail::class);
+        Mail::assertSent(GpiNotificationMail::class);
         $this->assertDatabaseHas('gpi_user_notifications', [
             'user_id' => $assignee->id,
         ]);

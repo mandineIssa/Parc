@@ -121,9 +121,13 @@ class EodBatchPlanningController extends Controller
 
         $sent = $this->notifier->notifyWeekPublished($week->fresh(['assignments.assignee', 'assignments.supervisor']), $settings);
 
+        $message = $sent > 0
+            ? "Planning publié. {$sent} notification(s) e-mail envoyée(s) aux personnes désignées."
+            : 'Planning publié, mais aucune notification e-mail n\'a pu être envoyée (vérifiez les e-mails des utilisateurs et la config MAIL).';
+
         return redirect()
             ->route('eod.planning.index', ['week' => $weekStart->format('Y-m-d')])
-            ->with('success', "Planning publié. {$sent} notification(s) envoyée(s).");
+            ->with($sent > 0 ? 'success' : 'error', $message);
     }
 
     public function settings()

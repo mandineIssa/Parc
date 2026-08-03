@@ -19,13 +19,15 @@
         <fieldset class="space-y-3">
             <legend class="text-sm font-bold text-gray-800 uppercase border-b pb-2 w-full">Notifications à la publication</legend>
             <label class="flex items-center gap-2">
-                <input type="checkbox" name="notify_on_publish" value="1" @checked(old('notify_on_publish', $settings->notify_on_publish)) class="rounded">
-                <span class="text-sm">Notifier la personne désignée pour le batch</span>
+                <input type="checkbox" name="notify_on_publish" value="1" checked disabled class="rounded">
+                <span class="text-sm">Notifier la personne désignée pour le batch <em class="text-gray-500">(toujours actif à la publication)</em></span>
             </label>
+            <input type="hidden" name="notify_on_publish" value="1">
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="notify_supervisor_on_publish" value="1" @checked(old('notify_supervisor_on_publish', $settings->notify_supervisor_on_publish)) class="rounded">
                 <span class="text-sm">Notifier aussi le superviseur batch (si compte GPI lié)</span>
             </label>
+            <p class="text-xs text-gray-500">Chaque agent désigné reçoit un e-mail dès la publication (compte utilisateur avec e-mail valide requis).</p>
         </fieldset>
 
         <fieldset class="space-y-3">
