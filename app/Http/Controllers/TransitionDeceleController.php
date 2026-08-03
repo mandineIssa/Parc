@@ -66,16 +66,19 @@ class TransitionDeceleController extends Controller
             };
 
             // ── Créer ou mettre à jour l'entrée Stock (décélé) ───
-            $stock = Stock::create([
-                'numero_serie'         => $equipment->numero_serie,
-                'type_stock'           => 'deceler',
-                'localisation_physique'=> $deceleration['localisation_physique'],
-                'etat'                 => $etatStock,
-                'quantite'             => 1,
-                'date_entree'          => $deceleration['date_entree_stock'],
-                'date_sortie'          => null,
-                'observations'         => $deceleration['observations_retour'] ?? null,
-            ]);
+            // numero_serie est unique : on réutilise la ligne existante si présente
+            $stock = Stock::updateOrCreate(
+                ['numero_serie' => $equipment->numero_serie],
+                [
+                    'type_stock'           => 'deceler',
+                    'localisation_physique'=> $deceleration['localisation_physique'],
+                    'etat'                 => $etatStock,
+                    'quantite'             => 1,
+                    'date_entree'          => $deceleration['date_entree_stock'],
+                    'date_sortie'          => null,
+                    'observations'         => $deceleration['observations_retour'] ?? null,
+                ]
+            );
 
             // ── Créer la fiche Décélération ───────────────────────
             Deceler::create([
@@ -93,14 +96,16 @@ class TransitionDeceleController extends Controller
                 'observations_retour'   => $deceleration['observations_retour'] ?? null,
             ]);
 
+            // ── Libérer l'affectation parc ────────────────────────
+            if ($equipment->parc) {
+                $equipment->parc()->delete();
+            }
+
             // ── Mettre à jour le statut de l'équipement ───────────
             //    On utilise 'stock' comme statut intermédiaire ;
             //    adaptez si votre enum a une valeur 'stock_decele'
             $equipment->update([
                 'statut' => 'stock',
-                // Ajoutez d'autres champs si nécessaire, ex:
-                // 'user_id' => null,
-                // 'agence_id' => null,
             ]);
 
             // ── Enregistrer l'historique de transition ────────────

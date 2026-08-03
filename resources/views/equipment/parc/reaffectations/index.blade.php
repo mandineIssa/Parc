@@ -37,6 +37,16 @@
         <p class="text-green-800 font-medium">{{ session('success') }}</p>
     </div>
     @endif
+    @if(session('error'))
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+        <div class="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </div>
+        <p class="text-red-800 font-medium">{{ session('error') }}</p>
+    </div>
+    @endif
 
     {{-- Statistiques rapides --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -144,11 +154,12 @@
                         <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                         <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Motif</th>
                         <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Fait par</th>
+                        <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
                     @forelse($reaffectations as $r)
-                    <tr class="hover:bg-indigo-50/30 transition-colors">
+                    <tr class="hover:bg-indigo-50/30 transition-colors {{ $r->isAnnulee() ? 'opacity-60 bg-gray-50' : '' }}">
 
                         {{-- Équipement --}}
                         <td class="px-5 py-4">
@@ -243,11 +254,35 @@
                             @else
                             <span class="text-gray-300 italic text-sm">—</span>
                             @endif
+                            @if($r->isAnnulee())
+                            <span class="mt-1 inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700">Annulée</span>
+                            @endif
+                        </td>
+
+                        {{-- Actions --}}
+                        <td class="px-5 py-4 text-right whitespace-nowrap">
+                            @if($r->isAnnulee())
+                                <span class="text-xs text-gray-400">—</span>
+                            @elseif(in_array((int) $r->id, $cancellableIds ?? [], true))
+                                <form action="{{ route('parc.reaffectations.cancel', $r) }}" method="POST" class="inline"
+                                      onsubmit="return confirm('Annuler cette réaffectation ?\nL\'équipement sera réattribué à : {{ addslashes($r->ancien_nom_complet) }}');">
+                                    @csrf
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 bg-white text-red-700 hover:bg-red-50 transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                        Annuler
+                                    </button>
+                                </form>
+                            @else
+                                <span class="text-xs text-gray-400" title="Seule la dernière réaffectation active peut être annulée">Non annulable</span>
+                            @endif
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-16 text-center">
+                        <td colspan="8" class="px-6 py-16 text-center">
                             <div class="flex flex-col items-center gap-3">
                                 <div class="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center">
                                     <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

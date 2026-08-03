@@ -179,10 +179,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Département</label>
-                                <input type="text" name="nouveau_departement"
-                                       value="{{ old('nouveau_departement') }}"
-                                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                                       placeholder="Informatique / DSI / RH...">
+                                <select name="nouveau_departement"
+                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                                    <option value="">— Choisir —</option>
+                                    @foreach(($departements ?? []) as $dept)
+                                        <option value="{{ $dept }}" {{ old('nouveau_departement') === $dept ? 'selected' : '' }}>{{ $dept }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Localisation</label>

@@ -168,19 +168,29 @@
                             </div>
                             <div>
                             <label class="block text-sm font-semibold text-gray-700">Département <span class="text-red-500">*</span></label>
-                            <input type="text" name="departement" id="departement" value="{{ old('departement') }}" required
+                            <select name="departement" id="departement" required
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
+                                <option value="">— Choisir —</option>
+                                @foreach(($departements ?? []) as $dept)
+                                    <option value="{{ $dept }}" {{ old('departement') === $dept ? 'selected' : '' }}>{{ $dept }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700">Poste affecté <span class="text-red-500">*</span></label>
-                            <input type="text" name="poste_affecte" id="poste_affecte" value="{{ old('poste_affecte') }}" required
+                            <select name="poste_affecte" id="poste_affecte" required
                                 class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
+                                <option value="">— Choisir —</option>
+                                @foreach(($positions ?? []) as $pos)
+                                    <option value="{{ $pos }}" {{ old('poste_affecte') === $pos ? 'selected' : '' }}>{{ $pos }}</option>
+                                @endforeach
+                            </select>
                             </div>
                             <div>
                             <label class="block text-sm font-semibold text-gray-700">Position / grade <span class="text-red-500">*</span></label>
                             <select name="position" required class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8102E]">
                                 <option value="">— Choisir —</option>
-                                @foreach($positions as $pos)
+                                @foreach(($positions ?? []) as $pos)
                                     <option value="{{ $pos }}" {{ old('position') === $pos ? 'selected' : '' }}>{{ $pos }}</option>
                                 @endforeach
                             </select>

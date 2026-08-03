@@ -20,10 +20,13 @@ class Reaffectation extends Model
         'date_reaffectation',
         'motif',
         'fait_par',
+        'annulee_at',
+        'annulee_par',
     ];
 
     protected $casts = [
         'date_reaffectation' => 'date',
+        'annulee_at' => 'datetime',
     ];
 
     public function equipment(): BelongsTo
@@ -34,6 +37,21 @@ class Reaffectation extends Model
     public function auteur(): BelongsTo
     {
         return $this->belongsTo(User::class, 'fait_par');
+    }
+
+    public function annulateur(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'annulee_par');
+    }
+
+    public function isAnnulee(): bool
+    {
+        return $this->annulee_at !== null;
+    }
+
+    public function scopeActives($query)
+    {
+        return $query->whereNull('annulee_at');
     }
 
     // Accesseurs utiles

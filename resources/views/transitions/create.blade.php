@@ -894,17 +894,9 @@
                     </label>
                     <select name="department" class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
                         <option value="">-- Sélectionner un département --</option>
-                        <option value="IT">IT</option>
-                        <option value="RH">Ressources Humaines</option>
-                        <option value="Comptabilité">Comptabilité</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Ventes">Ventes</option>
-                        <option value="Direction">Direction</option>
-                        <option value="Operations">Opérations</option>
-                        <option value="Commercial">Commercial</option>
-                        <option value="Administratif">Administratif</option>
-                        <option value="Autre">Autre</option>
+                        @foreach(($departements ?? []) as $dept)
+                            <option value="{{ $dept }}" {{ old('department') === $dept ? 'selected' : '' }}>{{ $dept }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -915,18 +907,9 @@
                     </label>
                     <select name="position" class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
                         <option value="">-- Sélectionner un poste --</option>
-                        <option value="Directeur">Directeur</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Chef de Projet">Chef de Projet</option>
-                        <option value="Technicien">Technicien</option>
-                        <option value="Développeur">Développeur</option>
-                        <option value="Analyste">Analyste</option>
-                        <option value="Consultant">Consultant</option>
-                        <option value="Administrateur">Administrateur</option>
-                        <option value="Assistant">Assistant</option>
-                        <option value="Agent">Agent</option>
-                        <option value="Stagiaire">Stagiaire</option>
-                        <option value="Autre">Autre</option>
+                        @foreach(($postes ?? []) as $poste)
+                            <option value="{{ $poste }}" {{ old('position') === $poste ? 'selected' : '' }}>{{ $poste }}</option>
+                        @endforeach
                     </select>
                 </div>
 

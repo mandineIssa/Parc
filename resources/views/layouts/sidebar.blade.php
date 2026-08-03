@@ -12,7 +12,7 @@
             $parcSectionOpen = $rapportsMenuOpen || $gestionMenuOpen || $equipementsMenuOpen || $stocksMenuOpen
                 || request()->routeIs('documentation.*');
             $configurationSectionOpen = $auditsPostesOpen
-                || request()->routeIs('agencies.*', 'categories.*', 'suppliers.*', 'admin.users.*', 'audits.*');
+                || request()->routeIs('agencies.*', 'categories.*', 'suppliers.*', 'admin.users.*', 'audits.*', 'parametres.*');
             $activeParcSubsection = match (true) {
                 $rapportsMenuOpen => 'rapports',
                 $gestionMenuOpen => 'gestion',
@@ -320,6 +320,7 @@
             </button>
             <div class="sidebar-section-body {{ $configurationSectionOpen ? 'open' : '' }}">
                 <a href="{{ route('agencies.index') }}" class="sidebar-item {{ request()->routeIs('agencies.*') ? 'sidebar-active' : '' }}">Agences</a>
+                <a href="{{ route('parametres.organisation') }}" class="sidebar-item {{ request()->routeIs('parametres.*') ? 'sidebar-active' : '' }}">Départements & Postes</a>
                 <a href="{{ route('categories.index') }}" class="sidebar-item {{ request()->routeIs('categories.*') ? 'sidebar-active' : '' }}">Catégories</a>
                 <a href="{{ route('suppliers.index') }}" class="sidebar-item {{ request()->routeIs('suppliers.*') ? 'sidebar-active' : '' }}">Fournisseurs</a>
                 <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : '' }}">Administration</a>

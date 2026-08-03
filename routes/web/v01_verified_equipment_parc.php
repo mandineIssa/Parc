@@ -233,10 +233,13 @@ Route::prefix('parc')->name('parc.')->group(function () {
 // --- Réaffectations (DOIT être avant resource parc) ---
 Route::get('/parc/reaffectations', [ReaffectationController::class, 'index'])
     ->name('parc.reaffectations.index');
- 
+
+Route::post('/parc/reaffectations/{reaffectation}/annuler', [ReaffectationController::class, 'cancel'])
+    ->name('parc.reaffectations.cancel');
+
 Route::get('/parc/{equipment}/reaffecter', [ReaffectationController::class, 'create'])
     ->name('parc.reaffecter');
- 
+
 Route::post('/parc/{equipment}/reaffecter', [ReaffectationController::class, 'store'])
     ->name('parc.reaffecter.store');
  
@@ -364,6 +367,28 @@ Route::resource('parc', ParcController::class);
     // GESTION DES AGENCES (CRUD complet)
     // ============================================
     Route::resource('agencies', AgencyController::class);
+
+    // ============================================
+    // PARAMÈTRES — Départements & Postes
+    // ============================================
+    Route::get('/parametres/organisation', [\App\Http\Controllers\ParametreOrganisationController::class, 'index'])
+        ->name('parametres.organisation');
+    Route::post('/parametres/departements', [\App\Http\Controllers\ParametreOrganisationController::class, 'storeDepartement'])
+        ->name('parametres.departements.store');
+    Route::put('/parametres/departements/{departement}', [\App\Http\Controllers\ParametreOrganisationController::class, 'updateDepartement'])
+        ->name('parametres.departements.update');
+    Route::post('/parametres/departements/{departement}/toggle', [\App\Http\Controllers\ParametreOrganisationController::class, 'toggleDepartement'])
+        ->name('parametres.departements.toggle');
+    Route::delete('/parametres/departements/{departement}', [\App\Http\Controllers\ParametreOrganisationController::class, 'destroyDepartement'])
+        ->name('parametres.departements.destroy');
+    Route::post('/parametres/postes', [\App\Http\Controllers\ParametreOrganisationController::class, 'storePoste'])
+        ->name('parametres.postes.store');
+    Route::put('/parametres/postes/{posteOrganisation}', [\App\Http\Controllers\ParametreOrganisationController::class, 'updatePoste'])
+        ->name('parametres.postes.update');
+    Route::post('/parametres/postes/{posteOrganisation}/toggle', [\App\Http\Controllers\ParametreOrganisationController::class, 'togglePoste'])
+        ->name('parametres.postes.toggle');
+    Route::delete('/parametres/postes/{posteOrganisation}', [\App\Http\Controllers\ParametreOrganisationController::class, 'destroyPoste'])
+        ->name('parametres.postes.destroy');
 
     // ============================================
     // GESTION DES CATÉGORIES

@@ -168,12 +168,16 @@ class ParcController extends Controller
         $suppliers = Supplier::orderBy('nom')->get();
         $agencies = Agency::orderBy('nom')->get();
 
-        $positions = [
-            'Directeur', 'Manager', 'Chef de Projet', 'Technicien', 'Développeur',
-            'Analyste', 'Consultant', 'Administrateur', 'Assistant', 'Agent',
-            'Stagiaire', 'CC', 'RH', 'Finance', 'Caissier', 'recouvrement',
-            'juridique', 'CAF', 'Logistique', 'marketing', 'Autre',
-        ];
+        $positions = \App\Models\PosteOrganisation::options();
+        if ($positions === []) {
+            $positions = [
+                'Directeur', 'Manager', 'Chef de Projet', 'Technicien', 'Développeur',
+                'Analyste', 'Consultant', 'Administrateur', 'Assistant', 'Agent',
+                'Stagiaire', 'Autre',
+            ];
+        }
+
+        $departements = \App\Models\Departement::options();
 
         $affectationReasons = [
             'Nouvelle embauche',
@@ -185,7 +189,7 @@ class ParcController extends Controller
             'Autre',
         ];
 
-        return view('equipment.parc.create', compact('suppliers', 'agencies', 'positions', 'affectationReasons'));
+        return view('equipment.parc.create', compact('suppliers', 'agencies', 'positions', 'departements', 'affectationReasons'));
     }
 
     /**
@@ -215,7 +219,7 @@ public function store(Request $request)
         'utilisateur_prenom' => 'required|string|max:100',
         'departement' => 'required|string|max:100',
         'poste_affecte' => 'required|string|max:100',
-        'position' => 'required|in:Directeur,Manager,Chef de Projet,Technicien,Développeur,Analyste,Consultant,Administrateur,Assistant,Agent,Stagiaire,CC,RH,Finance,Caissier,recouvrement,juridique,CAF,Logistique,marketing,Autre',
+        'position' => 'required|string|max:100',
         'date_affectation' => 'required|date',
         'date_retour_prevue' => 'nullable|date|after_or_equal:date_affectation',
         'affectation_reason' => 'nullable|in:Nouvelle embauche,Remplacement d\'équipement,Changement de poste,Besoins opérationnels,Mise à niveau,Dotation temporaire,Autre',

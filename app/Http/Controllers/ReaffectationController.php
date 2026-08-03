@@ -15,7 +15,9 @@ class ReaffectationController extends Controller
      */
     public function create(Equipment $equipment)
     {
-        return view('equipment.parc.reaffecter', compact('equipment'));
+        $departements = \App\Models\Departement::options();
+
+        return view('equipment.parc.reaffecter', compact('equipment', 'departements'));
     }
 
     /**
@@ -97,6 +99,73 @@ class ReaffectationController extends Controller
 
         $reaffectations = $query->paginate(20)->withQueryString();
 
-        return view('equipment.parc.reaffectations.index', compact('reaffectations'));
+        // IDs des dernières réaffectations actives par équipement (annulables)
+        $equipmentIds = $reaffectations->getCollection()->pluck('equipment_id')->unique()->filter();
+        $cancellableIds = [];
+        foreach ($equipmentIds as $equipmentId) {
+            $latestId = Reaffectation::query()
+                ->where('equipment_id', $equipmentId)
+                ->actives()
+                ->orderByDesc('date_reaffectation')
+                ->orderByDesc('id')
+                ->value('id');
+            if ($latestId) {
+                $cancellableIds[] = (int) $latestId;
+            }
+        }
+
+        return view('equipment.parc.reaffectations.index', compact('reaffectations', 'cancellableIds'));
+    }
+
+    /**
+     * Annule une réaffectation (restaure l'ancien utilisateur sur le parc).
+     * Seule la dernière réaffectation active de l'équipement peut être annulée.
+     */
+    public function cancel(Reaffectation $reaffectation)
+    {
+        if ($reaffectation->isAnnulee()) {
+            return back()->with('error', 'Cette réaffectation est déjà annulée.');
+        }
+
+        $latest = Reaffectation::query()
+            ->where('equipment_id', $reaffectation->equipment_id)
+            ->actives()
+            ->orderByDesc('date_reaffectation')
+            ->orderByDesc('id')
+            ->first();
+
+        if (! $latest || (int) $latest->id !== (int) $reaffectation->id) {
+            return back()->with('error', 'Seule la dernière réaffectation active de cet équipement peut être annulée.');
+        }
+
+        $equipment = $reaffectation->equipment;
+        if (! $equipment) {
+            return back()->with('error', 'Équipement introuvable pour cette réaffectation.');
+        }
+
+        $parc = $equipment->parc;
+        if (! $parc) {
+            return back()->with('error', 'Aucune affectation parc active à restaurer pour cet équipement.');
+        }
+
+        DB::transaction(function () use ($reaffectation, $parc) {
+            $parc->update([
+                'utilisateur_nom'    => $reaffectation->ancien_utilisateur_nom,
+                'utilisateur_prenom' => $reaffectation->ancien_utilisateur_prenom,
+                'departement'        => $reaffectation->ancien_departement,
+                'localisation'       => $reaffectation->ancienne_localisation,
+            ]);
+
+            $reaffectation->update([
+                'annulee_at'  => now(),
+                'annulee_par' => Auth::id(),
+            ]);
+        });
+
+        $serie = $equipment->numero_serie;
+
+        return redirect()
+            ->route('parc.reaffectations.index')
+            ->with('success', "Réaffectation de l'équipement #{$serie} annulée. L'ancien utilisateur a été restauré.");
     }
 }

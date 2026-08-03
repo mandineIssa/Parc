@@ -35,8 +35,10 @@ class TransitionController extends Controller
     {
         $equipment->load(['stock', 'parc', 'maintenance']);
         $users = User::all();
+        $departements = \App\Models\Departement::options();
+        $postes = \App\Models\PosteOrganisation::options();
 
-        return view('transitions.create', compact('equipment', 'users'));
+        return view('transitions.create', compact('equipment', 'users', 'departements', 'postes'));
     }
 
     /**
@@ -1566,18 +1568,11 @@ public function showTransitionForm(Equipment $equipment)
 {
     $equipment->load(['stock', 'parc', 'maintenance']);
     $users = User::all();
-    
-    // Solution A: Si vous avez un modèle Agency
     $agencies = Agency::all();
-    
-    // Solution B: Si vous n'avez pas de modèle Agency, créez un tableau
-    // $agencies = [
-    //     ['id' => 1, 'nom' => 'Agence Dakar'],
-    //     ['id' => 2, 'nom' => 'Agence Thiès'],
-    //     ['id' => 3, 'nom' => 'Agence Saint-Louis'],
-    // ];
-    
-    return view('transitions.create', compact('equipment', 'users', 'agencies'));
+    $departements = \App\Models\Departement::options();
+    $postes = \App\Models\PosteOrganisation::options();
+
+    return view('transitions.create', compact('equipment', 'users', 'agencies', 'departements', 'postes'));
 }
 
     public function viewApproval(TransitionApproval $approval)
@@ -4677,20 +4672,19 @@ private function processMaintenanceToStock(Equipment $equipment, array $data, Tr
                 'localisation_physique' => 'localIt', // Valeur par défaut
             ]);
         } else {
-            // Sinon créer une nouvelle entrée stock
-            $stock = stock::create([
-                'equipment_id' => $equipment->id,
-                'numero_serie' => $equipment->numero_serie,
-                'type_stock' => 'deceler',
-                'localisation_physique' => 'localIt', // Valeur par défaut
-                'date_entree' => $data['date_retour'],
-                'date_sortie' => null,
-                'etat' => 'disponible',
-                'quantite' => 1,
-                'observations' => 'Retour de maintenance: ' . ($data['diagnostic'] ?? 'Maintenance terminée'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Sinon créer / réutiliser l'entrée stock (numero_serie unique)
+            $stock = Stock::updateOrCreate(
+                ['numero_serie' => $equipment->numero_serie],
+                [
+                    'type_stock' => 'deceler',
+                    'localisation_physique' => 'localIt',
+                    'date_entree' => $data['date_retour'],
+                    'date_sortie' => null,
+                    'etat' => 'disponible',
+                    'quantite' => 1,
+                    'observations' => 'Retour de maintenance: ' . ($data['diagnostic'] ?? 'Maintenance terminée'),
+                ]
+            );
         }
 
         // Créer l'entrée dans la table deceler (si cette table existe)
@@ -5447,16 +5441,19 @@ public function listMaintenanceHorsServiceApprovals(Request $request)
                 default       => 'disponible',
             };
 
-            // Créer entrée Stock décélé
-            $stock = Stock::create([
-                'numero_serie'          => $equipment->numero_serie,
-                'type_stock'            => 'deceler',
-                'localisation_physique' => $decel['localisation_physique'],
-                'etat'                  => $etatStock,
-                'quantite'              => 1,
-                'date_entree'           => $retour['date_retour'] ?? now()->toDateString(),
-                'observations'          => $decel['observations_retour'] ?? null,
-            ]);
+            // Réutiliser l'entrée stock existante (numero_serie unique) ou en créer une
+            $stock = Stock::updateOrCreate(
+                ['numero_serie' => $equipment->numero_serie],
+                [
+                    'type_stock'            => 'deceler',
+                    'localisation_physique' => $decel['localisation_physique'],
+                    'etat'                  => $etatStock,
+                    'quantite'              => 1,
+                    'date_entree'           => $retour['date_retour'] ?? now()->toDateString(),
+                    'date_sortie'           => null,
+                    'observations'          => $decel['observations_retour'] ?? null,
+                ]
+            );
 
             // Créer fiche Déceler
             Deceler::create([
@@ -5470,6 +5467,11 @@ public function listMaintenanceHorsServiceApprovals(Request $request)
                 'valeur_residuelle'    => !empty($decel['valeur_residuelle']) ? (float)$decel['valeur_residuelle'] : null,
                 'observations_retour'  => $decel['observations_retour'] ?? null,
             ]);
+
+            // Libérer l'affectation parc si elle existe encore
+            if ($equipment->parc) {
+                $equipment->parc()->delete();
+            }
 
             // Mettre à jour l'équipement
             $equipment->update(['statut' => 'stock']);
