@@ -78,6 +78,7 @@ class ReaffectationController extends Controller
     public function index(Request $request)
     {
         $query = Reaffectation::with(['equipment', 'auteur'])
+            ->actives()
             ->orderByDesc('date_reaffectation');
 
         // Filtre par équipement (numéro de série ou nom)
