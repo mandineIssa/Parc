@@ -155,8 +155,9 @@ class UserMailNotifier
             );
 
             // Envoi synchrone pour les notifications critiques (évite la dépendance au queue:work)
+            // GpiNotificationMail implémente ShouldQueue : send() le mettrait quand même en file.
             if ($sync || config('queue.default') === 'sync') {
-                Mail::to($user->email, $recipientName)->send($mailable);
+                Mail::to($user->email, $recipientName)->sendNow($mailable);
             } else {
                 Mail::to($user->email, $recipientName)->queue($mailable);
             }
