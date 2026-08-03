@@ -69,7 +69,7 @@
             </div>
             <div>
                 <p class="text-2xl font-bold text-gray-900">
-                    {{ \App\Models\Reaffectation::whereMonth('date_reaffectation', now()->month)->count() }}
+                    {{ \App\Models\Reaffectation::actives()->whereMonth('date_reaffectation', now()->month)->count() }}
                 </p>
                 <p class="text-sm text-gray-500">Ce mois-ci</p>
             </div>
@@ -82,7 +82,7 @@
             </div>
             <div>
                 <p class="text-2xl font-bold text-gray-900">
-                    {{ \App\Models\Reaffectation::distinct('equipment_id')->count('equipment_id') }}
+                    {{ \App\Models\Reaffectation::actives()->distinct('equipment_id')->count('equipment_id') }}
                 </p>
                 <p class="text-sm text-gray-500">Équipements concernés</p>
             </div>
