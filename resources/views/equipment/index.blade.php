@@ -94,8 +94,8 @@
         @endforeach
     </div>
 
-    <!-- Filtres -->
-    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+    <!-- Filtres (serveur) -->
+    <form method="GET" action="{{ route('equipment.index') }}" id="equipmentFiltersForm" class="bg-white rounded-xl shadow-md p-6 mb-8">
         <div class="flex flex-col md:flex-row gap-4">
             <div class="flex-1">
                 <div class="relative">
@@ -104,16 +104,17 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                     </div>
-                    <input type="text" 
+                    <input type="text"
+                           name="search"
                            id="searchInput"
                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition"
                            placeholder="Rechercher par nom, N° série, marque, modèle..."
                            value="{{ request('search') }}">
                 </div>
             </div>
-            
+
             <div class="w-full md:w-48">
-                <select id="statutFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
+                <select name="statut" id="statutFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Tous les statuts</option>
                     <option value="stock" {{ request('statut') == 'stock' ? 'selected' : '' }}>Stock</option>
                     <option value="parc" {{ request('statut') == 'parc' ? 'selected' : '' }}>Parc</option>
@@ -122,65 +123,68 @@
                     <option value="perdu" {{ request('statut') == 'perdu' ? 'selected' : '' }}>Perdu</option>
                 </select>
             </div>
-            
+
             <div class="w-full md:w-48">
-                <select id="typeFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
+                <select name="type" id="typeFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Tous les types</option>
                     <option value="Réseau" {{ request('type') == 'Réseau' ? 'selected' : '' }}>Réseau</option>
                     <option value="Informatique" {{ request('type') == 'Informatique' ? 'selected' : '' }}>Informatique</option>
                     <option value="Électronique" {{ request('type') == 'Électronique' ? 'selected' : '' }}>Électronique</option>
                 </select>
             </div>
-            
-            <button id="resetFilters" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                Réinitialiser
+
+            <button type="submit" class="bg-[#A61B29] hover:bg-[#7A0C1A] text-white font-semibold py-3 px-6 rounded-lg transition">
+                Filtrer
             </button>
+            <a href="{{ route('equipment.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center">
+                Réinitialiser
+            </a>
         </div>
-        
-        <!-- Filtres rapides -->
+
         <div class="mt-4 pt-4 border-t border-gray-100">
             <div class="flex flex-wrap gap-2">
                 <span class="text-sm text-gray-500 flex items-center mr-3">Filtres rapides :</span>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="all">
-                    Tous
-                </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="stock">
-                    Stock
-                </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC] transition" data-filter="parc">
-                    Parc
-                </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition" data-filter="maintenance">
-                    Maintenance
-                </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-[#FCEBEC] text-[#9F1F2C] hover:bg-[#F8DADC] transition" data-filter="hors_service">
-                    Hors Service
-                </button>
-                <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200 transition" data-filter="perdu">
-                    Perdus
-                </button>
+                @php
+                    $quickFilters = [
+                        '' => 'Tous',
+                        'stock' => 'Stock',
+                        'parc' => 'Parc',
+                        'maintenance' => 'Maintenance',
+                        'hors_service' => 'Hors Service',
+                        'perdu' => 'Perdus',
+                    ];
+                @endphp
+                @foreach($quickFilters as $value => $label)
+                    @php
+                        $isQuickActive = ($value === '' && !request('statut')) || request('statut') === $value;
+                        $quickUrl = $value === ''
+                            ? route('equipment.index', request()->except(['page', 'statut']))
+                            : route('equipment.index', array_merge(request()->except(['page', 'statut']), ['statut' => $value]));
+                    @endphp
+                    <a href="{{ $quickUrl }}"
+                       class="px-3 py-1.5 text-sm font-medium rounded-full transition {{ $isQuickActive ? 'bg-[#A61B29] text-white ring-2 ring-offset-2 ring-[#A61B29]' : 'bg-[#FDF2F3] text-[#7A0C1A] hover:bg-[#F8DADC]' }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
             </div>
         </div>
-    </div>
+    </form>
 
-    <!-- Informations de recherche -->
-    <div id="searchResultsInfo" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 hidden">
+    @if(request()->filled('search') || request()->filled('statut') || request()->filled('type'))
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
         <div class="flex justify-between items-center">
             <div>
-                <span id="resultsCount" class="text-blue-800 font-medium">0 résultats</span>
-                <span id="searchTerm" class="text-blue-600 text-sm ml-4"></span>
+                <span class="text-blue-800 font-medium">{{ $equipments->total() }} résultat{{ $equipments->total() > 1 ? 's' : '' }}</span>
+                <span class="text-blue-600 text-sm ml-4">
+                    @if(request('statut')) Statut : {{ str_replace('_', ' ', request('statut')) }} @endif
+                    @if(request('type')) • Type : {{ request('type') }} @endif
+                    @if(request('search')) • Recherche : « {{ request('search') }} » @endif
+                </span>
             </div>
-            <button id="clearAllFilters" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-                Tout effacer
-            </button>
+            <a href="{{ route('equipment.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Tout effacer</a>
         </div>
     </div>
+    @endif
 
     <!-- Tableau des équipements -->
     <div class="bg-white rounded-xl shadow-md overflow-hidden">
@@ -188,10 +192,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-semibold text-gray-800">Liste des Équipements</h2>
-                    <p class="text-sm text-gray-600 mt-1" id="totalCount">{{ $equipments->total() }} équipement{{ $equipments->total() > 1 ? 's' : '' }} au total</p>
-                </div>
-                <div class="text-sm text-gray-500">
-                    <span id="filteredCount"></span>
+                    <p class="text-sm text-gray-600 mt-1">{{ $equipments->total() }} équipement{{ $equipments->total() > 1 ? 's' : '' }} au total</p>
                 </div>
             </div>
         </div>
@@ -352,29 +353,30 @@
                         </td>
                     </tr>
                     @empty
-                    <tr id="noResultsRow" style="display: none;">
+                    <tr>
                         <td colspan="6" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center">
                                 <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                 </svg>
                                 <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun équipement trouvé</h3>
-                                <p class="text-gray-500 mb-6">Commencez par ajouter votre premier équipement</p>
+                                <p class="text-gray-500 mb-6">
+                                    @if(request()->filled('search') || request()->filled('statut') || request()->filled('type'))
+                                        Aucun résultat pour ces filtres. Essayez de les modifier.
+                                    @else
+                                        Commencez par ajouter votre premier équipement
+                                    @endif
+                                </p>
                                 <div class="flex gap-3">
-                                    <a href="{{ route('equipment.create') }}" 
+                                    @if(request()->filled('search') || request()->filled('statut') || request()->filled('type'))
+                                        <a href="{{ route('equipment.index') }}"
+                                           class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg inline-flex items-center">
+                                            Réinitialiser les filtres
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('equipment.create') }}"
                                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg inline-flex items-center">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                        </svg>
                                         Nouvel Équipement
-                                    </a>
-                                    
-                                    <a href="{{ route('equipment.import.form') }}" 
-                                       class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg inline-flex items-center">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                        </svg>
-                                        Import CSV
                                     </a>
                                 </div>
                             </div>
@@ -435,290 +437,17 @@
 </div>
 
 <script>
-// Fonction de recherche dynamique
-document.addEventListener('DOMContentLoaded', function() {
-    // Récupérer les éléments
-    const searchInput = document.getElementById('searchInput');
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('equipmentFiltersForm');
     const statutFilter = document.getElementById('statutFilter');
     const typeFilter = document.getElementById('typeFilter');
-    const resetButton = document.getElementById('resetFilters');
-    const clearAllFilters = document.getElementById('clearAllFilters');
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const searchResultsInfo = document.getElementById('searchResultsInfo');
-    const resultsCount = document.getElementById('resultsCount');
-    const searchTerm = document.getElementById('searchTerm');
-    const totalCount = document.getElementById('totalCount');
-    const filteredCount = document.getElementById('filteredCount');
-    const noResultsRow = document.querySelector('#noResultsRow');
-    
-    const equipmentRows = document.querySelectorAll('.equipment-row');
-    const totalEquipments = equipmentRows.length;
-    let currentFilter = '';
-    
-    // Fonction pour normaliser le texte (supprime les accents)
-    function normalizeText(text) {
-        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+    if (statutFilter) {
+        statutFilter.addEventListener('change', function () { form.submit(); });
     }
-    
-    // Fonction pour mettre en surbrillance le texte correspondant
-    function highlightText(element, searchTerm) {
-        if (!searchTerm || !element) return;
-        
-        const text = element.textContent;
-        const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-        element.innerHTML = text.replace(regex, '<span class="search-highlight">$1</span>');
+    if (typeFilter) {
+        typeFilter.addEventListener('change', function () { form.submit(); });
     }
-    
-    // Fonction pour enlever les surbrillances
-    function removeHighlights() {
-        document.querySelectorAll('.search-highlight').forEach(el => {
-            const parent = el.parentNode;
-            parent.replaceChild(document.createTextNode(el.textContent), el);
-            parent.normalize();
-        });
-    }
-    
-    // Fonction de filtrage
-    function filterEquipments() {
-        const searchTermValue = normalizeText(searchInput.value.trim());
-        const selectedStatut = statutFilter.value;
-        const selectedType = typeFilter.value;
-        let visibleCount = 0;
-        
-        // Supprimer les anciennes surbrillances
-        removeHighlights();
-        
-        // Masquer la ligne "aucun résultat" par défaut
-        if (noResultsRow) {
-            noResultsRow.style.display = 'none';
-        }
-        
-        // Masquer les informations de recherche si pas de recherche
-        if (!searchTermValue && !selectedStatut && !selectedType && !currentFilter) {
-            searchResultsInfo.classList.add('hidden');
-        } else {
-            searchResultsInfo.classList.remove('hidden');
-        }
-        
-        // Filtrer les lignes
-        equipmentRows.forEach(row => {
-            const nom = row.getAttribute('data-nom');
-            const numeroSerie = row.getAttribute('data-numero-serie');
-            const numeroCodification = row.getAttribute('data-numero-codification');
-            const marque = row.getAttribute('data-marque');
-            const modele = row.getAttribute('data-modele');
-            const statut = row.getAttribute('data-statut');
-            const type = row.getAttribute('data-type');
-            const localisation = row.getAttribute('data-localisation');
-            const agence = row.getAttribute('data-agence');
-            
-            // Vérifier la correspondance avec la recherche
-            const searchMatch = !searchTermValue || 
-                nom.includes(searchTermValue) ||
-                numeroSerie.includes(searchTermValue) ||
-                numeroCodification.includes(searchTermValue) ||
-                marque.includes(searchTermValue) ||
-                modele.includes(searchTermValue) ||
-                localisation.includes(searchTermValue) ||
-                agence.includes(searchTermValue);
-            
-            // Vérifier la correspondance avec le statut
-            const statutMatch = !selectedStatut || statut === selectedStatut;
-            
-            // Vérifier la correspondance avec le type
-            const typeMatch = !selectedType || type === normalizeText(selectedType);
-            
-            // Vérifier la correspondance avec le filtre rapide
-            let filterMatch = true;
-            if (currentFilter === 'stock') {
-                filterMatch = statut === 'stock';
-            } else if (currentFilter === 'parc') {
-                filterMatch = statut === 'parc';
-            } else if (currentFilter === 'maintenance') {
-                filterMatch = statut === 'maintenance';
-            } else if (currentFilter === 'hors_service') {
-                filterMatch = statut === 'hors_service';
-            } else if (currentFilter === 'perdu') {
-                filterMatch = statut === 'perdu';
-            } else if (currentFilter === 'all') {
-                filterMatch = true;
-            }
-            
-            if (searchMatch && statutMatch && typeMatch && filterMatch) {
-                row.style.display = '';
-                visibleCount++;
-                
-                // Mettre en surbrillance le texte recherché
-                if (searchTermValue) {
-                    const nomElement = row.querySelector('.equipment-nom');
-                    const numeroSerieElement = row.querySelector('.equipment-numero-serie');
-                    const numeroCodificationElement = row.querySelector('.equipment-numero-codification');
-                    const marqueModeleElement = row.querySelector('.equipment-marque-modele');
-                    const agenceElement = row.querySelector('.equipment-agence');
-                    const localisationElement = row.querySelector('.equipment-localisation');
-                    
-                    if (nomElement) highlightText(nomElement, searchInput.value.trim());
-                    if (numeroSerieElement) highlightText(numeroSerieElement, searchInput.value.trim());
-                    if (numeroCodificationElement) highlightText(numeroCodificationElement, searchInput.value.trim());
-                    if (marqueModeleElement) highlightText(marqueModeleElement, searchInput.value.trim());
-                    if (agenceElement) highlightText(agenceElement, searchInput.value.trim());
-                    if (localisationElement) highlightText(localisationElement, searchInput.value.trim());
-                }
-            } else {
-                row.style.display = 'none';
-            }
-        });
-        
-        // Mettre à jour les informations de recherche
-        updateSearchInfo(searchTermValue, selectedStatut, selectedType, visibleCount);
-        
-        // Afficher le message "aucun résultat" si besoin
-        if (visibleCount === 0) {
-            if (noResultsRow) {
-                noResultsRow.style.display = '';
-            }
-        }
-    }
-    
-    // Mettre à jour les informations de recherche
-    function updateSearchInfo(searchTermValue, selectedStatut, selectedType, visibleCount) {
-        if (resultsCount) {
-            resultsCount.textContent = `${visibleCount} résultat${visibleCount > 1 ? 's' : ''}`;
-        }
-        
-        if (filteredCount) {
-            filteredCount.textContent = visibleCount === totalEquipments ? '' : `${visibleCount} sur ${totalEquipments}`;
-        }
-        
-        if (searchTerm) {
-            let infoText = '';
-            if (searchTermValue) {
-                infoText += `Recherche : "${searchInput.value}"`;
-            }
-            if (selectedStatut) {
-                if (infoText) infoText += ' • ';
-                infoText += `Statut : ${getStatutName(selectedStatut)}`;
-            }
-            if (selectedType) {
-                if (infoText) infoText += ' • ';
-                infoText += `Type : ${selectedType}`;
-            }
-            if (currentFilter && currentFilter !== 'all') {
-                if (infoText) infoText += ' • ';
-                infoText += `Filtre : ${getFilterName(currentFilter)}`;
-            }
-            searchTerm.textContent = infoText;
-        }
-    }
-    
-    // Obtenir le nom du statut
-    function getStatutName(statut) {
-        switch(statut) {
-            case 'stock': return 'Stock';
-            case 'parc': return 'Parc';
-            case 'maintenance': return 'Maintenance';
-            case 'hors_service': return 'Hors Service';
-            case 'perdu': return 'Perdu';
-            default: return statut;
-        }
-    }
-    
-    // Obtenir le nom du filtre
-    function getFilterName(filter) {
-        switch(filter) {
-            case 'all': return 'Tous';
-            case 'stock': return 'Stock';
-            case 'parc': return 'Parc';
-            case 'maintenance': return 'Maintenance';
-            case 'hors_service': return 'Hors Service';
-            case 'perdu': return 'Perdus';
-            default: return '';
-        }
-    }
-    
-    // Mettre à jour l'état des boutons de filtre
-    function updateFilterButtons() {
-        filterButtons.forEach(btn => {
-            const filter = btn.dataset.filter;
-            if (filter === currentFilter) {
-                btn.classList.add('ring-2', 'ring-offset-2', 'ring-[#A61B29]');
-            } else {
-                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-[#A61B29]');
-            }
-        });
-    }
-    
-    // Événements
-    searchInput.addEventListener('input', filterEquipments);
-    statutFilter.addEventListener('change', filterEquipments);
-    typeFilter.addEventListener('change', filterEquipments);
-    
-    resetButton.addEventListener('click', function() {
-        searchInput.value = '';
-        statutFilter.value = '';
-        typeFilter.value = '';
-        currentFilter = '';
-        updateFilterButtons();
-        filterEquipments();
-        searchInput.focus();
-    });
-    
-    clearAllFilters.addEventListener('click', function() {
-        searchInput.value = '';
-        statutFilter.value = '';
-        typeFilter.value = '';
-        currentFilter = '';
-        updateFilterButtons();
-        filterEquipments();
-        searchInput.focus();
-    });
-    
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            currentFilter = this.dataset.filter;
-            
-            if (currentFilter === 'all') {
-                statutFilter.value = '';
-                typeFilter.value = '';
-            } else if (['stock', 'parc', 'maintenance', 'hors_service', 'perdu'].includes(currentFilter)) {
-                statutFilter.value = currentFilter;
-                typeFilter.value = '';
-            }
-            
-            updateFilterButtons();
-            filterEquipments();
-        });
-    });
-    
-    // Debouncing pour les performances
-    let debounceTimer;
-    searchInput.addEventListener('input', function() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(filterEquipments, 300);
-    });
-    
-    // Recherche avec Entrée
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            filterEquipments();
-        }
-    });
-    
-    // Initialiser avec les valeurs de l'URL
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('search')) {
-        searchInput.value = urlParams.get('search');
-    }
-    if (urlParams.has('statut')) {
-        statutFilter.value = urlParams.get('statut');
-    }
-    if (urlParams.has('type')) {
-        typeFilter.value = urlParams.get('type');
-    }
-    
-    // Initialiser le filtrage
-    filterEquipments();
 });
 </script>
 

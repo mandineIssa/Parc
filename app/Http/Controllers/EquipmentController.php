@@ -373,27 +373,29 @@ class EquipmentController extends Controller
     {
         $query = Equipment::with(['agence', 'fournisseur'])
             ->orderBy('created_at', 'desc');
-        
+
         if ($request->filled('statut')) {
             $query->where('statut', $request->statut);
         }
-        
+
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
-        
+
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('numero_serie', 'like', "%{$search}%")
+                  ->orWhere('nom', 'like', "%{$search}%")
                   ->orWhere('marque', 'like', "%{$search}%")
                   ->orWhere('modele', 'like', "%{$search}%")
-                  ->orWhere('adresse_mac', 'like', "%{$search}%");
+                  ->orWhere('adresse_mac', 'like', "%{$search}%")
+                  ->orWhere('numero_codification', 'like', "%{$search}%");
             });
         }
-        
-        $equipments = $query->paginate(20);
-        
+
+        $equipments = $query->paginate(20)->withQueryString();
+
         $stats = [
             'stock' => Equipment::where('statut', 'stock')->count(),
             'parc' => Equipment::where('statut', 'parc')->count(),
@@ -401,7 +403,7 @@ class EquipmentController extends Controller
             'hors_service' => Equipment::where('statut', 'hors_service')->count(),
             'perdu' => Equipment::where('statut', 'perdu')->count(),
         ];
-        
+
         return view('equipment.index', compact('equipments', 'stats'));
     }
 
