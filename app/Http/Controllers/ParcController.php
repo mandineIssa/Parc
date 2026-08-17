@@ -418,7 +418,7 @@ public function downloadTemplate()
         
         // En-têtes pour l'import vers parc
         $headers = [
-            'type', 'categorie', 'sous_categorie', 'numero_serie', 'marque', 'modele',
+            'type', 'nom_equipement', 'categorie', 'sous_categorie', 'numero_serie', 'marque', 'modele',
             'garantie', 'date_livraison', 'prix', 'reference_facture', 'etat',
             'fournisseur_id', 'localisation', 'adresse_mac', 'contrat_maintenance',
             'type_switch', 'ports_ethernet', 'ports_poe', 'vitesse_ports',
@@ -436,7 +436,7 @@ public function downloadTemplate()
         
         $examples = [
             [
-                'Informatique', 'Ordinateur portable', 'Professionnel', 'SN2024001', 'DELL', 'Latitude 5420',
+                'Informatique', 'PC Portable Direction', 'Ordinateur portable', 'Professionnel', 'SN2024001', 'DELL', 'Latitude 5420',
                 '3 ans', '2024-01-15', '1500000', 'FACT-2024-001', 'neuf',
                 '1', 'Siège Dakar', '00:1A:2B:3C:4D:5E', 'oui',
                 '', '', '', '',
@@ -450,7 +450,7 @@ public function downloadTemplate()
                 '2', 'IT', 'Développeur', '2024-01-20', 'Affectation initiale'
             ],
             [
-                'Réseau', 'Switch', '24 ports', 'SN2024002', 'Cisco', 'Catalyst 2960',
+                'Réseau', 'Switch Data Center', 'Switch', '24 ports', 'SN2024002', 'Cisco', 'Catalyst 2960',
                 '5 ans', '2024-01-20', '2500000', 'FACT-2024-002', 'neuf',
                 '3', 'Data Center', '00:1A:2B:3C:4D:5F', 'oui',
                 'Gigabit', '24', '12', '1 Gbps',
@@ -620,6 +620,7 @@ public function downloadTemplate()
                 
                 $equipmentData = [
                     'type' => $this->normalizeType($data['type']),
+                    'nom' => trim((string) ($data['nom_equipement'] ?? $data['nom'] ?? '')) ?: null,
                     'numero_serie' => $data['numero_serie'],
                     'marque' => $data['marque'] ?? '',
                     'modele' => $data['modele'] ?? '',

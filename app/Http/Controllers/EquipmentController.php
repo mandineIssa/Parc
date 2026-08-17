@@ -630,7 +630,7 @@ class EquipmentController extends Controller
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             
             $headers = [
-                'type', 'categorie', 'sous_categorie', 'numero_serie', 'marque', 'modele',
+                'type', 'nom_equipement', 'categorie', 'sous_categorie', 'numero_serie', 'marque', 'modele',
                 'garantie', 'date_livraison', 'prix', 'reference_facture', 'etat',
                 'fournisseur_id', 'localisation', 'adresse_mac', 'contrat_maintenance',
                 'type_switch', 'ports_ethernet', 'ports_poe', 'vitesse_ports',
@@ -829,6 +829,12 @@ class EquipmentController extends Controller
                 
                 if (empty($data['type'])) { $errors[] = "Ligne $lineNumber: Type manquant"; continue; }
                 if (empty($data['numero_serie'])) { $errors[] = "Ligne $lineNumber: Numéro de série manquant"; continue; }
+
+                $equipmentName = trim((string) ($data['nom_equipement'] ?? $data['nom'] ?? ''));
+                if ($equipmentName === '') {
+                    $errors[] = "Ligne $lineNumber: Nom de l'équipement manquant";
+                    continue;
+                }
                 
                 if (Equipment::where('numero_serie', $data['numero_serie'])->exists()) {
                     $errors[] = "Ligne $lineNumber: Numéro de série '{$data['numero_serie']}' existe déjà";
@@ -854,6 +860,7 @@ class EquipmentController extends Controller
                 
                 $equipmentData = [
                     'type' => $this->normalizeType($data['type']),
+                    'nom' => $equipmentName,
                     'numero_serie' => $data['numero_serie'],
                     'marque' => $data['marque'] ?? '',
                     'modele' => $data['modele'] ?? '',
@@ -1002,7 +1009,7 @@ class EquipmentController extends Controller
             'E'  => ['Modèle',               18],
             'F'  => ['Catégorie',            16],
             'G'  => ['Sous-catégorie',       18],
-            'H'  => ['Nom',                  18],
+            'H'  => ['Nom de l’équipement',  24],
             'I'  => ['N° codification',      20],
             'J'  => ['État',                 12],
             'K'  => ['Statut',               14],

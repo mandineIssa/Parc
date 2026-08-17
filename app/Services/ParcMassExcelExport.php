@@ -22,17 +22,18 @@ class ParcMassExcelExport
         'D' => ['Departeme', 18],
         'E' => ['POSTE', 22],
         'F' => ['Dotation (ordinateur)', 20],
-        'G' => ['serial number', 18],
-        'H' => ['Marque/Modele', 16],
-        'I' => ['Model PC', 24],
-        'J' => ['DATE MISE EN SERVICE', 20],
-        'K' => ['DATE D\'ACHAT', 16],
-        'L' => ['PRIX D\'ACHAT', 14],
-        'M' => ['', 4],
-        'N' => ['Date prévue d\'amortissement', 26],
-        'O' => ['', 4],
-        'P' => ['Fournisseur', 18],
-        'Q' => ['État (Bon / Moyen / Mauvais)', 24],
+        'G' => ['NOM DE L\'EQUIPEMENT', 26],
+        'H' => ['serial number', 18],
+        'I' => ['Marque/Modele', 16],
+        'J' => ['Model PC', 24],
+        'K' => ['DATE MISE EN SERVICE', 20],
+        'L' => ['DATE D\'ACHAT', 16],
+        'M' => ['PRIX D\'ACHAT', 14],
+        'N' => ['', 4],
+        'O' => ['Date prévue d\'amortissement', 26],
+        'P' => ['', 4],
+        'Q' => ['Fournisseur', 18],
+        'R' => ['État (Bon / Moyen / Mauvais)', 24],
     ];
 
     public function build(Request $request): Spreadsheet
@@ -95,21 +96,22 @@ class ParcMassExcelExport
             $sheet->setCellValue("D{$row}", $parc?->departement ?? $equipment->departement ?? '');
             $sheet->setCellValue("E{$row}", $parc?->poste_affecte ?? $parc?->position ?? $equipment->poste_staff ?? '');
             $sheet->setCellValue("F{$row}", $parc ? 'OUI' : 'NON');
-            $sheet->setCellValue("G{$row}", $equipment->numero_serie ?? '');
-            $sheet->setCellValue("H{$row}", $equipment->marque ?? '');
-            $sheet->setCellValue("I{$row}", $equipment->modele ?? '');
+            $sheet->setCellValue("G{$row}", $equipment->nom ?? '');
+            $sheet->setCellValue("H{$row}", $equipment->numero_serie ?? '');
+            $sheet->setCellValue("I{$row}", $equipment->marque ?? '');
+            $sheet->setCellValue("J{$row}", $equipment->modele ?? '');
 
-            $this->setDateCell($sheet, "J{$row}", $dateMiseService);
-            $this->setDateCell($sheet, "K{$row}", $dateAchat, yearOnlyFallback: true);
+            $this->setDateCell($sheet, "K{$row}", $dateMiseService);
+            $this->setDateCell($sheet, "L{$row}", $dateAchat, yearOnlyFallback: true);
 
             if ($equipment->prix !== null && (float) $equipment->prix > 0) {
-                $sheet->setCellValue("L{$row}", (float) $equipment->prix);
+                $sheet->setCellValue("M{$row}", (float) $equipment->prix);
             }
 
-            $this->setDateCell($sheet, "N{$row}", $dateAmortissement);
+            $this->setDateCell($sheet, "O{$row}", $dateAmortissement);
 
-            $sheet->setCellValue("P{$row}", $equipment->fournisseur?->nom ?? '');
-            $sheet->setCellValue("Q{$row}", $this->formatEtatLabel($equipment->etat));
+            $sheet->setCellValue("Q{$row}", $equipment->fournisseur?->nom ?? '');
+            $sheet->setCellValue("R{$row}", $this->formatEtatLabel($equipment->etat));
 
             $bg = ($row % 2 === 0) ? 'FFF2F2F2' : 'FFFFFFFF';
             $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
@@ -126,8 +128,8 @@ class ParcMassExcelExport
                 ],
             ]);
 
-            $sheet->getStyle("L{$row}")->getNumberFormat()->setFormatCode('#,##0');
-            foreach (["J{$row}", "K{$row}", "N{$row}"] as $dateCell) {
+            $sheet->getStyle("M{$row}")->getNumberFormat()->setFormatCode('#,##0');
+            foreach (["K{$row}", "L{$row}", "O{$row}"] as $dateCell) {
                 $sheet->getStyle($dateCell)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
             }
             $sheet->getRowDimension($row)->setRowHeight(16);
