@@ -13,7 +13,7 @@ class UserMailNotifierTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_notifier_queues_mail_and_creates_in_app_notification(): void
+    public function test_notifier_sends_mail_and_creates_in_app_notification(): void
     {
         Mail::fake();
 
@@ -23,7 +23,7 @@ class UserMailNotifierTest extends TestCase
         $sent = $notifier->notifyUser($user, 'Sujet', 'Titre', 'Corps du message');
 
         $this->assertTrue($sent);
-        Mail::assertQueued(GpiNotificationMail::class, function ($mail) {
+        Mail::assertSent(GpiNotificationMail::class, function ($mail) {
             return $mail->mailSubject === 'Sujet' && $mail->title === 'Titre';
         });
         $this->assertDatabaseHas('gpi_user_notifications', [
@@ -40,6 +40,6 @@ class UserMailNotifierTest extends TestCase
         $sent = $notifier->notifyUserByEmail('inconnu@test.local', 'S', 'T', 'M');
 
         $this->assertFalse($sent);
-        Mail::assertNothingQueued();
+        Mail::assertNothingSent();
     }
 }

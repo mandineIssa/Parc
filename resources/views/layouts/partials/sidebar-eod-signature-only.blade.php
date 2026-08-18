@@ -5,7 +5,7 @@
     <div class="px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">EOD — Signature</div>
     <div class="sidebar-section-body open" style="max-height: none;">
         @if($u->eodSidebarShowsN3Section())
-            <a href="{{ route('eod.n3.pending') }}" class="sidebar-item {{ request()->routeIs('eod.n3.pending') ? 'sidebar-active' : '' }}">Fiches à signer (N+3)</a>
+            <a href="{{ route('eod.n3.pending') }}" class="sidebar-item {{ request()->routeIs('eod.n3.pending') ? 'sidebar-active' : '' }}">Fiches à signer (Head IT)</a>
             <a href="{{ route('eod.n3.index') }}" class="sidebar-item {{ request()->routeIs('eod.n3.index') ? 'sidebar-active' : '' }}">Supervision EOD</a>
             <a href="{{ route('eod.n3.statistiques') }}" class="sidebar-item {{ request()->routeIs('eod.n3.statistiques') ? 'sidebar-active' : '' }}">Statistiques</a>
         @endif

@@ -104,7 +104,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                     </div>
-                    <input type="text"
+                    <input type="text" 
                            name="search"
                            id="searchInput"
                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition"
@@ -112,7 +112,7 @@
                            value="{{ request('search') }}">
                 </div>
             </div>
-
+            
             <div class="w-full md:w-48">
                 <select name="statut" id="statutFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Tous les statuts</option>
@@ -123,7 +123,7 @@
                     <option value="perdu" {{ request('statut') == 'perdu' ? 'selected' : '' }}>Perdu</option>
                 </select>
             </div>
-
+            
             <div class="w-full md:w-48">
                 <select name="type" id="typeFilter" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none transition bg-white">
                     <option value="">Tous les types</option>
@@ -132,7 +132,7 @@
                     <option value="Électronique" {{ request('type') == 'Électronique' ? 'selected' : '' }}>Électronique</option>
                 </select>
             </div>
-
+            
             <button type="submit" class="bg-[#A61B29] hover:bg-[#7A0C1A] text-white font-semibold py-3 px-6 rounded-lg transition">
                 Filtrer
             </button>
@@ -140,7 +140,7 @@
                 Réinitialiser
             </a>
         </div>
-
+        
         <div class="mt-4 pt-4 border-t border-gray-100">
             <div class="flex flex-wrap gap-2">
                 <span class="text-sm text-gray-500 flex items-center mr-3">Filtres rapides :</span>
@@ -374,7 +374,7 @@
                                             Réinitialiser les filtres
                                         </a>
                                     @endif
-                                    <a href="{{ route('equipment.create') }}"
+                                    <a href="{{ route('equipment.create') }}" 
                                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg inline-flex items-center">
                                         Nouvel Équipement
                                     </a>

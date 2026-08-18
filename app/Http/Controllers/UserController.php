@@ -3,6 +3,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProfilExport;
+use App\Exports\ProfilTemplateExport;
+use App\Imports\ProfilImport;
+use App\Models\Agency;
+use App\Models\Departement;
+use App\Models\Filiale;
+use App\Models\PosteOrganisation;
 use App\Models\User;
 use App\Support\UserSignatureStorage;
 use Illuminate\Http\Request;
@@ -10,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
@@ -19,9 +27,15 @@ class UserController extends Controller
     public function show(User $user)
     {
         try {
-            $user->load(['equipment' => function ($query) {
-                $query->latest()->take(5);
-            }]);
+            $user->load([
+                'agence',
+                'filiale',
+                'nPlus1',
+                'nPlus2',
+                'equipment' => function ($query) {
+                    $query->latest()->take(5);
+                },
+            ]);
             $user->loadCount('equipment');
         } catch (\Exception $e) {
             $user->equipment_count = 0;
@@ -35,7 +49,11 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::orderBy('name')->paginate(20);
+        $users = User::query()
+            ->with(['agence', 'filiale'])
+            ->orderBy('name')
+            ->paginate(20);
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -44,7 +62,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('admin.users.create');
+        return view('admin.users.create', $this->profilFormData());
     }
 
     /**
@@ -62,12 +80,26 @@ class UserController extends Controller
             'eod_signature_only_ui' => ['sometimes', 'boolean'],
             'departement' => ['nullable', 'string', 'max:255'],
             'fonction' => ['nullable', 'string', 'max:255'],
+            'matricule' => ['nullable', 'string', 'max:50', 'unique:users,matricule'],
+            'telephone' => ['nullable', 'string', 'max:40'],
+            'type_contrat' => ['nullable', Rule::in(['CDI', 'CDD', 'Stagiaire', 'Autre'])],
+            'statut' => ['nullable', Rule::in(['actif', 'inactif'])],
+            'agency_id' => ['nullable', 'exists:agencies,id'],
+            'filiale_id' => ['nullable', 'exists:filiales,id'],
+            'n_plus_1_id' => ['nullable', 'exists:users,id'],
+            'n_plus_2_id' => ['nullable', 'exists:users,id'],
             'signature_file' => ['nullable', 'image', 'max:4096'],
             'signature_canvas' => ['nullable', 'string'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['eod_signature_only_ui'] = $request->boolean('eod_signature_only_ui');
+        $validated['email'] = strtolower(trim($validated['email']));
+        $validated['type_contrat'] = $validated['type_contrat'] ?? 'CDI';
+        $validated['statut'] = $validated['statut'] ?? 'actif';
+        if (blank($validated['matricule'] ?? null)) {
+            unset($validated['matricule']);
+        }
 
         unset($validated['signature_file'], $validated['signature_canvas']);
 
@@ -94,7 +126,10 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        return view('admin.users.edit', array_merge(
+            compact('user'),
+            $this->profilFormData($user->id)
+        ));
     }
 
     /**
@@ -114,6 +149,14 @@ public function update(Request $request, User $user)
         'eod_signature_only_ui' => ['sometimes', 'boolean'],
         'departement' => ['nullable', 'string', 'max:255'],
         'fonction' => ['nullable', 'string', 'max:255'],
+        'matricule' => ['nullable', 'string', 'max:50', Rule::unique('users', 'matricule')->ignore($user->id)],
+        'telephone' => ['nullable', 'string', 'max:40'],
+        'type_contrat' => ['nullable', Rule::in(['CDI', 'CDD', 'Stagiaire', 'Autre'])],
+        'statut' => ['nullable', Rule::in(['actif', 'inactif'])],
+        'agency_id' => ['nullable', 'exists:agencies,id'],
+        'filiale_id' => ['nullable', 'exists:filiales,id'],
+        'n_plus_1_id' => ['nullable', 'exists:users,id'],
+        'n_plus_2_id' => ['nullable', 'exists:users,id'],
     ]);
 
     // Mise à jour du mot de passe si fourni
@@ -124,20 +167,33 @@ public function update(Request $request, User $user)
         $validated['password'] = Hash::make($request->password);
     }
 
-    // SOLUTION 1: Mise à jour avec Query Builder (contourne les problèmes d'Elquent)
-    DB::table('users')
-        ->where('id', $user->id)
-        ->update([
+        $payload = [
             'name' => $validated['name'],
             'prenom' => $validated['prenom'],
-            'email' => $validated['email'],
+            'email' => strtolower(trim($validated['email'])),
             'role' => $validated['role'],
-            'role_change' => $validated['role_change'] ?? null, // Force la mise à jour
+            'role_change' => $validated['role_change'] ?? null,
             'eod_signature_only_ui' => $request->boolean('eod_signature_only_ui'),
             'departement' => $validated['departement'] ?? null,
             'fonction' => $validated['fonction'] ?? null,
+            'matricule' => filled($validated['matricule'] ?? null) ? $validated['matricule'] : $user->matricule,
+            'telephone' => $validated['telephone'] ?? null,
+            'type_contrat' => $validated['type_contrat'] ?? 'CDI',
+            'statut' => $validated['statut'] ?? 'actif',
+            'agency_id' => $validated['agency_id'] ?? null,
+            'filiale_id' => $validated['filiale_id'] ?? null,
+            'n_plus_1_id' => $validated['n_plus_1_id'] ?? null,
+            'n_plus_2_id' => $validated['n_plus_2_id'] ?? null,
             'updated_at' => now(),
-        ]);
+        ];
+
+        if (! empty($validated['password'])) {
+            $payload['password'] = $validated['password'];
+        }
+
+        DB::table('users')
+            ->where('id', $user->id)
+            ->update($payload);
 
     // Vérification immédiate
     $updated = DB::table('users')->where('id', $user->id)->first();
@@ -165,5 +221,67 @@ public function update(Request $request, User $user)
 
         return redirect()->route('users.index')
             ->with('success', 'Utilisateur supprimé avec succès.');
+    }
+
+    public function export()
+    {
+        $filename = 'profils_'.now()->format('Y-m-d_His').'.xlsx';
+
+        return Excel::download(new ProfilExport(), $filename);
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new ProfilTemplateExport(), 'modele_import_profils.xlsx');
+    }
+
+    public function showImportForm()
+    {
+        return view('admin.users.import');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'excel_file' => ['required', 'file', 'mimes:xlsx,xls', 'max:10240'],
+        ]);
+
+        set_time_limit(300);
+
+        $import = new ProfilImport();
+        Excel::import($import, $request->file('excel_file'));
+
+        $message = "Import terminé : {$import->imported} profil(s) importé(s)";
+        if ($import->skipped > 0) {
+            $message .= ", {$import->skipped} ligne(s) ignorée(s)";
+        }
+
+        if ($import->errors !== []) {
+            return redirect()->route('users.import.form')
+                ->with('warning', $message)
+                ->with('import_errors', $import->errors);
+        }
+
+        return redirect()->route('users.index')->with('success', $message);
+    }
+
+    /**
+     * @return array{agencies: \Illuminate\Support\Collection, filiales: \Illuminate\Support\Collection, managers: \Illuminate\Support\Collection}
+     */
+    private function profilFormData(?int $exceptUserId = null): array
+    {
+        $managers = User::query()
+            ->when($exceptUserId, fn ($query) => $query->where('id', '!=', $exceptUserId))
+            ->orderBy('name')
+            ->orderBy('prenom')
+            ->get(['id', 'name', 'prenom', 'matricule']);
+
+        return [
+            'agencies' => Agency::query()->orderBy('nom')->get(['id', 'nom']),
+            'filiales' => Filiale::query()->orderBy('nom')->get(['id', 'nom']),
+            'departementOptions' => Departement::options(),
+            'posteOptions' => PosteOrganisation::options(),
+            'managers' => $managers,
+        ];
     }
 }

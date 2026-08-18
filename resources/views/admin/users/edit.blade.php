@@ -91,20 +91,32 @@
                     <!-- Département -->
                     <div>
                         <label for="departement" class="block font-medium text-gray-700">Département</label>
-                        <input id="departement" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" type="text" name="departement" value="{{ old('departement', $user->departement) }}" />
+                        <select id="departement" name="departement" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">—</option>
+                            @foreach($departementOptions ?? [] as $option)
+                                <option value="{{ $option }}" {{ old('departement', $user->departement) === $option ? 'selected' : '' }}>{{ $option }}</option>
+                            @endforeach
+                        </select>
                         @error('departement')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Fonction -->
+                    <!-- Poste -->
                     <div>
-                        <label for="fonction" class="block font-medium text-gray-700">Fonction</label>
-                        <input id="fonction" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" type="text" name="fonction" value="{{ old('fonction', $user->fonction) }}" />
+                        <label for="fonction" class="block font-medium text-gray-700">Poste</label>
+                        <select id="fonction" name="fonction" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">—</option>
+                            @foreach($posteOptions ?? [] as $option)
+                                <option value="{{ $option }}" {{ old('fonction', $user->fonction) === $option ? 'selected' : '' }}>{{ $option }}</option>
+                            @endforeach
+                        </select>
                         @error('fonction')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    @include('admin.users.partials.profil-rh-fields', ['user' => $user])
 
                     <!-- Mot de passe (optionnel) -->
                     <div>

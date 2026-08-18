@@ -270,6 +270,7 @@ class EodSuiviController extends Controller
                         $q->where('status', 'PENDING_CONTROLLER')
                             ->orWhere(function ($q2) {
                                 $q2->where('status', 'PENDING_N3_CONTROLLER')
+                                    ->whereNotNull('n3_validated_at')
                                     ->whereNull('controller_validated_at');
                             });
                     });
@@ -312,6 +313,10 @@ class EodSuiviController extends Controller
 
         if ($fiche->status !== 'PENDING_N3_CONTROLLER') {
             return back()->with('error', 'Cette fiche n\'est pas en attente de signature Controller.');
+        }
+
+        if (! $fiche->n3_validated_at) {
+            return back()->with('error', 'Le Head IT doit signer avant le Controller.');
         }
 
         if ($fiche->controller_validated_at) {
@@ -364,7 +369,7 @@ class EodSuiviController extends Controller
         return redirect()->route('eod.controller.edit', $fiche)
             ->with('success', $fiche->status === 'CLOSED'
                 ? 'Fiche validée et clôturée. Un e-mail de confirmation a été envoyé à l\'auteur.'
-                : 'Signature enregistrée. En attente de la signature N+3.');
+                : 'Signature enregistrée. En attente de la signature Head IT.');
     }
 
     // ==================== N+3 ====================
@@ -383,6 +388,7 @@ class EodSuiviController extends Controller
                 $q->where('status', 'PENDING_CONTROLLER')
                     ->orWhere(function ($q2) {
                         $q2->where('status', 'PENDING_N3_CONTROLLER')
+                            ->whereNotNull('n3_validated_at')
                             ->whereNull('controller_validated_at');
                     });
             });
@@ -510,7 +516,7 @@ class EodSuiviController extends Controller
         $this->authorizeRole('N3');
 
         if ($fiche->status !== 'PENDING_N3_CONTROLLER' || $fiche->n3_validated_at) {
-            return back()->with('error', 'Signature N+3 non disponible pour cette fiche.');
+            return back()->with('error', 'Signature Head IT non disponible pour cette fiche.');
         }
 
         $request->validate([
@@ -540,7 +546,7 @@ class EodSuiviController extends Controller
         $fiche->n3_validated_at = now();
         $fiche->history = array_merge($fiche->history ?? [], [[
             'role' => 'N3',
-            'action' => 'Signature N+3 enregistrée',
+            'action' => 'Signature Head IT enregistrée',
             'at' => now()->format('d/m/Y H:i:s'),
         ]]);
         $fiche->updated_by = Auth::id();
@@ -554,7 +560,7 @@ class EodSuiviController extends Controller
         return redirect()->route('eod.n3.show', $fiche)
             ->with('success', $fiche->status === 'CLOSED'
                 ? 'Fiche validée et clôturée. Un e-mail de confirmation a été envoyé à l\'auteur.'
-                : 'Signature N+3 enregistrée. En attente du Controller.');
+                : 'Signature Head IT enregistrée. En attente du Controller.');
     }
 
     public function n3Export($format)
@@ -908,7 +914,7 @@ class EodSuiviController extends Controller
         $fiche->status = 'PENDING_N3_CONTROLLER';
         $fiche->history = array_merge($fiche->history ?? [], [[
             'role' => Auth::user()->role_change ?? 'Auteur',
-            'action' => 'Fiche soumise à N+3 et Controller pour signature',
+            'action' => 'Fiche soumise au Head IT pour signature (Controller ensuite)',
             'at' => now()->format('d/m/Y H:i:s'),
         ]]);
         $fiche->updated_by = Auth::id();
@@ -919,7 +925,7 @@ class EodSuiviController extends Controller
         $authorEmail = Auth::user()->email ?? 'votre adresse enregistrée';
 
         return redirect()->route($redirectIndexRoute)
-            ->with('success', "Fiche transmise à N+3 et au Controller pour signature. Un e-mail de confirmation a été envoyé à : {$authorEmail}");
+            ->with('success', "Fiche transmise au Head IT pour signature. Le Controller signera ensuite. Un e-mail de confirmation a été envoyé à : {$authorEmail}");
     }
 
     private function finalizeDualSign(EodSuivi $fiche): void
@@ -932,7 +938,7 @@ class EodSuiviController extends Controller
             $fiche->status = 'CLOSED';
             $fiche->history = array_merge($fiche->history ?? [], [[
                 'role' => 'Système',
-                'action' => 'Fiche clôturée — signatures N+3 et Controller complètes',
+                'action' => 'Fiche clôturée — signatures Head IT et Controller complètes',
                 'at' => now()->format('d/m/Y H:i:s'),
             ]]);
             $fiche->save();

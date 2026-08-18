@@ -28,9 +28,9 @@
                 @endif
             </p>
             @if($pendingDual && !$fiche->n3_validated_at)
-                <p class="text-sm text-amber-700 mt-2">La signature N+3 n’est pas encore enregistrée. Vous pouvez signer en parallèle ; la fiche sera clôturée lorsque les deux signatures seront complètes.</p>
+                <p class="text-sm text-amber-700 mt-2">Le Head IT n’a pas encore signé. Le Controller ne peut signer qu’après la signature Head IT.</p>
             @elseif($pendingDual && $fiche->n3_validated_at)
-                <p class="text-sm text-green-700 mt-2">N+3 a signé. Votre signature clôturera la fiche et activera le PDF définitif.</p>
+                <p class="text-sm text-green-700 mt-2">Le Head IT a signé. Votre signature clôturera la fiche et activera le PDF définitif.</p>
             @endif
         </div>
         <div class="flex flex-nowrap items-center gap-2 shrink-0">
@@ -163,18 +163,18 @@
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-            <h2 class="text-sm font-semibold text-gray-700 mb-3">Signataires (N+3 &amp; Controller)</h2>
+            <h2 class="text-sm font-semibold text-gray-700 mb-3">Signataires (Head IT puis Controller)</h2>
             <div class="space-y-3 text-sm">
                 @if($fiche->n3_validated_at)
                     <div>
-                        <p><span class="text-gray-600">N+3 :</span> <strong>{{ $n3Name !== '' ? $n3Name : '—' }}</strong>
+                        <p><span class="text-gray-600">Head IT :</span> <strong>{{ $n3Name !== '' ? $n3Name : '—' }}</strong>
                             — {{ $fiche->n3_validation_date ?? $fiche->n3_validated_at->format('d/m/Y H:i') }}</p>
                         @if($fiche->n3_signature_path)
-                            <img src="{{ asset('storage/'.$fiche->n3_signature_path) }}" alt="Signature N+3" class="mt-2 max-h-24 rounded border border-gray-200">
+                            <img src="{{ asset('storage/'.$fiche->n3_signature_path) }}" alt="Signature Head IT" class="mt-2 max-h-24 rounded border border-gray-200">
                         @endif
                     </div>
                 @else
-                    <p class="text-amber-800">Signature N+3 en attente.</p>
+                    <p class="text-amber-800">Signature Head IT en attente.</p>
                 @endif
                 <hr class="border-gray-100">
                 @if($fiche->controller_validated_at)
@@ -216,7 +216,7 @@
                 </div>
                 <button type="submit" class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold">Valider et signer (flux historique)</button>
             </form>
-        @elseif($pendingDual)
+        @elseif($pendingDual && $fiche->n3_validated_at)
             <form method="POST" action="{{ route('eod.controller.sign', $fiche) }}" enctype="multipart/form-data" id="controller-sign-form">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -248,6 +248,8 @@
                 </div>
                 <button type="submit" class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold">Enregistrer la signature Controller</button>
             </form>
+        @elseif($pendingDual)
+            <p class="text-sm text-amber-800">Le formulaire de signature Controller s’activera après la signature Head IT.</p>
         @else
             <div class="text-sm text-gray-700 space-y-2">
                 <p><strong>Signé par :</strong> {{ $controllerSignerName !== '' ? $controllerSignerName : '—' }}</p>

@@ -34,7 +34,11 @@ class TransitionController extends Controller
     public function create(Equipment $equipment)
     {
         $equipment->load(['stock', 'parc', 'maintenance']);
-        $users = User::all();
+        $users = User::query()
+            ->whereNotNull('matricule')
+            ->where('matricule', '!=', '')
+            ->orderBy('matricule')
+            ->get(['id', 'matricule', 'name', 'prenom', 'departement', 'fonction', 'email']);
         $departements = \App\Models\Departement::options();
         $postes = \App\Models\PosteOrganisation::options();
 
@@ -1567,7 +1571,11 @@ private function extractUserName($affectationData)
 public function showTransitionForm(Equipment $equipment)
 {
     $equipment->load(['stock', 'parc', 'maintenance']);
-    $users = User::all();
+    $users = User::query()
+        ->whereNotNull('matricule')
+        ->where('matricule', '!=', '')
+        ->orderBy('matricule')
+        ->get(['id', 'matricule', 'name', 'prenom', 'departement', 'fonction', 'email']);
     $agencies = Agency::all();
     $departements = \App\Models\Departement::options();
     $postes = \App\Models\PosteOrganisation::options();

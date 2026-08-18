@@ -37,6 +37,11 @@
                     <div class="p-6 bg-white border-b border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="border-b pb-4">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Matricule</label>
+                                <p class="text-lg font-semibold text-gray-900">{{ $user->matricule ?: '-' }}</p>
+                            </div>
+
+                            <div class="border-b pb-4">
                                 <label class="block text-sm font-medium text-gray-500 mb-1">Nom</label>
                                 <p class="text-lg font-semibold text-gray-900">{{ $user->name }}</p>
                             </div>
@@ -88,6 +93,55 @@
                                 <p class="text-gray-900">
                                     <i class="fas fa-briefcase text-gray-600 mr-2"></i>
                                     {{ $user->fonction ?? '-' }}
+                                </p>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Téléphone</label>
+                                <p class="text-gray-900">{{ $user->telephone ?: '-' }}</p>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Site</label>
+                                <p class="text-gray-900">{{ $user->agence?->nom ?: '-' }}</p>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Filiale</label>
+                                <p class="text-gray-900">{{ $user->filiale?->nom ?: '-' }}</p>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Type de contrat</label>
+                                <p class="text-gray-900">{{ $user->type_contrat ?: 'CDI' }}</p>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Statut</label>
+                                <p class="text-gray-900">{{ $user->statut ?: 'actif' }}</p>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">N+1</label>
+                                <p class="text-gray-900">
+                                    @if($user->nPlus1)
+                                        {{ $user->nPlus1->name }} {{ $user->nPlus1->prenom }}
+                                        @if($user->nPlus1->matricule) ({{ $user->nPlus1->matricule }}) @endif
+                                    @else
+                                        —
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">N+2</label>
+                                <p class="text-gray-900">
+                                    @if($user->nPlus2)
+                                        {{ $user->nPlus2->name }} {{ $user->nPlus2->prenom }}
+                                        @if($user->nPlus2->matricule) ({{ $user->nPlus2->matricule }}) @endif
+                                    @else
+                                        —
+                                    @endif
                                 </p>
                             </div>
                         </div>

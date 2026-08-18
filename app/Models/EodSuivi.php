@@ -60,7 +60,9 @@ class EodSuivi extends Model
         return match($this->status) {
             'DRAFT' => 'Brouillon',
             'PENDING_N2' => 'En attente validation N+2 (ancien flux)',
-            'PENDING_N3_CONTROLLER' => 'En attente signatures N+3 et Controller',
+            'PENDING_N3_CONTROLLER' => $this->n3Signed()
+                ? 'En attente de la signature Controller'
+                : 'En attente de la signature Head IT',
             'PENDING_CONTROLLER' => 'En attente validation Controller',
             'CLOSED' => 'Clôturé',
             'VALIDATED' => 'Validé',

@@ -9,7 +9,10 @@
     $u = auth()->user();
     $canSignEodCtrlSlot = $u->canSignEodControllerSlot()
         && ! $fiche->controller_validated_at
-        && in_array($fiche->status, ['PENDING_N3_CONTROLLER', 'PENDING_CONTROLLER'], true);
+        && (
+            $fiche->status === 'PENDING_CONTROLLER'
+            || ($fiche->status === 'PENDING_N3_CONTROLLER' && $fiche->n3_validated_at)
+        );
     $showControllerSlotReadOnly = $u->canAccessEodAsN3()
         && ! $u->canSignEodControllerSlot()
         && ! $fiche->controller_validated_at
@@ -297,17 +300,17 @@
 
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
             <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-                <h3 class="font-semibold text-gray-800">Signatures N+3 &amp; Controller</h3>
+                <h3 class="font-semibold text-gray-800">Signatures Head IT &amp; Controller</h3>
             </div>
             <div class="p-4 space-y-3 text-sm">
                 @if($fiche->n3_validated_at)
-                    <p><span class="text-gray-600">N+3 :</span> {{ trim(($fiche->n3Validator?->prenom ?? '') . ' ' . ($fiche->n3Validator?->name ?? '')) ?: '—' }}
+                    <p><span class="text-gray-600">Head IT :</span> {{ trim(($fiche->n3Validator?->prenom ?? '') . ' ' . ($fiche->n3Validator?->name ?? '')) ?: '—' }}
                         — {{ $fiche->n3_validation_date ?? $fiche->n3_validated_at->format('d/m/Y H:i') }}</p>
                     @if($fiche->n3_signature_path)
-                        <img src="{{ asset('storage/'.$fiche->n3_signature_path) }}" alt="Signature N+3" class="max-h-24 rounded border border-gray-200">
+                        <img src="{{ asset('storage/'.$fiche->n3_signature_path) }}" alt="Signature Head IT" class="max-h-24 rounded border border-gray-200">
                     @endif
                 @else
-                    <p class="text-amber-800">Signature N+3 en attente.</p>
+                    <p class="text-amber-800">Signature Head IT en attente.</p>
                 @endif
                 <hr class="border-gray-100">
                 @if($fiche->controller_validated_at)
@@ -343,7 +346,7 @@
     @if($fiche->status === 'PENDING_N3_CONTROLLER' && !$fiche->n3_validated_at)
     <div class="bg-white rounded-xl shadow-md border border-[#C8102E]/25 overflow-hidden mb-6">
         <div class="bg-gradient-to-r from-[#C8102E] to-[#4a4a4a] px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-white">Votre signature N+3</h2>
+            <h2 class="text-lg font-semibold text-white">Votre signature Head IT</h2>
             <p class="text-sm text-red-100 mt-1">Signataire connecté : <strong>{{ trim((auth()->user()->prenom ?? '') . ' ' . (auth()->user()->name ?? '')) }}</strong></p>
         </div>
         <div class="p-6">
@@ -372,7 +375,7 @@
                     <label class="block text-sm text-gray-600 mb-1">Note (optionnel)</label>
                     <textarea name="n3_validation_note" rows="2" class="w-full rounded-lg border-gray-300 text-sm">{{ old('n3_validation_note') }}</textarea>
                 </div>
-                <button type="submit" class="px-5 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white rounded-lg text-sm font-semibold">Enregistrer la signature N+3</button>
+                <button type="submit" class="px-5 py-2 bg-[#C8102E] hover:bg-[#a00d24] text-white rounded-lg text-sm font-semibold">Enregistrer la signature Head IT</button>
             </form>
         </div>
     </div>
@@ -384,9 +387,9 @@
             <h2 class="text-lg font-semibold text-white">Votre signature Controller</h2>
             <p class="text-sm text-red-100 mt-1">
                 @if($fiche->n3_validated_at)
-                    La signature N+3 est enregistrée. Vous pouvez finaliser votre visa sur le formulaire dédié.
+                    La signature Head IT est enregistrée. Vous pouvez finaliser votre visa sur le formulaire dédié.
                 @else
-                    Vous pouvez signer en parallèle de N+3 ; la fiche sera clôturée lorsque les deux signatures seront complètes.
+                    Le Head IT doit signer avant le Controller.
                 @endif
             </p>
         </div>

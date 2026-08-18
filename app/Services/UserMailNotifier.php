@@ -154,13 +154,10 @@ class UserMailNotifier
                 $actionLabel
             );
 
-            // Envoi synchrone pour les notifications critiques (évite la dépendance au queue:work)
-            // GpiNotificationMail implémente ShouldQueue : send() le mettrait quand même en file.
-            if ($sync || config('queue.default') === 'sync') {
-                Mail::to($user->email, $recipientName)->sendNow($mailable);
-            } else {
-                Mail::to($user->email, $recipientName)->queue($mailable);
-            }
+            // Toujours sendNow : GpiNotificationMail implémente ShouldQueue, donc send()/queue()
+            // déposent le mail dans la table jobs. Sans `php artisan queue:work` (cas local et
+            // souvent en prod), l'e-mail ne part jamais alors que la notif in-app est créée.
+            Mail::to($user->email, $recipientName)->sendNow($mailable);
 
             $this->inApp->notify(
                 $user,
@@ -175,7 +172,7 @@ class UserMailNotifier
                 'email' => $user->email,
                 'subject' => $subject,
                 'title' => $title,
-                'sync' => $sync || config('queue.default') === 'sync',
+                'sync' => true,
             ]);
 
             return true;

@@ -11,8 +11,8 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Autoriser seulement les super_admin et agent_it à voir la liste
-        return in_array($user->role, ['super_admin', 'agent_it']);
+        return $user->isSuperAdmin()
+            || strtolower(trim((string) ($user->role ?? ''))) === 'agent_it';
     }
 
     /**
@@ -20,8 +20,8 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        // Autoriser seulement les super_admin et agent_it à créer
-        return in_array($user->role, ['super_admin', 'agent_it']);
+        return $user->isSuperAdmin()
+            || strtolower(trim((string) ($user->role ?? ''))) === 'agent_it';
     }
 
     /**
@@ -35,13 +35,13 @@ class UserPolicy
         }
         
         // Les super_admin peuvent tout modifier
-        if ($user->role === 'super_admin') {
+        if ($user->isSuperAdmin()) {
             return true;
         }
         
         // Les agent_it peuvent modifier tous les utilisateurs sauf les super_admin
-        if ($user->role === 'agent_it') {
-            return $model->role !== 'super_admin';
+        if (strtolower(trim((string) ($user->role ?? ''))) === 'agent_it') {
+            return $model->role !== 'super_admin' && strtolower(trim((string) ($model->role ?? ''))) !== 'superadmin';
         }
         
         // Les users normaux ne peuvent modifier que leur propre profil
@@ -59,10 +59,10 @@ class UserPolicy
         }
         
         // Seuls les super_admin peuvent supprimer
-        if ($user->role === 'super_admin') {
+        if ($user->isSuperAdmin()) {
             // Empêcher de supprimer le dernier super_admin
-            if ($model->role === 'super_admin' && 
-                User::where('role', 'super_admin')->count() <= 1) {
+            if ($model->isSuperAdmin() &&
+                User::whereIn('role', ['super_admin', 'superadmin'])->count() <= 1) {
                 return false;
             }
             return true;

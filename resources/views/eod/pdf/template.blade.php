@@ -522,7 +522,7 @@
         @if(!empty($fiche->n3_validation_note) || !empty($fiche->controller_validation_note))
         <div style="margin:0 8px 8px;padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;font-size:7.5px;color:#334155;">
             @if(!empty($fiche->n3_validation_note))
-                <strong>Note N+3 :</strong> {{ $fiche->n3_validation_note }}<br>
+                <strong>Note Head IT :</strong> {{ $fiche->n3_validation_note }}<br>
             @endif
             @if(!empty($fiche->controller_validation_note))
                 <strong>Note Controller :</strong> {{ $fiche->controller_validation_note }}

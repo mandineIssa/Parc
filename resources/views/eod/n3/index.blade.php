@@ -1,7 +1,7 @@
 {{-- resources/views/eod/n3/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'N+3 - Supervision EOD')
+@section('title', 'Head IT - Supervision EOD')
 @section('header', 'Supervision EOD - Tableau de bord')
 
 @section('content')
@@ -11,7 +11,7 @@
         <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
             <a href="{{ route('eod.n3.pending') }}" class="bg-[#C8102E] hover:bg-[#a00d24] text-white font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                À signer (N+3)
+                À signer (Head IT)
                 @if(($stats['en_attente_signature'] ?? 0) > 0)
                     <span class="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold bg-white text-[#C8102E] rounded-full">{{ $stats['en_attente_signature'] }}</span>
                 @endif

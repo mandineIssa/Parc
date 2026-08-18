@@ -1,7 +1,7 @@
 {{-- resources/views/eod/n3/statistiques.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'N+3 - Statistiques EOD')
+@section('title', 'Head IT - Statistiques EOD')
 @section('header', 'Supervision EOD - Statistiques détaillées')
 
 @section('content')

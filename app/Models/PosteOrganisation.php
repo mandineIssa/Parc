@@ -9,7 +9,7 @@ class PosteOrganisation extends Model
 {
     protected $table = 'postes_organisation';
 
-    protected $fillable = ['nom', 'actif', 'ordre'];
+    protected $fillable = ['nom', 'description', 'actif', 'ordre'];
 
     protected $casts = [
         'actif' => 'boolean',

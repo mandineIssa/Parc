@@ -89,7 +89,7 @@ class AuthServiceProvider extends ServiceProvider
             $role = $normalizeRole($user);
 
             // Super admin bypass TOUTES les gates
-            if ($role === 'super_admin' || $hasBootstrapSuperAccess($user)) {
+            if (in_array($role, ['super_admin', 'superadmin'], true) || $hasBootstrapSuperAccess($user)) {
                 return true;
             }
         });

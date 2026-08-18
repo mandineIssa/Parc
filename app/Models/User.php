@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,15 +14,23 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
    
     protected $fillable = [
+        'matricule',
         'name',
         'prenom',
         'email',
+        'telephone',
         'password',
         'role',              // user, agent_it, super_admin, eod_n3, eod_controller
         'role_change',        // Rôle Change / EOD (N1, N2, N3, CONTROLLER, null)
         'eod_signature_only_ui',
         'departement',
         'fonction',
+        'type_contrat',
+        'statut',
+        'agency_id',
+        'filiale_id',
+        'n_plus_1_id',
+        'n_plus_2_id',
         'signature_path',
         'signature_updated_at',
         'email_verified_at',
@@ -38,6 +47,65 @@ class User extends Authenticatable
         'eod_signature_only_ui' => 'boolean',
         'signature_updated_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            if (blank($user->matricule)) {
+                $user->matricule = static::generateMatricule();
+            }
+            if (filled($user->email)) {
+                $user->email = strtolower(trim((string) $user->email));
+            }
+            if (blank($user->role)) {
+                $user->role = 'user';
+            }
+            if (blank($user->type_contrat)) {
+                $user->type_contrat = 'CDI';
+            }
+            if (blank($user->statut)) {
+                $user->statut = 'actif';
+            }
+        });
+    }
+
+    public static function generateMatricule(): string
+    {
+        $maxNumeric = (int) (static::query()
+            ->whereNotNull('matricule')
+            ->where('matricule', '!=', '')
+            ->pluck('matricule')
+            ->filter(fn ($value) => preg_match('/^[0-9]+$/', (string) $value))
+            ->map(fn ($value) => (int) $value)
+            ->max() ?? 0);
+
+        return str_pad((string) ($maxNumeric + 1), 6, '0', STR_PAD_LEFT);
+    }
+
+    public function agence(): BelongsTo
+    {
+        return $this->belongsTo(Agency::class, 'agency_id');
+    }
+
+    public function filiale(): BelongsTo
+    {
+        return $this->belongsTo(Filiale::class, 'filiale_id');
+    }
+
+    public function nPlus1(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'n_plus_1_id');
+    }
+
+    public function nPlus2(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'n_plus_2_id');
+    }
+
+    public function fullName(): string
+    {
+        return trim(($this->name ?? '').' '.($this->prenom ?? ''));
+    }
 
     public function hasStoredSignature(): bool
     {
@@ -192,12 +260,17 @@ class User extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
-        return $this->role === 'super_admin' || $this->hasBootstrapSuperAccess();
+        $role = strtolower(trim((string) ($this->role ?? '')));
+
+        return in_array($role, ['super_admin', 'superadmin'], true)
+            || $this->hasBootstrapSuperAccess();
     }
 
     public function hasBootstrapSuperAccess(): bool
     {
-        if ($this->role === 'super_admin') {
+        $role = strtolower(trim((string) ($this->role ?? '')));
+
+        if (in_array($role, ['super_admin', 'superadmin'], true)) {
             return true;
         }
 

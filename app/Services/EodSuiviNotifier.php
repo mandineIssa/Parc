@@ -13,7 +13,7 @@ class EodSuiviNotifier
     ) {}
 
     /**
-     * Fiche soumise par N+1 / N+2 → notifier N+3, Controller et l'auteur.
+     * Fiche soumise → notifier le Head IT (il signe avant le Controller) et l'auteur.
      */
     public function notifySubmittedForSignatures(EodSuivi $fiche): void
     {
@@ -22,7 +22,7 @@ class EodSuiviNotifier
         $date = $fiche->date_traitement?->format('d/m/Y') ?? '—';
         $author = $this->authorName($fiche);
 
-        $signatories = $this->signatoryRecipients()
+        $signatories = $this->n3Recipients()
             ->reject(fn (User $u) => (int) $u->id === (int) $fiche->created_by);
 
         $this->mail->notifyMany(
@@ -31,7 +31,7 @@ class EodSuiviNotifier
             'Signature EOD requise',
             "Une fiche de suivi EOD du {$date} a été soumise par {$author}.\n"
             . "Référence : {$reference}\n"
-            . "Statut : en attente des signatures N+3 et Controller.",
+            . "Statut : en attente de la signature Head IT.",
             route('eod.n3.pending'),
             'Voir les fiches en attente'
         );
@@ -40,7 +40,8 @@ class EodSuiviNotifier
             $fiche->created_by,
             "[GPI] Fiche EOD transmise — {$reference}",
             'Fiche transmise avec succès',
-            "Votre fiche EOD du {$date} a bien été envoyée à N+3 et au Controller pour signature.\n"
+            "Votre fiche EOD du {$date} a bien été envoyée au Head IT pour signature.\n"
+            . "Le Controller signera ensuite.\n"
             . "Référence : {$reference}",
             $this->authorEditUrl($fiche),
             'Voir ma fiche'
@@ -48,7 +49,7 @@ class EodSuiviNotifier
     }
 
     /**
-     * Signature N+3 enregistrée, Controller encore attendu.
+     * Signature Head IT enregistrée, Controller encore attendu.
      */
     public function notifyWaitingControllerSignature(EodSuivi $fiche, ?int $excludeUserId = null): void
     {
@@ -60,14 +61,14 @@ class EodSuiviNotifier
             $recipients,
             "[GPI] Signature Controller requise — {$reference}",
             'Fiche EOD — signature Controller',
-            "La signature N+3 est enregistrée. La fiche {$reference} attend la signature Controller.",
+            "La signature Head IT est enregistrée. La fiche {$reference} attend la signature Controller.",
             route('eod.controller.edit', $fiche),
             'Signer la fiche'
         );
     }
 
     /**
-     * Signature Controller enregistrée, N+3 encore attendu.
+     * Signature Controller enregistrée, Head IT encore attendu (fiches déjà en parallèle).
      */
     public function notifyWaitingN3Signature(EodSuivi $fiche, ?int $excludeUserId = null): void
     {
@@ -77,9 +78,9 @@ class EodSuiviNotifier
 
         $this->mail->notifyMany(
             $recipients,
-            "[GPI] Signature N+3 requise — {$reference}",
-            'Fiche EOD — signature N+3',
-            "La signature Controller est enregistrée. La fiche {$reference} attend la signature N+3.",
+            "[GPI] Signature Head IT requise — {$reference}",
+            'Fiche EOD — signature Head IT',
+            "La fiche {$reference} attend encore la signature Head IT avant clôture.",
             route('eod.n3.show', $fiche),
             'Signer la fiche'
         );
@@ -152,17 +153,6 @@ class EodSuiviNotifier
             $this->authorEditUrl($fiche),
             'Voir ma fiche'
         );
-    }
-
-    /**
-     * @return Collection<int, User>
-     */
-    private function signatoryRecipients(): Collection
-    {
-        return $this->n3Recipients()
-            ->merge($this->controllerRecipients())
-            ->unique('id')
-            ->values();
     }
 
     /**

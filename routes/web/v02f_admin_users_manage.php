@@ -45,6 +45,15 @@ use App\Http\Controllers\IncidentFicheController;
     |--------------------------------------------------------------------------
     */
 Route::middleware(['can:manage-users'])->prefix('admin')->group(function () {
+    Route::get('/users/export', [UserController::class, 'export'])
+        ->name('users.export');
+    Route::get('/users/import', [UserController::class, 'showImportForm'])
+        ->name('users.import.form');
+    Route::post('/users/import', [UserController::class, 'import'])
+        ->name('users.import');
+    Route::get('/users/import/template', [UserController::class, 'downloadTemplate'])
+        ->name('users.import.template');
+
     Route::get('/users', [UserController::class, 'index'])
         ->name('users.index'); // Sans 'admin.' préfixe
     

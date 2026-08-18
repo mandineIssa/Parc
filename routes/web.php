@@ -89,6 +89,15 @@ require __DIR__.'/auth.php';
 
 // ✅ MODIFICATION 2 : Routes utilisateurs avec préfixe /admin
 // Routes pour la gestion des utilisateurs (protégées par authentification)
+Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
+    Route::middleware('can:manage-users')->group(function () {
+        Route::get('/users/export', [UserController::class, 'export'])->name('users.export');
+        Route::get('/users/import/template', [UserController::class, 'downloadTemplate'])->name('users.import.template');
+        Route::get('/users/import', [UserController::class, 'showImportForm'])->name('users.import.form');
+        Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
+    });
+});
+
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     Route::middleware('can:manage-users')->group(function () {
         Route::resource('users', UserController::class);

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Departement extends Model
 {
-    protected $fillable = ['nom', 'actif', 'ordre'];
+    protected $fillable = ['nom', 'description', 'actif', 'ordre'];
 
     protected $casts = [
         'actif' => 'boolean',

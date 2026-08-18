@@ -295,7 +295,7 @@
                         <a href="{{ route('eod.n2.create') }}" class="sidebar-item {{ request()->routeIs('eod.n2.create') ? 'sidebar-active' : '' }}">Nouvelle fiche EOD</a>
                     @endif
                     @if($eodN3)
-                        <a href="{{ route('eod.n3.pending') }}" class="sidebar-item {{ request()->routeIs('eod.n3.pending') ? 'sidebar-active' : '' }}">Fiches à signer (N+3)</a>
+                        <a href="{{ route('eod.n3.pending') }}" class="sidebar-item {{ request()->routeIs('eod.n3.pending') ? 'sidebar-active' : '' }}">Fiches à signer (Head IT)</a>
                         <a href="{{ route('eod.n3.index') }}" class="sidebar-item {{ request()->routeIs('eod.n3.index') ? 'sidebar-active' : '' }}">Supervision EOD</a>
                     @endif
                     @if($eodN3 || $eodCtrl || auth()->user()?->role === 'super_admin')
@@ -320,7 +320,8 @@
             </button>
             <div class="sidebar-section-body {{ $configurationSectionOpen ? 'open' : '' }}">
                 <a href="{{ route('agencies.index') }}" class="sidebar-item {{ request()->routeIs('agencies.*') ? 'sidebar-active' : '' }}">Agences</a>
-                <a href="{{ route('parametres.organisation') }}" class="sidebar-item {{ request()->routeIs('parametres.*') ? 'sidebar-active' : '' }}">Départements & Postes</a>
+                <a href="{{ route('parametres.departements.index') }}" class="sidebar-item {{ request()->routeIs('parametres.departements.*') ? 'sidebar-active' : '' }}">Départements</a>
+                <a href="{{ route('parametres.postes.index') }}" class="sidebar-item {{ request()->routeIs('parametres.postes.*') ? 'sidebar-active' : '' }}">Postes</a>
                 <a href="{{ route('categories.index') }}" class="sidebar-item {{ request()->routeIs('categories.*') ? 'sidebar-active' : '' }}">Catégories</a>
                 <a href="{{ route('suppliers.index') }}" class="sidebar-item {{ request()->routeIs('suppliers.*') ? 'sidebar-active' : '' }}">Fournisseurs</a>
                 <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : '' }}">Administration</a>

@@ -2,8 +2,8 @@
 
 @php $isCtrl = !empty($pendingAsController); @endphp
 
-@section('title', $isCtrl ? 'EOD — Fiches en attente Controller' : 'EOD — Fiches en attente N+3')
-@section('header', $isCtrl ? 'EOD — Signatures Controller' : 'EOD — Signatures N+3')
+@section('title', $isCtrl ? 'EOD — Fiches en attente Controller' : 'EOD — Fiches en attente Head IT')
+@section('header', $isCtrl ? 'EOD — Signatures Controller' : 'EOD — Signatures Head IT')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -54,7 +54,7 @@
                     @if($isCtrl)
                         Aucune fiche en attente de signature Controller.
                     @else
-                        Aucune fiche en attente de signature N+3.
+                        Aucune fiche en attente de signature Head IT.
                     @endif
                 </td></tr>
                 @endforelse

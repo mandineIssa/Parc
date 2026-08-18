@@ -734,6 +734,26 @@
                         <div class="bg-white p-4 rounded-lg border-2 border-green-300">
                             <h4 class="font-bold mb-3 text-green-800">✍️ Signature de l'utilisateur *</h4>
                             <p class="text-xs text-gray-600 mb-3">Utilisateur affecté (peut aussi être signé à l'étape « Fiche de mouvement »).</p>
+                            <div class="mb-3">
+                                <label class="block text-sm font-semibold mb-1">Matricule :</label>
+                                <select id="utilisateur_signature_matricule" name="utilisateur_signature_matricule"
+                                    class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white"
+                                    onchange="fillUtilisateurFromMatricule(this)">
+                                    <option value="">— Choisir un matricule —</option>
+                                    @foreach($users ?? [] as $profil)
+                                        @if(filled($profil->matricule))
+                                            <option value="{{ $profil->matricule }}"
+                                                data-nom="{{ $profil->name }}"
+                                                data-prenom="{{ $profil->prenom }}"
+                                                data-departement="{{ $profil->departement }}"
+                                                data-poste="{{ $profil->fonction }}"
+                                                data-email="{{ $profil->email }}">
+                                                {{ $profil->matricule }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="grid grid-cols-2 gap-3 mb-3">
                                 <div>
                                     <label class="block text-sm font-semibold mb-1">Nom :</label>
@@ -862,8 +882,31 @@
                     Information du destinataire
                 </h4>
 
-                <!-- Utilisateur * - Input texte au lieu de select -->
-              <!-- Utilisateur - Nom et Prénom séparés -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">
+                        <span class="text-red-500">*</span> Matricule
+                    </label>
+                    <select id="destinataire_matricule" name="utilisateur_matricule"
+                        class="w-full px-3 py-2 border-2 border-gray-300 rounded bg-white"
+                        onchange="fillUtilisateurFromMatricule(this)">
+                        <option value="">— Choisir un matricule —</option>
+                        @foreach($users ?? [] as $profil)
+                            @if(filled($profil->matricule))
+                                <option value="{{ $profil->matricule }}"
+                                    data-nom="{{ $profil->name }}"
+                                    data-prenom="{{ $profil->prenom }}"
+                                    data-departement="{{ $profil->departement }}"
+                                    data-poste="{{ $profil->fonction }}"
+                                    data-email="{{ $profil->email }}"
+                                    {{ old('utilisateur_matricule') === $profil->matricule ? 'selected' : '' }}>
+                                    {{ $profil->matricule }}
+                                </option>
+                            @endif
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Utilisateur - Nom et Prénom séparés -->
 <div class="mb-4 grid grid-cols-2 gap-4">
     <div>
         <label class="block text-sm font-semibold mb-2">
@@ -892,7 +935,7 @@
                     <label class="block text-sm font-semibold mb-2">
                         <span class="text-red-500">*</span> Département
                     </label>
-                    <select name="department" class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
+                    <select name="department" id="destinataire_departement" class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
                         <option value="">-- Sélectionner un département --</option>
                         @foreach(($departements ?? []) as $dept)
                             <option value="{{ $dept }}" {{ old('department') === $dept ? 'selected' : '' }}>{{ $dept }}</option>
@@ -905,7 +948,7 @@
                     <label class="block text-sm font-semibold mb-2">
                         <span class="text-red-500">*</span> Poste
                     </label>
-                    <select name="position" class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
+                    <select name="position" id="destinataire_poste" class="w-full px-3 py-2 border-2 border-gray-300 rounded" required>
                         <option value="">-- Sélectionner un poste --</option>
                         @foreach(($postes ?? []) as $poste)
                             <option value="{{ $poste }}" {{ old('position') === $poste ? 'selected' : '' }}>{{ $poste }}</option>
@@ -967,7 +1010,7 @@
                 <!-- Email -->
                 <div>
                     <label class="block text-sm font-semibold mb-2">Email</label>
-                    <input type="email" name="email" placeholder="Ex: utilisateur@entreprise.com"
+                    <input type="email" name="email" id="destinataire_email" placeholder="Ex: utilisateur@entreprise.com"
                         class="w-full px-3 py-2 border-2 border-gray-300 rounded">
                 </div>
             </div>
@@ -1306,6 +1349,56 @@
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 
 <script>
+function fillUtilisateurFromMatricule(select) {
+    const option = select.options[select.selectedIndex];
+    const nom = option ? (option.getAttribute('data-nom') || '') : '';
+    const prenom = option ? (option.getAttribute('data-prenom') || '') : '';
+    const departement = option ? (option.getAttribute('data-departement') || '') : '';
+    const poste = option ? (option.getAttribute('data-poste') || '') : '';
+    const email = option ? (option.getAttribute('data-email') || '') : '';
+    const matricule = select.value || '';
+
+    const nomSig = document.getElementById('utilisateur_signature_nom');
+    const prenomSig = document.getElementById('utilisateur_signature_prenom');
+    if (nomSig) nomSig.value = nom;
+    if (prenomSig) prenomSig.value = prenom;
+
+    const nomDest = document.querySelector('input[name="utilisateur_nom"]');
+    const prenomDest = document.querySelector('input[name="utilisateur_prenom"]');
+    if (nomDest) nomDest.value = nom;
+    if (prenomDest) prenomDest.value = prenom;
+
+    setSelectValue(document.getElementById('destinataire_departement'), departement);
+    setSelectValue(document.getElementById('destinataire_poste'), poste);
+
+    const emailField = document.getElementById('destinataire_email') || document.querySelector('input[name="email"]');
+    if (emailField) emailField.value = email;
+
+    ['utilisateur_signature_matricule', 'destinataire_matricule'].forEach(function (id) {
+        const other = document.getElementById(id);
+        if (other && other !== select && other.value !== matricule) {
+            other.value = matricule;
+        }
+    });
+}
+
+function setSelectValue(select, value) {
+    if (!select || !value) {
+        return;
+    }
+
+    const exists = Array.from(select.options).some(function (opt) {
+        return opt.value === value;
+    });
+    if (!exists) {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value;
+        select.appendChild(opt);
+    }
+    select.value = value;
+}
+
 
 // Variables globales
 
@@ -1611,15 +1704,18 @@ function startThreeStepFlow() {
 
         <!-- Bouton de soumission final -->
 
-        <div class="mt-8 pt-6 border-t border-gray-200 text-center hidden" id="final-submit">
+        <div class="mt-8 pt-6 border-t border-gray-200 hidden" id="final-submit">
 
-            <button type="button" onclick="submitAllForms()" class="btn-cofina-success px-8 py-4 text-lg font-bold">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <button type="button" onclick="previousStep()" class="btn-cofina-outline px-6 py-3">
+                    ← Étape précédente
+                </button>
+                <button type="button" onclick="submitAllForms()" class="btn-cofina-success px-8 py-4 text-lg font-bold">
+                    ✅ SOUMETTRE POUR APPROBATION
+                </button>
+            </div>
 
-                ✅ SOUMETTRE POUR APPROBATION
-
-            </button>
-
-            <p class="text-sm text-gray-600 mt-2">
+            <p class="text-sm text-gray-600 mt-2 text-right">
 
                 Toutes les informations seront soumises pour approbation
 
@@ -1770,20 +1866,28 @@ function showStep(stepNumber) {
     
 
     // Gérer la visibilité des boutons
-
-    if (stepNumber === 3) {
-
-        navigationButtons.classList.add('hidden');
-
-        finalSubmit.classList.remove('hidden');
-
-    } else {
-
+    if (navigationButtons) {
         navigationButtons.classList.remove('hidden');
-
-        finalSubmit.classList.add('hidden');
-
+        const prevBtn = navigationButtons.querySelector('button[onclick="previousStep()"]');
+        const nextBtn = navigationButtons.querySelector('button[onclick="nextStep()"]');
+        if (prevBtn) {
+            prevBtn.classList.toggle('invisible', stepNumber <= 1);
+            prevBtn.disabled = stepNumber <= 1;
+        }
+        if (nextBtn) {
+            nextBtn.classList.toggle('hidden', stepNumber >= 3);
+        }
     }
+
+    if (finalSubmit) {
+        if (stepNumber === 3) {
+            finalSubmit.classList.remove('hidden');
+        } else {
+            finalSubmit.classList.add('hidden');
+        }
+    }
+
+    bindStepNavigation();
 
 }
 
@@ -1845,6 +1949,48 @@ function previousStep() {
 
     }
 
+}
+
+
+
+function goToStep(stepNumber) {
+    stepNumber = parseInt(stepNumber, 10);
+    if (!stepNumber || stepNumber === currentStep) {
+        return;
+    }
+
+    if (stepNumber > 3) {
+        if (currentStep === 3) {
+            document.getElementById('final-submit')?.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            nextStep();
+        }
+        return;
+    }
+
+    if (stepNumber < currentStep) {
+        saveCurrentStepData();
+        currentStep = stepNumber;
+        showStep(currentStep);
+        document.getElementById('forms-container')?.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    nextStep();
+}
+
+function bindStepNavigation() {
+    document.querySelectorAll('#three-step-flow-container .step-number').forEach(function (el, index) {
+        const wrap = el.closest('.w-1/4') || el.parentElement;
+        if (!wrap) {
+            return;
+        }
+        wrap.style.cursor = 'pointer';
+        wrap.title = index + 1 < currentStep ? 'Revenir à cette étape' : 'Aller à cette étape';
+        wrap.onclick = function () {
+            goToStep(index + 1);
+        };
+    });
 }
 
 
@@ -2643,12 +2789,17 @@ function startDeceleFlow() {
                 </button>
             </div>
         </div>
-        <div class="mt-8 pt-6 border-t border-gray-200 text-center hidden" id="final-submit-decele">
+        <div class="mt-8 pt-6 border-t border-gray-200 hidden" id="final-submit-decele">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+            <button type="button" onclick="previousStepDecele()" class="btn-cofina-outline px-6 py-3">
+                ← Étape précédente
+            </button>
             <button type="button" onclick="submitAllDecele()"
                 class="btn-cofina-success px-8 py-4 text-lg font-bold">
                 ✅ SOUMETTRE POUR APPROBATION
             </button>
-            <p class="text-sm text-gray-600 mt-2">
+            </div>
+            <p class="text-sm text-gray-600 mt-2 text-right">
                 L'équipement sera transféré en stock décélé après validation
             </p>
         </div>`;
@@ -2718,8 +2869,24 @@ function showStepDecele(step) {
     updateProgressDecele(step);
     updateStepNumbersDecele(step);
  
-    if (step === 3) { nav.classList.add('hidden');    fin.classList.remove('hidden'); }
-    else            { nav.classList.remove('hidden'); fin.classList.add('hidden'); }
+    if (step === 3) {
+        nav.classList.remove('hidden');
+        const prevBtn = nav.querySelector('button[onclick="previousStepDecele()"]');
+        const nextBtn = nav.querySelector('button[onclick="nextStepDecele()"]');
+        if (prevBtn) prevBtn.classList.remove('invisible');
+        if (nextBtn) nextBtn.classList.add('hidden');
+        fin.classList.remove('hidden');
+    } else {
+        nav.classList.remove('hidden');
+        const prevBtn = nav.querySelector('button[onclick="previousStepDecele()"]');
+        const nextBtn = nav.querySelector('button[onclick="nextStepDecele()"]');
+        if (prevBtn) {
+            prevBtn.classList.toggle('invisible', step <= 1);
+            prevBtn.disabled = step <= 1;
+        }
+        if (nextBtn) nextBtn.classList.remove('hidden');
+        fin.classList.add('hidden');
+    }
 }
  
 function nextStepDecele() {

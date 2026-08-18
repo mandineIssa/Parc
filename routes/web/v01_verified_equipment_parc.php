@@ -369,20 +369,38 @@ Route::resource('parc', ParcController::class);
     Route::resource('agencies', AgencyController::class);
 
     // ============================================
-    // PARAMÈTRES — Départements & Postes
+    // PARAMÈTRES — Départements et Postes (listes séparées)
     // ============================================
     Route::get('/parametres/organisation', [\App\Http\Controllers\ParametreOrganisationController::class, 'index'])
         ->name('parametres.organisation');
+
+    Route::get('/parametres/departements', [\App\Http\Controllers\ParametreOrganisationController::class, 'indexDepartements'])
+        ->name('parametres.departements.index');
+    Route::get('/parametres/departements/create', [\App\Http\Controllers\ParametreOrganisationController::class, 'createDepartement'])
+        ->name('parametres.departements.create');
     Route::post('/parametres/departements', [\App\Http\Controllers\ParametreOrganisationController::class, 'storeDepartement'])
         ->name('parametres.departements.store');
+    Route::get('/parametres/departements/{departement}', [\App\Http\Controllers\ParametreOrganisationController::class, 'showDepartement'])
+        ->name('parametres.departements.show');
+    Route::get('/parametres/departements/{departement}/edit', [\App\Http\Controllers\ParametreOrganisationController::class, 'editDepartement'])
+        ->name('parametres.departements.edit');
     Route::put('/parametres/departements/{departement}', [\App\Http\Controllers\ParametreOrganisationController::class, 'updateDepartement'])
         ->name('parametres.departements.update');
     Route::post('/parametres/departements/{departement}/toggle', [\App\Http\Controllers\ParametreOrganisationController::class, 'toggleDepartement'])
         ->name('parametres.departements.toggle');
     Route::delete('/parametres/departements/{departement}', [\App\Http\Controllers\ParametreOrganisationController::class, 'destroyDepartement'])
         ->name('parametres.departements.destroy');
+
+    Route::get('/parametres/postes', [\App\Http\Controllers\ParametreOrganisationController::class, 'indexPostes'])
+        ->name('parametres.postes.index');
+    Route::get('/parametres/postes/create', [\App\Http\Controllers\ParametreOrganisationController::class, 'createPoste'])
+        ->name('parametres.postes.create');
     Route::post('/parametres/postes', [\App\Http\Controllers\ParametreOrganisationController::class, 'storePoste'])
         ->name('parametres.postes.store');
+    Route::get('/parametres/postes/{posteOrganisation}', [\App\Http\Controllers\ParametreOrganisationController::class, 'showPoste'])
+        ->name('parametres.postes.show');
+    Route::get('/parametres/postes/{posteOrganisation}/edit', [\App\Http\Controllers\ParametreOrganisationController::class, 'editPoste'])
+        ->name('parametres.postes.edit');
     Route::put('/parametres/postes/{posteOrganisation}', [\App\Http\Controllers\ParametreOrganisationController::class, 'updatePoste'])
         ->name('parametres.postes.update');
     Route::post('/parametres/postes/{posteOrganisation}/toggle', [\App\Http\Controllers\ParametreOrganisationController::class, 'togglePoste'])

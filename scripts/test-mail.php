@@ -44,7 +44,7 @@ try {
 
 echo PHP_EOL . '--- Test 2 : template GpiNotificationMail ---' . PHP_EOL;
 try {
-    Illuminate\Support\Facades\Mail::to($to, $recipientName)->send(
+    Illuminate\Support\Facades\Mail::to($to, $recipientName)->sendNow(
         new App\Mail\GpiNotificationMail(
             '[GPI] Test notification — ' . date('Y-m-d H:i:s'),
             'Test du template COFINA',
