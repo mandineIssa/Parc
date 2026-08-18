@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\User;
 use App\Support\ProfilExcelMapper;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -17,10 +18,20 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ProfilExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithTitle
 {
+    public function __construct(
+        private readonly ?Request $filters = null
+    ) {}
+
     public function collection(): Collection
     {
-        return User::query()
-            ->with(['agence', 'filiale', 'nPlus1', 'nPlus2'])
+        $query = User::query()
+            ->with(['agence', 'filiale', 'nPlus1', 'nPlus2']);
+
+        if ($this->filters) {
+            $query->filter($this->filters);
+        }
+
+        return $query
             ->orderBy('name')
             ->orderBy('prenom')
             ->get();

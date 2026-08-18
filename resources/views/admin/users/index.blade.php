@@ -4,6 +4,23 @@
 @section('title', 'Gestion des utilisateurs')
 
 @section('content')
+@php
+    $filterQuery = request()->only(['search', 'role', 'role_change', 'departement', 'statut']);
+    $hasFilters = collect($filterQuery)->filter(fn ($v) => $v !== null && $v !== '')->isNotEmpty();
+    $roleOptions = [
+        'super_admin' => 'Super Admin',
+        'agent_it' => 'Agent IT',
+        'user' => 'Utilisateur',
+        'eod_n3' => 'Signataire EOD N+3',
+        'eod_controller' => 'Contrôleur EOD',
+    ];
+    $roleChangeOptions = [
+        'N1' => 'N+1 - Demandeur',
+        'N2' => 'N+2 - Technicien',
+        'N3' => 'N+3 - Validateur',
+        'CONTROLLER' => 'Controller',
+    ];
+@endphp
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -17,7 +34,7 @@
                         <a href="{{ route('users.import.form') }}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition-colors">
                             Importer
                         </a>
-                        <a href="{{ route('users.export') }}" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-md transition-colors">
+                        <a href="{{ route('users.export', $filterQuery) }}" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-md transition-colors">
                             Exporter Excel
                         </a>
                         <a href="{{ route('users.create') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md transition-colors">
@@ -38,6 +55,76 @@
                     </div>
                 @endif
 
+                <form method="GET" action="{{ route('users.index') }}" id="usersFiltersForm" class="mb-6 bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <div class="flex flex-col lg:flex-row gap-3">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </div>
+                                <input type="text"
+                                       name="search"
+                                       value="{{ request('search') }}"
+                                       placeholder="Matricule, nom, prénom, e-mail…"
+                                       class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none bg-white">
+                            </div>
+                        </div>
+                        <div class="w-full lg:w-48">
+                            <select name="role" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                                <option value="">Tous les rôles</option>
+                                @foreach($roleOptions as $value => $label)
+                                    <option value="{{ $value }}" @selected(request('role') === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="w-full lg:w-52">
+                            <select name="role_change" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                                <option value="">Tous les rôles Change</option>
+                                @foreach($roleChangeOptions as $value => $label)
+                                    <option value="{{ $value }}" @selected(request('role_change') === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="w-full lg:w-52">
+                            <select name="departement" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                                <option value="">Tous les départements</option>
+                                @foreach(($departementOptions ?? []) as $departement)
+                                    <option value="{{ $departement }}" @selected(request('departement') === $departement)>{{ $departement }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="w-full lg:w-40">
+                            <select name="statut" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                                <option value="">Tous les statuts</option>
+                                <option value="actif" @selected(request('statut') === 'actif')>Actif</option>
+                                <option value="inactif" @selected(request('statut') === 'inactif')>Inactif</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="bg-[#A61B29] hover:bg-[#7A0C1A] text-white font-semibold py-2.5 px-5 rounded-lg transition">
+                            Filtrer
+                        </button>
+                        <a href="{{ route('users.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2.5 px-5 rounded-lg transition text-center">
+                            Réinitialiser
+                        </a>
+                    </div>
+                </form>
+
+                @if($hasFilters)
+                    <div class="mb-4 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 flex flex-wrap items-center justify-between gap-2">
+                        <p class="text-sm text-blue-800">
+                            <span class="font-semibold">{{ $users->total() }} résultat{{ $users->total() > 1 ? 's' : '' }}</span>
+                            @if(request('search')) • Recherche : « {{ request('search') }} » @endif
+                            @if(request('role')) • Rôle : {{ $roleOptions[request('role')] ?? request('role') }} @endif
+                            @if(request('role_change')) • Change : {{ $roleChangeOptions[request('role_change')] ?? request('role_change') }} @endif
+                            @if(request('departement')) • Département : {{ request('departement') }} @endif
+                            @if(request('statut')) • Statut : {{ request('statut') }} @endif
+                        </p>
+                        <a href="{{ route('users.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-900">Tout effacer</a>
+                    </div>
+                @endif
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -53,7 +140,7 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($users as $user)
+                            @forelse($users as $user)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $user->matricule ?: '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $user->name }}</td>
@@ -112,7 +199,13 @@
                                     @endif
                                 </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                    Aucun utilisateur ne correspond aux filtres.
+                                </td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

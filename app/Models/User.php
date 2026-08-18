@@ -3,9 +3,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -100,6 +102,50 @@ class User extends Authenticatable
     public function nPlus2(): BelongsTo
     {
         return $this->belongsTo(self::class, 'n_plus_2_id');
+    }
+
+    /**
+     * Filtres liste / export administration des utilisateurs.
+     */
+    public function scopeFilter(Builder $query, Request $request): Builder
+    {
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $query->where(function (Builder $q) use ($search) {
+                $like = '%'.$search.'%';
+                $q->where('matricule', 'like', $like)
+                    ->orWhere('name', 'like', $like)
+                    ->orWhere('prenom', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('telephone', 'like', $like)
+                    ->orWhere('fonction', 'like', $like);
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->string('role')->toString());
+        }
+
+        if ($request->filled('role_change')) {
+            $query->where('role_change', $request->string('role_change')->toString());
+        }
+
+        if ($request->filled('departement')) {
+            $query->where('departement', $request->string('departement')->toString());
+        }
+
+        if ($request->filled('statut')) {
+            $statut = $request->string('statut')->toString();
+            if ($statut === 'actif') {
+                $query->where(function (Builder $q) {
+                    $q->where('statut', 'actif')->orWhereNull('statut');
+                });
+            } else {
+                $query->where('statut', $statut);
+            }
+        }
+
+        return $query;
     }
 
     public function fullName(): string

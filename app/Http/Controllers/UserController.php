@@ -47,14 +47,20 @@ class UserController extends Controller
     /**
      * Afficher la liste des utilisateurs
      */
-    public function index()
+    public function index(Request $request)
     {
         $users = User::query()
             ->with(['agence', 'filiale'])
+            ->filter($request)
             ->orderBy('name')
-            ->paginate(20);
+            ->orderBy('prenom')
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index', [
+            'users' => $users,
+            'departementOptions' => $this->departementFilterOptions(),
+        ]);
     }
 
     /**
@@ -223,11 +229,11 @@ public function update(Request $request, User $user)
             ->with('success', 'Utilisateur supprimé avec succès.');
     }
 
-    public function export()
+    public function export(Request $request)
     {
         $filename = 'profils_'.now()->format('Y-m-d_His').'.xlsx';
 
-        return Excel::download(new ProfilExport(), $filename);
+        return Excel::download(new ProfilExport($request), $filename);
     }
 
     public function downloadTemplate()
@@ -283,5 +289,29 @@ public function update(Request $request, User $user)
             'posteOptions' => PosteOrganisation::options(),
             'managers' => $managers,
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function departementFilterOptions(): array
+    {
+        $fromReferentiel = Departement::options();
+        $fromUsers = User::query()
+            ->whereNotNull('departement')
+            ->where('departement', '!=', '')
+            ->distinct()
+            ->orderBy('departement')
+            ->pluck('departement')
+            ->all();
+
+        return collect($fromReferentiel)
+            ->merge($fromUsers)
+            ->map(fn ($value) => trim((string) $value))
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
     }
 }
