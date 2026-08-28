@@ -435,10 +435,9 @@ class EodSuiviController extends Controller
             ->limit(5)
             ->get();
 
-        $dernieresFiches = EodSuivi::with('creator', 'validator')
+        $fiches = EodSuivi::with('creator', 'validator')
             ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
+            ->paginate(15);
 
         $repartitionSemaine = EodSuivi::selectRaw('DAYOFWEEK(created_at) as jour, count(*) as total')
             ->groupBy('jour')
@@ -450,7 +449,7 @@ class EodSuiviController extends Controller
             });
 
         return view('eod.n3.index', compact(
-            'stats', 'evolution', 'topContributeurs', 'dernieresFiches', 'repartitionSemaine'
+            'stats', 'evolution', 'topContributeurs', 'fiches', 'repartitionSemaine'
         ));
     }
 

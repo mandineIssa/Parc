@@ -115,10 +115,11 @@
         </div>
     </div>
 
-    <!-- Dernières fiches -->
+    <!-- Toutes les fiches -->
     <div class="bg-white rounded-xl shadow-md overflow-hidden">
-        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-800">Dernières fiches de suivi</h2>
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h2 class="text-lg font-semibold text-gray-800">Toutes les fiches de suivi</h2>
+            <p class="text-sm text-gray-500">{{ $fiches->total() }} fiche(s) au total</p>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -134,7 +135,7 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($dernieresFiches as $fiche)
+                    @forelse($fiches as $fiche)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-[#C8102E]">{{ $fiche->reference }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->date_traitement->format('d/m/Y') }}</td>
@@ -175,6 +176,11 @@
                 </tbody>
             </table>
         </div>
+        @if($fiches->hasPages())
+        <div class="px-6 py-4 border-t border-gray-200">
+            {{ $fiches->links() }}
+        </div>
+        @endif
     </div>
 
     <!-- Bouton de retour au dashboard -->

@@ -87,6 +87,21 @@ class DocumentationController extends Controller
         return $pdf->download($filename);
     }
 
+    public function downloadCahierChargesModuleParcPdf(\App\Services\CahierDesChargesModuleParcBuilder $builder)
+    {
+        $pdf = Pdf::loadView('documentation.pdf.cahier-charges-module-parc', [
+            'chapters' => $builder->chapters(),
+            'version' => '1.0',
+            'generatedAt' => now()->format('d/m/Y H:i'),
+        ]);
+
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Cahier_Charges_Module_Parc_COFINA_'.now()->format('Y-m-d').'.pdf';
+
+        return $pdf->download($filename);
+    }
+
     public function download(string $format = 'pdf')
     {
         if ($format === 'pdf') {
