@@ -80,13 +80,21 @@
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Top contributeurs</h3>
             <div class="space-y-4">
                 @forelse($topContributeurs as $contrib)
+                @php
+                    $contribFullName = $contrib->creator
+                        ? trim(($contrib->creator->prenom ?? '') . ' ' . ($contrib->creator->name ?? ''))
+                        : '';
+                    $contribInitial = $contribFullName !== ''
+                        ? strtoupper(mb_substr($contribFullName, 0, 1))
+                        : '?';
+                @endphp
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-[#C8102E] font-semibold mr-3">
-                            {{ strtoupper(substr($contrib->creator?->name ?? '?', 0, 1)) }}
+                            {{ $contribInitial }}
                         </div>
                         <div>
-                            <p class="font-medium">{{ $contrib->creator?->name ?? 'Utilisateur inconnu' }}</p>
+                            <p class="font-medium">{{ $contribFullName !== '' ? $contribFullName : 'Utilisateur inconnu' }}</p>
                             <p class="text-xs text-gray-500">{{ $contrib->creator?->departement ?? '—' }}</p>
                         </div>
                     </div>
@@ -139,13 +147,13 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-[#C8102E]">{{ $fiche->reference }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->date_traitement->format('d/m/Y') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->creator?->name ?? '—' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->creator ? (trim(($fiche->creator->prenom ?? '') . ' ' . ($fiche->creator->name ?? '')) ?: '—') : '—' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $fiche->status_class }}">
                                 {{ $fiche->status_label }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->validator?->name ?? '—' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->validator ? (trim(($fiche->validator->prenom ?? '') . ' ' . ($fiche->validator->name ?? '')) ?: '—') : '—' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             @php
                                 $incidents = json_decode($fiche->incidents_data ?? '[]', true);
