@@ -136,8 +136,12 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Référence</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Créateur</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut global</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Validateur</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Head IT</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Head IT</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Controller</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Controller</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Incidents</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -148,15 +152,53 @@
                         <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-[#C8102E]">{{ $fiche->reference }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->date_traitement->format('d/m/Y') }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->creator ? (trim(($fiche->creator->prenom ?? '') . ' ' . ($fiche->creator->name ?? '')) ?: '—') : '—' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            @if(($fiche->statut_global ?? '') === 'Succès')
+                                <span class="text-green-600 font-semibold">✓ Succès</span>
+                            @elseif(($fiche->statut_global ?? '') === 'Échec')
+                                <span class="text-red-600 font-semibold">✗ Échec</span>
+                            @else
+                                <span class="text-gray-500">{{ $fiche->statut_global ?: '—' }}</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $fiche->status_class }}">
                                 {{ $fiche->status_label }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $fiche->validator ? (trim(($fiche->validator->prenom ?? '') . ' ' . ($fiche->validator->name ?? '')) ?: '—') : '—' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            @if($fiche->n3_validated_at)
+                                {{ trim(($fiche->n3Validator?->prenom ?? '') . ' ' . ($fiche->n3Validator?->name ?? '')) ?: '—' }}
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            @if($fiche->n3_validated_at)
+                                {{ $fiche->n3_validation_date ?: $fiche->n3_validated_at->format('d/m/Y H:i') }}
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            @if($fiche->controller_validated_at)
+                                {{ trim(($fiche->controllerValidator?->prenom ?? '') . ' ' . ($fiche->controllerValidator?->name ?? '')) ?: '—' }}
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            @if($fiche->controller_validated_at)
+                                {{ $fiche->controller_validation_date ?: $fiche->controller_validated_at->format('d/m/Y H:i') }}
+                            @else
+                                <span class="text-gray-400">—</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             @php
-                                $incidents = json_decode($fiche->incidents_data ?? '[]', true);
+                                $incidents = is_array($fiche->incidents_data)
+                                    ? $fiche->incidents_data
+                                    : (json_decode($fiche->incidents_data ?? '[]', true) ?: []);
                                 $nbIncidents = count($incidents);
                             @endphp
                             @if($nbIncidents > 0)
@@ -176,7 +218,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="11" class="px-6 py-12 text-center text-gray-500">
                             Aucune fiche de suivi trouvée
                         </td>
                     </tr>

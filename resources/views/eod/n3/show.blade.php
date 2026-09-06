@@ -61,19 +61,35 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500 mb-1">Statut global</p>
-                    <p class="font-medium">{{ $fiche->statut_global ?? '—' }}</p>
+                    <p class="font-medium">
+                        @if(($fiche->statut_global ?? '') === 'Succès')
+                            <span class="text-green-600">✓ Succès</span>
+                        @elseif(($fiche->statut_global ?? '') === 'Échec')
+                            <span class="text-red-600">✗ Échec</span>
+                        @else
+                            {{ $fiche->statut_global ?: '—' }}
+                        @endif
+                    </p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500 mb-1">Créateur</p>
                     <p class="font-medium">{{ trim(($fiche->creator?->prenom ?? '') . ' ' . ($fiche->creator?->name ?? '')) ?: '—' }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">Validateur</p>
-                    <p class="font-medium">{{ $fiche->validator?->name ?? '—' }}</p>
+                    <p class="text-sm text-gray-500 mb-1">Head IT (validateur)</p>
+                    <p class="font-medium">{{ trim(($fiche->n3Validator?->prenom ?? '') . ' ' . ($fiche->n3Validator?->name ?? '')) ?: '—' }}</p>
+                    <p class="text-sm text-gray-500 mt-2 mb-1">Date validation Head IT</p>
+                    <p class="font-medium">
+                        {{ $fiche->n3_validation_date ?: ($fiche->n3_validated_at ? $fiche->n3_validated_at->format('d/m/Y H:i') : '—') }}
+                    </p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 mb-1">Date validation</p>
-                    <p class="font-medium">{{ $fiche->validated_at ? $fiche->validated_at->format('d/m/Y H:i') : '—' }}</p>
+                    <p class="text-sm text-gray-500 mb-1">Controller (validateur)</p>
+                    <p class="font-medium">{{ trim(($fiche->controllerValidator?->prenom ?? '') . ' ' . ($fiche->controllerValidator?->name ?? '')) ?: '—' }}</p>
+                    <p class="text-sm text-gray-500 mt-2 mb-1">Date validation Controller</p>
+                    <p class="font-medium">
+                        {{ $fiche->controller_validation_date ?: ($fiche->controller_validated_at ? $fiche->controller_validated_at->format('d/m/Y H:i') : '—') }}
+                    </p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500 mb-1">Responsable suivi</p>
@@ -421,19 +437,57 @@
         <div class="p-6">
             <div class="space-y-4">
                 @foreach($fiche->history as $h)
+                @php
+                    $actorName = trim((string) ($h['by'] ?? ''));
+                    $role = (string) ($h['role'] ?? '');
+                    $action = (string) ($h['action'] ?? '');
+                    if ($actorName === '') {
+                        if ($role === 'N3') {
+                            $actorName = trim(($fiche->n3Validator?->prenom ?? '') . ' ' . ($fiche->n3Validator?->name ?? ''));
+                        } elseif ($role === 'CONTROLLER') {
+                            $actorName = trim(($fiche->controllerValidator?->prenom ?? '') . ' ' . ($fiche->controllerValidator?->name ?? ''));
+                        } elseif (in_array($role, ['N1', 'Auteur'], true)) {
+                            $actorName = trim(($fiche->creator?->prenom ?? '') . ' ' . ($fiche->creator?->name ?? ''));
+                        } elseif (str_contains($action, 'Signature') && (str_contains($action, 'Head IT') || str_contains($action, 'N+3'))) {
+                            $actorName = trim(($fiche->n3Validator?->prenom ?? '') . ' ' . ($fiche->n3Validator?->name ?? ''));
+                        } elseif (str_contains($action, 'Signature Controller') || str_contains($action, 'signature Controller')) {
+                            $actorName = trim(($fiche->controllerValidator?->prenom ?? '') . ' ' . ($fiche->controllerValidator?->name ?? ''));
+                        }
+                    }
+                    $roleLabel = match ($role) {
+                        'N3' => 'Head IT',
+                        'CONTROLLER' => 'Controller',
+                        'N1' => 'N1',
+                        'N2' => 'N2',
+                        'Système' => 'Système',
+                        default => $role,
+                    };
+                    $isSignerEvent = $role === 'N3'
+                        || $role === 'CONTROLLER'
+                        || str_contains($action, 'Signature');
+                @endphp
                 <div class="flex">
                     <div class="flex-shrink-0 mr-4">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2"
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border-2 leading-tight text-center px-0.5"
                              style="background: {{ $h['role'] === 'N1' ? 'rgba(200,16,46,0.08)' : ($h['role'] === 'N2' ? 'rgba(74,74,74,0.08)' : 'rgba(200,16,46,0.12)') }}; 
                                     border-color: {{ $h['role'] === 'N1' ? '#C8102E' : ($h['role'] === 'N2' ? '#4a4a4a' : '#a00d24') }};
                                     color: {{ $h['role'] === 'N1' ? '#C8102E' : ($h['role'] === 'N2' ? '#4a4a4a' : '#a00d24') }};">
-                            {{ $h['role'] }}
+                            {{ $roleLabel === 'Controller' ? 'CTRL' : ($roleLabel === 'Head IT' ? 'HIT' : $roleLabel) }}
                         </div>
                     </div>
                     <div class="flex-1 pb-4">
-                        <div class="flex items-center justify-between">
-                            <p class="text-sm font-medium text-gray-900">{{ $h['action'] }}</p>
-                            <span class="text-xs text-gray-500">{{ $h['at'] }}</span>
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ $h['action'] }}</p>
+                                @if($actorName !== '')
+                                    <p class="text-sm text-gray-700 mt-0.5">
+                                        {{ $isSignerEvent ? 'Signataire' : 'Par' }} :
+                                        <span class="font-semibold">{{ $actorName }}</span>
+                                        <span class="text-gray-400">({{ $roleLabel }})</span>
+                                    </p>
+                                @endif
+                            </div>
+                            <span class="text-xs text-gray-500 whitespace-nowrap">{{ $h['at'] }}</span>
                         </div>
                         @if(!empty($h['note']))
                             <p class="text-sm text-gray-600 mt-1 italic">"{{ $h['note'] }}"</p>

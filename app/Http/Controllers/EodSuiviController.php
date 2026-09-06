@@ -49,6 +49,7 @@ class EodSuiviController extends Controller
         $data['history'] = [[
             'role' => 'N1',
             'action' => 'Création de la fiche de suivi EOD',
+            'by' => $this->currentUserFullName(),
             'at' => now()->format('d/m/Y H:i:s'),
         ]];
 
@@ -355,6 +356,7 @@ class EodSuiviController extends Controller
         $fiche->history = array_merge($fiche->history ?? [], [[
             'role' => 'CONTROLLER',
             'action' => 'Signature Controller enregistrée',
+            'by' => $this->currentUserFullName(),
             'note' => $request->controller_validation_note,
             'at' => now()->format('d/m/Y H:i:s'),
         ]]);
@@ -381,7 +383,7 @@ class EodSuiviController extends Controller
         $user = Auth::user();
 
         if ($user->isEodControllerOnly()) {
-            $query = EodSuivi::with('validator')
+            $query = EodSuivi::with(['n3Validator', 'creator'])
                 ->whereIn('status', ['PENDING_N3_CONTROLLER', 'PENDING_CONTROLLER', 'CLOSED', 'VALIDATED'])
                 ->orderBy('created_at', 'desc');
             $query->where(function ($q) {
@@ -435,7 +437,7 @@ class EodSuiviController extends Controller
             ->limit(5)
             ->get();
 
-        $fiches = EodSuivi::with('creator', 'validator')
+        $fiches = EodSuivi::with('creator', 'n3Validator', 'controllerValidator')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -504,8 +506,10 @@ class EodSuiviController extends Controller
     {
         $this->authorizeRole(['N3', 'CONTROLLER']);
 
-        $batchData = json_decode($fiche->batch_data ?? '[]', true) ?: [];
-        $incidentsData = json_decode($fiche->incidents_data ?? '[]', true) ?: [];
+        $fiche->load(['creator', 'n3Validator', 'controllerValidator', 'validator']);
+
+        $batchData = is_array($fiche->batch_data) ? $fiche->batch_data : (json_decode($fiche->batch_data ?? '[]', true) ?: []);
+        $incidentsData = is_array($fiche->incidents_data) ? $fiche->incidents_data : (json_decode($fiche->incidents_data ?? '[]', true) ?: []);
 
         return view('eod.n3.show', compact('fiche', 'batchData', 'incidentsData'));
     }
@@ -546,6 +550,7 @@ class EodSuiviController extends Controller
         $fiche->history = array_merge($fiche->history ?? [], [[
             'role' => 'N3',
             'action' => 'Signature Head IT enregistrée',
+            'by' => $this->currentUserFullName(),
             'at' => now()->format('d/m/Y H:i:s'),
         ]]);
         $fiche->updated_by = Auth::id();
@@ -566,7 +571,7 @@ class EodSuiviController extends Controller
     {
         $this->authorizeRole('N3');
 
-        $fiches = EodSuivi::with('creator', 'validator')
+        $fiches = EodSuivi::with('creator', 'n3Validator', 'controllerValidator')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -574,21 +579,35 @@ class EodSuiviController extends Controller
             $filename = 'eod_export_' . date('Y-m-d') . '.csv';
             $handle = fopen('php://temp', 'w+');
 
-            fputcsv($handle, ['Référence', 'Date', 'Statut', 'Créateur', 'Validateur', 'Date validation', 'Incidents', 'Statut global']);
+            fputcsv($handle, [
+                'Référence', 'Date', 'Statut', 'Créateur', 'Statut global',
+                'Head IT', 'Date Head IT', 'Controller', 'Date Controller', 'Incidents',
+            ]);
 
             foreach ($fiches as $fiche) {
-                $incidents = json_decode($fiche->incidents_data, true);
+                $incidents = is_array($fiche->incidents_data)
+                    ? $fiche->incidents_data
+                    : (json_decode($fiche->incidents_data ?? '[]', true) ?: []);
                 $nbIncidents = is_array($incidents) ? count($incidents) : 0;
+                $creatorName = trim(($fiche->creator?->prenom ?? '') . ' ' . ($fiche->creator?->name ?? '')) ?: 'N/A';
+                $headItName = trim(($fiche->n3Validator?->prenom ?? '') . ' ' . ($fiche->n3Validator?->name ?? '')) ?: 'N/A';
+                $controllerName = trim(($fiche->controllerValidator?->prenom ?? '') . ' ' . ($fiche->controllerValidator?->name ?? '')) ?: 'N/A';
+                $headItDate = $fiche->n3_validation_date
+                    ?: ($fiche->n3_validated_at ? $fiche->n3_validated_at->format('d/m/Y H:i') : '');
+                $controllerDate = $fiche->controller_validation_date
+                    ?: ($fiche->controller_validated_at ? $fiche->controller_validated_at->format('d/m/Y H:i') : '');
 
                 fputcsv($handle, [
                     $fiche->reference,
                     $fiche->date_traitement->format('d/m/Y'),
                     $fiche->status_label,
-                    $fiche->creator?->name ?? 'N/A',
-                    $fiche->validator?->name ?? 'N/A',
-                    $fiche->validated_at ? $fiche->validated_at->format('d/m/Y H:i') : '',
-                    $nbIncidents,
+                    $creatorName,
                     $fiche->statut_global ?? 'N/A',
+                    $headItName,
+                    $headItDate,
+                    $controllerName,
+                    $controllerDate,
+                    $nbIncidents,
                 ]);
             }
 
@@ -914,6 +933,7 @@ class EodSuiviController extends Controller
         $fiche->history = array_merge($fiche->history ?? [], [[
             'role' => Auth::user()->role_change ?? 'Auteur',
             'action' => 'Fiche soumise au Head IT pour signature (Controller ensuite)',
+            'by' => $this->currentUserFullName(),
             'at' => now()->format('d/m/Y H:i:s'),
         ]]);
         $fiche->updated_by = Auth::id();
@@ -979,6 +999,7 @@ class EodSuiviController extends Controller
         $data['history'] = array_merge($fiche->history ?? [], [[
             'role' => 'CONTROLLER',
             'action' => 'Validation et signature Controller (flux historique)',
+            'by' => $this->currentUserFullName(),
             'note' => $request->controller_validation_note,
             'at' => now()->format('d/m/Y H:i:s'),
         ]]);

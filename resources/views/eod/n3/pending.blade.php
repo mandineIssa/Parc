@@ -22,7 +22,7 @@
                     <th class="px-4 py-3 font-semibold">Référence</th>
                     <th class="px-4 py-3 font-semibold">Date traitement</th>
                     @if($isCtrl)
-                        <th class="px-4 py-3 font-semibold">N+2</th>
+                        <th class="px-4 py-3 font-semibold">Head IT</th>
                     @else
                         <th class="px-4 py-3 font-semibold">Créateur</th>
                     @endif
@@ -36,7 +36,7 @@
                     <td class="px-4 py-3 font-mono">{{ $fiche->reference }}</td>
                     <td class="px-4 py-3">{{ $fiche->date_traitement?->format('d/m/Y') ?? '—' }}</td>
                     @if($isCtrl)
-                        <td class="px-4 py-3">{{ $fiche->validator?->name ?? '—' }}</td>
+                        <td class="px-4 py-3">{{ trim(($fiche->n3Validator?->prenom ?? '') . ' ' . ($fiche->n3Validator?->name ?? '')) ?: '—' }}</td>
                     @else
                         <td class="px-4 py-3">{{ trim(($fiche->creator?->prenom ?? '') . ' ' . ($fiche->creator?->name ?? '')) ?: '—' }}</td>
                     @endif
