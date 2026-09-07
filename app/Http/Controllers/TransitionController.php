@@ -1351,22 +1351,19 @@ private function extractUserName($affectationData)
     if (isset($affectationData['user_id'])) {
         $user = User::find($affectationData['user_id']);
         if ($user) {
-            return $user->name;
+            return $user->fullName();
         }
     }
-    
-    // Priorité 2 : Utiliser utilisateur_nom du formulaire
-    if (isset($affectationData['utilisateur_nom']) && !empty($affectationData['utilisateur_nom'])) {
-        return $affectationData['utilisateur_nom'];
+
+    $prenom = trim((string) ($affectationData['utilisateur_prenom'] ?? $affectationData['responsable_prenom'] ?? ''));
+    $nom = trim((string) ($affectationData['utilisateur_nom'] ?? $affectationData['responsable_name'] ?? ''));
+    $full = trim($prenom.' '.$nom);
+    if ($full !== '') {
+        return $full;
     }
-    
-    // Priorité 3 : Utiliser responsable_name
-    if (isset($affectationData['responsable_name']) && !empty($affectationData['responsable_name'])) {
-        return $affectationData['responsable_name'];
-    }
-    
+
     // Fallback : utilisateur actuel
-    return auth()->user()->name ?? 'N/A';
+    return auth()->user()?->fullName() ?? 'N/A';
 }
     /**
      * Extraire les signatures des données

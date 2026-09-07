@@ -90,19 +90,19 @@
                 <div class="space-y-3">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Nom complet :</span>
-                        <span class="font-bold">{{ $data['user_name'] ?? 'N/A' }}</span>
+                        <span class="font-bold">{{ $approval->endUserFullName() }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Département :</span>
-                        <span class="font-bold text-cofina-red">{{ $data['departement'] ?? 'N/A' }}</span>
+                        <span class="font-bold text-cofina-red">{{ $approval->endUserDepartment() }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Poste :</span>
-                        <span>{{ $data['poste_affecte'] ?? 'N/A' }}</span>
+                        <span>{{ $approval->endUserPosition() }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Date prévue :</span>
-                        <span>{{ isset($data['date_affectation']) ? \Carbon\Carbon::parse($data['date_affectation'])->format('d/m/Y') : 'N/A' }}</span>
+                        <span>{{ $approval->endUserAffectationDate() }}</span>
                     </div>
                 </div>
             </div>

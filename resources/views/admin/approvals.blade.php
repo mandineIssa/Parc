@@ -258,32 +258,14 @@
                                 </svg>
                                 Utilisateur final
                             </p>
-                            @php
-                                $data = json_decode($approval->data, true);
-                                // Gestion des différentes structures de données
-                                if (isset($data['affectation_data'])) {
-                                    // Structure multi_step (3 étapes)
-                                    $affectationData = $data['affectation_data'];
-                                    $userName = $affectationData['responsable_name'] ?? 'N/A';
-                                    $department = $affectationData['department'] ?? 'N/A';
-                                    $position = $affectationData['position'] ?? 'N/A';
-                                    $affectationDate = $affectationData['affectation_date'] ?? 'N/A';
-                                } else {
-                                    // Structure simple ou ancienne
-                                    $userName = $data['user_name'] ?? ($data['utilisateur_nom'] ?? 'N/A');
-                                    $department = $data['departement'] ?? ($data['destination'] ?? 'N/A');
-                                    $position = $data['poste_affecte'] ?? ($data['receptionnaire_fonction'] ?? 'N/A');
-                                    $affectationDate = $data['date_affectation'] ?? ($data['date_expediteur'] ?? 'N/A');
-                                }
-                            @endphp
                             <p class="font-bold">
-                                {{ $userName }}
+                                {{ $approval->endUserFullName() }}
                             </p>
                             <p class="text-sm text-gray-600 flex items-center">
                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"></path>
                                 </svg>
-                                {{ $department }}
+                                {{ $approval->endUserDepartment() }}
                             </p>
                         </div>
                         <div>
@@ -294,7 +276,7 @@
                                 Poste
                             </p>
                             <p class="font-bold">
-                                {{ $position }}
+                                {{ $approval->endUserPosition() }}
                             </p>
                         </div>
                         <div>
@@ -305,11 +287,7 @@
                                 Date prévue
                             </p>
                             <p class="font-bold">
-                                @if($affectationDate && $affectationDate !== 'N/A')
-                                    {{ \Carbon\Carbon::parse($affectationDate)->format('d/m/Y') }}
-                                @else
-                                    N/A
-                                @endif
+                                {{ $approval->endUserAffectationDate() }}
                             </p>
                         </div>
                     </div>

@@ -166,6 +166,120 @@ class TransitionApproval extends Model
     }
 
     /**
+     * Données de transition normalisées (gère JSON string / double encodage).
+     *
+     * @return array<string, mixed>
+     */
+    public function payload(): array
+    {
+        $data = $this->data;
+
+        if (is_string($data)) {
+            $decoded = json_decode($data, true);
+            $data = is_array($decoded) ? $decoded : [];
+        }
+
+        if (! is_array($data)) {
+            return [];
+        }
+
+        // Double encodage éventuel : data = "{\"user_name\":...}"
+        if (count($data) === 1 && isset($data[0]) && is_string($data[0])) {
+            $decoded = json_decode($data[0], true);
+            if (is_array($decoded)) {
+                $data = $decoded;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Nom complet de l'utilisateur final (affectation Stock → Parc).
+     */
+    public function endUserFullName(): string
+    {
+        $data = $this->payload();
+        $aff = $data['affectation_data'] ?? $data['affectation_simple'] ?? [];
+        if (! is_array($aff)) {
+            $aff = [];
+        }
+
+        $prenom = trim((string) (
+            $aff['utilisateur_prenom']
+            ?? $data['user_prenom']
+            ?? $aff['responsable_prenom']
+            ?? ''
+        ));
+        $nom = trim((string) (
+            $aff['utilisateur_nom']
+            ?? $data['user_name']
+            ?? $aff['responsable_name']
+            ?? $data['utilisateur_nom']
+            ?? ''
+        ));
+
+        // Si user_name contient déjà prénom+nom et user_prenom est vide
+        $full = trim($prenom.' '.$nom);
+        if ($full === '' || $full === 'N/A') {
+            return 'N/A';
+        }
+
+        // Éviter "Prénom Prénom Nom" si nom contient déjà le prénom
+        if ($prenom !== '' && $nom !== '' && str_starts_with(mb_strtolower($nom), mb_strtolower($prenom.' '))) {
+            return $nom;
+        }
+
+        return $full;
+    }
+
+    public function endUserDepartment(): string
+    {
+        $data = $this->payload();
+        $aff = $data['affectation_data'] ?? $data['affectation_simple'] ?? [];
+
+        return (string) (
+            (is_array($aff) ? ($aff['department'] ?? null) : null)
+            ?? $data['departement']
+            ?? $data['destination']
+            ?? 'N/A'
+        );
+    }
+
+    public function endUserPosition(): string
+    {
+        $data = $this->payload();
+        $aff = $data['affectation_data'] ?? $data['affectation_simple'] ?? [];
+
+        return (string) (
+            (is_array($aff) ? ($aff['position'] ?? null) : null)
+            ?? $data['poste_affecte']
+            ?? $data['receptionnaire_fonction']
+            ?? 'N/A'
+        );
+    }
+
+    public function endUserAffectationDate(): string
+    {
+        $data = $this->payload();
+        $aff = $data['affectation_data'] ?? $data['affectation_simple'] ?? [];
+        $raw = (is_array($aff) ? ($aff['affectation_date'] ?? null) : null)
+            ?? $data['date_affectation']
+            ?? $data['date_expediteur']
+            ?? null;
+
+        if (! $raw) {
+            return 'N/A';
+        }
+
+        try {
+            return \Carbon\Carbon::parse($raw)->format('d/m/Y');
+        } catch (\Throwable) {
+            return (string) $raw;
+        }
+    }
+
+    /**
      * Méthodes
      */
     public function approve(User $approver, $notes = null)
