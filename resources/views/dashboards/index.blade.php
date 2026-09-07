@@ -278,7 +278,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm">
-                            {{ $submission->submitter->name ?? 'N/A' }}
+                            {{ $submission->submitter?->fullName() ?: 'N/A' }}
                         </div>
                         <div class="text-xs text-gray-500">
                             {{ $submission->created_at->format('H:i') }}

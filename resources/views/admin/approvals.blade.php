@@ -147,7 +147,7 @@
                             </svg>
                             Demandeur
                         </p>
-                        <p class="font-bold">{{ $approval->submitter->name ?? 'N/A' }}</p>
+                        <p class="font-bold">{{ $approval->submitter?->fullName() ?: 'N/A' }}</p>
                         <p class="text-sm text-gray-600 flex items-center">
                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>

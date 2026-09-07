@@ -115,7 +115,7 @@
                 <div class="space-y-3">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Nom :</span>
-                        <span class="font-bold">{{ $approval->submitter->name ?? 'N/A' }}</span>
+                        <span class="font-bold">{{ $approval->submitter?->fullName() ?: 'N/A' }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Email :</span>

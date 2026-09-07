@@ -150,7 +150,9 @@ class User extends Authenticatable
 
     public function fullName(): string
     {
-        return trim(($this->name ?? '').' '.($this->prenom ?? ''));
+        $full = trim(($this->prenom ?? '').' '.($this->name ?? ''));
+
+        return $full !== '' ? $full : (string) ($this->name ?? $this->email ?? '');
     }
 
     public function hasStoredSignature(): bool

@@ -107,7 +107,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm">
-                                {{ $approval->submitter->name ?? 'N/A' }}
+                                {{ $approval->submitter?->fullName() ?: 'N/A' }}
                             </div>
                             <div class="text-xs text-gray-500">
                                 {{ $data['agent_fonction'] ?? '' }}
