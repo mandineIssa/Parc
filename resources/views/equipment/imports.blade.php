@@ -93,19 +93,14 @@
                             <strong>Téléchargez le template Excel</strong> en cliquant sur le bouton ci-dessous
                         </li>
                         <li class="mb-2">
-                            <strong>Remplissez le template</strong> avec vos données :
-                            <ul class="mt-1">
-                                <li>Onglet <strong>EQUIPMENT</strong> : Informations principales (obligatoire)</li>
-                                <li>Onglet <strong>EQUIPMENT_DETAILS</strong> : Détails et classification (optionnel)</li>
-                                <li>Onglet <strong>STOCK</strong> : Gestion du stock (optionnel)</li>
-                                <li>Onglet <strong>PARC</strong> : Affectations utilisateurs (optionnel)</li>
-                            </ul>
+                            <strong>Remplissez l'onglet « Équipements Complet »</strong> à partir de la ligne 3
+                            (mêmes colonnes que l'export équipements).
                         </li>
                         <li class="mb-2">
-                            <strong>Respectez les formats</strong> indiqués dans la ligne de description
+                            Le <strong>numéro de série</strong> est obligatoire. Les lignes sans numéro de série sont ignorées.
                         </li>
                         <li class="mb-2">
-                            <strong>Uploadez le fichier</strong> rempli pour l'importation
+                            Une cellule vide <strong>remplace</strong> la valeur déjà enregistrée.
                         </li>
                     </ol>
 

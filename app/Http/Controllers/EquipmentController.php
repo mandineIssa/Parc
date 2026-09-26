@@ -137,22 +137,25 @@ class EquipmentController extends Controller
                 'fournisseur_id' => 'nullable|exists:suppliers,id',
                 'date_livraison' => 'required|date',
                 'prix' => 'required|numeric|min:0',
-                'garantie' => 'required|string|max:100',
+                'garantie' => 'nullable|string|max:100',
                 'reference_facture' => 'nullable|string|max:255',
+                'reference_installation' => 'nullable|string|max:255',
+                'numero_codification' => 'nullable|string|max:255',
                 'etat' => 'required|in:neuf,bon,moyen,mauvais',
                 'adresse_mac' => 'nullable|string|max:255',
                 'notes' => 'nullable|string',
                 'date_mise_service' => 'nullable|date',
                 'date_amortissement' => 'nullable|date',
-                'categorie' => 'sometimes|string|max:255',
-                'sous_categorie' => 'sometimes|string|max:255',
+                'categorie' => 'nullable|string|max:255',
+                'sous_categorie' => 'nullable|string|max:255',
             ]);
             
             $equipmentData = array_filter($validated, function($key) {
                 return in_array($key, [
                     'type', 'marque', 'modele', 'agency_id',
                     'localisation', 'fournisseur_id', 'date_livraison', 'prix',
-                    'garantie', 'reference_facture', 'etat', 'adresse_mac',
+                    'garantie', 'reference_facture', 'reference_installation',
+                    'numero_codification', 'etat', 'adresse_mac',
                     'notes', 'date_mise_service', 'date_amortissement'
                 ]);
             }, ARRAY_FILTER_USE_KEY);
@@ -163,36 +166,36 @@ class EquipmentController extends Controller
             $existingDetail = $equipment->detail;
             
             $detailsData = [
-                'categorie' => $request->input('categorie', $existingDetail->categorie ?? null),
-                'sous_categorie' => $request->input('sous_categorie', $existingDetail->sous_categorie ?? null),
+                'categorie' => $request->input('categorie') ?: ($existingDetail?->categorie),
+                'sous_categorie' => $request->input('sous_categorie') ?: ($existingDetail?->sous_categorie),
                 'contrat_maintenance' => $request->has('contrat_maintenance'),
             ];
             
             switch ($type) {
                 case 'Réseau':
-                    $detailsData['etat_specifique'] = $request->input('etat_reseau', $existingDetail->etat_specifique ?? null);
-                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip', $existingDetail->adresse_ip_specifique ?? null);
-                    $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac', $existingDetail->adresse_mac_specifique ?? null);
+                    $detailsData['etat_specifique'] = $request->input('etat_reseau', $existingDetail?->etat_specifique);
+                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip', $existingDetail?->adresse_ip_specifique);
+                    $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac', $existingDetail?->adresse_mac_specifique);
                     break;
                 case 'Électronique':
-                    $detailsData['etat_specifique'] = $request->input('etat_electronique', $existingDetail->etat_specifique ?? null);
-                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_elec', $existingDetail->adresse_ip_specifique ?? null);
-                    $detailsData['numero_codification_specifique'] = $request->input('numero_codification', $existingDetail->numero_codification_specifique ?? null);
+                    $detailsData['etat_specifique'] = $request->input('etat_electronique', $existingDetail?->etat_specifique);
+                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_elec', $existingDetail?->adresse_ip_specifique);
+                    $detailsData['numero_codification_specifique'] = $request->input('numero_codification', $existingDetail?->numero_codification_specifique);
                     break;
                 case 'Informatique':
-                    $detailsData['etat_specifique'] = $request->input('etat_stock', $existingDetail->etat_specifique ?? null);
-                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_info', $existingDetail->adresse_ip_specifique ?? null);
-                    $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac_info', $existingDetail->adresse_mac_specifique ?? null);
-                    $detailsData['departement_specifique'] = $request->input('departement', $existingDetail->departement_specifique ?? null);
-                    $detailsData['poste_staff_specifique'] = $request->input('poste_staff', $existingDetail->poste_staff_specifique ?? null);
+                    $detailsData['etat_specifique'] = $request->input('etat_stock', $existingDetail?->etat_specifique);
+                    $detailsData['adresse_ip_specifique'] = $request->input('adresse_ip_info', $existingDetail?->adresse_ip_specifique);
+                    $detailsData['adresse_mac_specifique'] = $request->input('adresse_mac_info', $existingDetail?->adresse_mac_specifique);
+                    $detailsData['departement_specifique'] = $request->input('departement', $existingDetail?->departement_specifique);
+                    $detailsData['poste_staff_specifique'] = $request->input('poste_staff', $existingDetail?->poste_staff_specifique);
                     break;
             }
             
             if ($request->has('contrat_maintenance')) {
-                $detailsData['type_contrat'] = $request->input('type_contrat', $existingDetail->type_contrat ?? null);
-                $detailsData['date_debut_contrat'] = $request->input('date_debut_contrat', $existingDetail->date_debut_contrat ?? null);
-                $detailsData['date_fin_contrat'] = $request->input('date_fin_contrat', $existingDetail->date_fin_contrat ?? null);
-                $detailsData['periodicite_maintenance'] = $request->input('periodicite_maintenance', $existingDetail->periodicite_maintenance ?? null);
+                $detailsData['type_contrat'] = $request->input('type_contrat', $existingDetail?->type_contrat);
+                $detailsData['date_debut_contrat'] = $request->input('date_debut_contrat', $existingDetail?->date_debut_contrat);
+                $detailsData['date_fin_contrat'] = $request->input('date_fin_contrat', $existingDetail?->date_fin_contrat);
+                $detailsData['periodicite_maintenance'] = $request->input('periodicite_maintenance', $existingDetail?->periodicite_maintenance);
             } else {
                 $detailsData['type_contrat'] = null;
                 $detailsData['date_debut_contrat'] = null;
@@ -215,7 +218,7 @@ class EquipmentController extends Controller
             
             DB::commit();
             
-            return redirect()->route('equipment.index')
+            return redirect()->route('equipment.show', $equipment->id)
                 ->with('success', 'Équipement mis à jour avec succès !');
                 
         } catch (\Exception $e) {

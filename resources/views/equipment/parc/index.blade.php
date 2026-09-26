@@ -6,7 +6,7 @@
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-8">
         <div class="flex gap-3 mt-4 md:mt-0">
             <a href="{{ route('equipment.imports.form') }}"
-               class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center {{ request()->routeIs('equipment.imports.*') ? 'ring-2 ring-green-300' : '' }}">
+               class="bg-slate-600 hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center {{ request()->routeIs('equipment.imports.*') ? 'ring-2 ring-slate-300' : '' }}">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
@@ -14,6 +14,16 @@
                 <span>Import Équipements</span>
             </a>
             
+            <a href="{{ route('parc.mass-import.form') }}"
+               class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center {{ request()->routeIs('parc.mass-import.*') ? 'ring-2 ring-green-300' : '' }}"
+               title="Importer le tableau Parc (même format que l'export, types informatiques)">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L9 8m4-4v12"/>
+                </svg>
+                Import en masse
+            </a>
+
             <a href="{{ route('parc.export', request()->only(['search', 'type', 'etat', 'filtre_rapide'])) }}"
                class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition flex items-center"
                title="Télécharger le tableau Parc (format Excel COFINA)">

@@ -195,6 +195,9 @@ Route::get('equipment/parc/import', [ParcController::class, 'showImportForm'])->
 Route::post('equipment/parc/import', [ParcController::class, 'import'])->name('parc.import');
 Route::get('equipment/parc/import/template', [ParcController::class, 'downloadTemplate'])->name('parc.import.template');
 Route::get('equipment/parc/export', [ParcController::class, 'export'])->name('parc.export');
+Route::get('equipment/parc/import-masse', [ParcController::class, 'showMassImportForm'])->name('parc.mass-import.form');
+Route::post('equipment/parc/import-masse', [ParcController::class, 'massImport'])->name('parc.mass-import');
+Route::get('equipment/parc/import-masse/ignores', [ParcController::class, 'downloadMassImportIgnored'])->name('parc.mass-import.ignored');
 // ============================================
 // CRUD ÉQUIPEMENTS (APRÈS)
 // ============================================

@@ -9,11 +9,9 @@
         @csrf
          @method('PUT')
 
-    <!-- Champs cachés pour les données non modifiables -->
-        <input type="hidden" name="type" value="{{ $equipment->type }}">
+    <!-- Type conservé (non modifiable visuellement) -->
+        <input type="hidden" name="type" id="type" value="{{ $equipment->type }}">
         <input type="hidden" name="numero_serie" value="{{ $equipment->numero_serie }}">
-        <input type="hidden" name="categorie" value="{{ $equipment->detail->categorie ?? '' }}">
-        <input type="hidden" name="sous_categorie" value="{{ $equipment->detail->sous_categorie ?? '' }}">
         
 <!-- Informations de base -->
     <div class="mb-8 pb-8 border-b">
@@ -32,10 +30,32 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2">Type</label>
                 <input type="text" value="{{ $equipment->type }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
             </div>
-            
-            <!-- reste du formulaire... -->
-                        
-                        <!-- Marque -->
+
+            <!-- Codification -->
+            <div id="field-codification">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Codification</label>
+                <input type="text" name="numero_codification" value="{{ old('numero_codification', $equipment->numero_codification) }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                       placeholder="Compléter si N/A">
+            </div>
+
+            <!-- Catégorie -->
+            <div id="field-categorie">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Catégorie</label>
+                <select name="categorie" id="categorie" onchange="updateSousCategoriesParc()"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <option value="">-- Sélectionner --</option>
+                </select>
+            </div>
+
+            <!-- Sous-catégorie -->
+            <div id="field-sous-categorie">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Sous-catégorie</label>
+                <select name="sous_categorie" id="sous_categorie"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <option value="">-- Sélectionner la catégorie d'abord --</option>
+                </select>
+            </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Marque *</label>
                             <input type="text" name="marque" value="{{ old('marque', $equipment->marque) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
@@ -48,7 +68,7 @@
                         </div>
                         
                         <!-- Agence -->
-                        <div>
+                        <div id="field-agence">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Agence</label>
                             <select name="agency_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
                                 <option value="">-- Sélectionner --</option>
@@ -61,7 +81,7 @@
                         </div>
                         
                         <!-- Fournisseur -->
-                        <div>
+                        <div id="field-fournisseur">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Fournisseur</label>
                             <select name="fournisseur_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
                                 <option value="">-- Sélectionner --</option>
@@ -80,9 +100,10 @@
                         </div>
                         
                         <!-- Garantie -->
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Garantie *</label>
-                            <input type="text" name="garantie" value="{{ old('garantie', $equipment->garantie) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
+                        <div id="field-garantie">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Garantie</label>
+                            <input type="text" name="garantie" value="{{ old('garantie', $equipment->garantie) }}" placeholder="Ex: 3 ans"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
                         </div>
                         
                         <!-- Date Livraison -->
@@ -98,9 +119,17 @@
                         </div>
                         
                         <!-- Référence facture -->
-                        <div>
+                        <div id="field-reference-facture">
                             <label class="block text-sm font-bold text-gray-700 mb-2">REF Facture</label>
                             <input type="text" name="reference_facture" value="{{ old('reference_facture', $equipment->reference_facture) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
+
+                        <!-- Référence installation -->
+                        <div id="field-reference-installation">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Réf. Installation</label>
+                            <input type="text" name="reference_installation" value="{{ old('reference_installation', $equipment->reference_installation) }}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                                   placeholder="Compléter si N/A">
                         </div>
                         
                         <!-- État -->
@@ -124,6 +153,13 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Date mise en service</label>
                             <input type="date" name="date_mise_service" value="{{ old('date_mise_service', $equipment->date_mise_service ? $equipment->date_mise_service->format('Y-m-d') : '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
+
+                        <!-- Date amortissement -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Date d'amortissement</label>
+                            <input type="date" name="date_amortissement" value="{{ old('date_amortissement', $equipment->date_amortissement ? $equipment->date_amortissement->format('Y-m-d') : '') }}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
                         </div>
                         
                         <!-- Notes -->
@@ -376,19 +412,63 @@
         @endif
 </div>
 
+<script src="{{ asset('js/equipment-categories.js') }}"></script>
 <script>
 function toggleContractFields() {
     const checkbox = document.getElementById('contrat_maintenance');
     const fields = document.getElementById('contract-fields');
-    fields.classList.toggle('hidden', !checkbox.checked);
+    if (checkbox && fields) {
+        fields.classList.toggle('hidden', !checkbox.checked);
+    }
 }
-</script>
-<script>
+
 function redirectToMaintenance(checkbox) {
     if (checkbox.checked) {
         window.location.href = "{{ route('equipment.maintenance.create', $equipment) }}";
     }
 }
+
+(function initEquipmentEditForm() {
+    if (typeof updateCategoriesParc === 'function') {
+        updateCategoriesParc();
+        var cat = @json(old('categorie', $equipment->detail->categorie ?? ''));
+        var sous = @json(old('sous_categorie', $equipment->detail->sous_categorie ?? ''));
+        var catSelect = document.getElementById('categorie');
+        var sousSelect = document.getElementById('sous_categorie');
+        function ensureOption(select, value) {
+            if (!value || !select) return;
+            var found = Array.prototype.some.call(select.options, function (opt) { return opt.value === value; });
+            if (!found) {
+                var option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            }
+        }
+        if (cat && catSelect) {
+            ensureOption(catSelect, cat);
+            catSelect.value = cat;
+            updateSousCategoriesParc();
+            ensureOption(sousSelect, sous);
+            if (sous) {
+                sousSelect.value = sous;
+            }
+        }
+    }
+
+    var hash = window.location.hash;
+    if (hash) {
+        var wrap = document.querySelector(hash);
+        if (wrap) {
+            wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            wrap.classList.add('ring-2', 'ring-amber-400', 'rounded-lg', 'p-2');
+            var input = wrap.matches('input, select, textarea') ? wrap : wrap.querySelector('input, select, textarea');
+            if (input) {
+                input.focus();
+            }
+        }
+    }
+})();
 </script>
 
 @endsection

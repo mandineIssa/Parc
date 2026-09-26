@@ -71,7 +71,7 @@
                         <div class="space-y-3">
                             <div class="flex items-center">
                                 <span class="w-32 text-gray-600">Codification:</span>
-                                <span class="font-medium">{{ $equipment->numero_codification ?? 'N/A' }}</span>
+                                @include('equipment.partials.editable-na', ['value' => $equipment->numero_codification, 'equipment' => $equipment, 'field' => 'field-codification'])
                             </div>
                             <div class="flex items-center">
                                 <span class="w-32 text-gray-600">Type:</span>
@@ -79,27 +79,15 @@
                             </div>
                             <div class="flex items-center">
                                 <span class="w-32 text-gray-600">Catégorie:</span>
-                                <span class="font-medium">
-                                    @if($equipment->detail && $equipment->detail->categorie)
-                                        {{ $equipment->detail->categorie }}
-                                    @else
-                                        N/A
-                                    @endif
-                                </span>
+                                @include('equipment.partials.editable-na', ['value' => $equipment->detail->categorie ?? null, 'equipment' => $equipment, 'field' => 'field-categorie'])
                             </div>
                             <div class="flex items-center">
                                 <span class="w-32 text-gray-600">Sous-catégorie:</span>
-                                <span class="font-medium">
-                                    @if($equipment->detail && $equipment->detail->sous_categorie)
-                                        {{ $equipment->detail->sous_categorie }}
-                                    @else
-                                        N/A
-                                    @endif
-                                </span>
+                                @include('equipment.partials.editable-na', ['value' => $equipment->detail->sous_categorie ?? null, 'equipment' => $equipment, 'field' => 'field-sous-categorie'])
                             </div>
                             <div class="flex items-center">
                                 <span class="w-32 text-gray-600">Agence:</span>
-                                <span class="font-medium">{{ $equipment->agence->nom ?? 'N/A' }}</span>
+                                @include('equipment.partials.editable-na', ['value' => $equipment->agence->nom ?? null, 'equipment' => $equipment, 'field' => 'field-agence'])
                             </div>
                         </div>
                         <div class="space-y-3">
@@ -123,7 +111,7 @@
                             </div>
                             <div class="flex items-center">
                                 <span class="w-32 text-gray-600">Garantie:</span>
-                                <span class="font-medium">{{ $equipment->garantie }}</span>
+                                @include('equipment.partials.editable-na', ['value' => $equipment->garantie, 'equipment' => $equipment, 'field' => 'field-garantie'])
                             </div>
                         </div>
                     </div>
@@ -144,17 +132,17 @@
                             </div>
                             <div class="flex items-center">
                                 <span class="w-40 text-gray-600">Fournisseur:</span>
-                                <span class="font-medium">{{ $equipment->fournisseur->nom ?? 'N/A' }}</span>
+                                @include('equipment.partials.editable-na', ['value' => $equipment->fournisseur->nom ?? null, 'equipment' => $equipment, 'field' => 'field-fournisseur'])
                             </div>
                             <div class="flex items-center">
                                 <span class="w-40 text-gray-600">Réf. Facture:</span>
-                                <span class="font-medium">{{ $equipment->reference_facture ?? 'N/A' }}</span>
+                                @include('equipment.partials.editable-na', ['value' => $equipment->reference_facture, 'equipment' => $equipment, 'field' => 'field-reference-facture'])
                             </div>
                         </div>
                         <div class="space-y-3">
                             <div class="flex items-center">
                                 <span class="w-40 text-gray-600">Réf. Installation:</span>
-                                <span class="font-medium">{{ $equipment->reference_installation ?? 'N/A' }}</span>
+                                @include('equipment.partials.editable-na', ['value' => $equipment->reference_installation, 'equipment' => $equipment, 'field' => 'field-reference-installation'])
                             </div>
                             @if($equipment->date_mise_service)
                             <div class="flex items-center">

@@ -2,14 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Agency;
+use App\Models\Category;
 use App\Models\Equipment;
 use App\Models\EquipmentDetail;
 use App\Models\Stock;
 use App\Models\Parc;
+use App\Models\Supplier;
+use App\Services\EquipmentExcelMapper;
 use Illuminate\Http\Request;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Exception;
 
 class EquipmentImportController extends Controller
@@ -23,17 +33,28 @@ class EquipmentImportController extends Controller
     }
 
     /**
-     * Télécharge le template Excel
+     * Template identique à l'export équipements (même onglet, mêmes colonnes).
      */
     public function downloadTemplate()
     {
-        $filePath = storage_path('app/templates/Template_Import_Equipements.xlsx');
+        $spreadsheet = $this->buildExportCompatibleWorkbook();
+        $filename = 'template_import_equipements.xlsx';
 
-        if (!file_exists($filePath)) {
-            return back()->with('error', 'Template non trouvé.');
+        return response()->streamDownload(function () use ($spreadsheet) {
+            (new Xlsx($spreadsheet))->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    public function downloadIgnored()
+    {
+        $path = session('equipment_import_ignored_path');
+        if (! $path || ! is_file($path)) {
+            return back()->with('error', 'Aucun rapport d\'équipements ignorés n\'est disponible.');
         }
 
-        return response()->download($filePath, 'Template_Import_Equipements.xlsx');
+        return response()->download($path, basename($path));
     }
 
     /**
@@ -72,24 +93,33 @@ class EquipmentImportController extends Controller
                 'errors'                     => []
             ];
 
-            $equipmentSheet = $spreadsheet->getSheetByName('EQUIPMENT');
-            if ($equipmentSheet) {
-                $stats['equipment_imported'] = $this->importEquipment($equipmentSheet, $stats);
-            }
+            $exportSheet = $spreadsheet->getSheetByName('Équipements Complet')
+                ?? $spreadsheet->getSheetByName('Équipements')
+                ?? $spreadsheet->getSheetByName('Equipements Complet')
+                ?? $spreadsheet->getSheetByName('Equipements');
 
-            $detailsSheet = $spreadsheet->getSheetByName('EQUIPMENT_DETAILS');
-            if ($detailsSheet) {
-                $stats['equipment_details_imported'] = $this->importEquipmentDetails($detailsSheet, $stats);
-            }
+            if ($exportSheet && $this->sheetLooksLikeEquipmentExport($exportSheet)) {
+                $stats['equipment_imported'] = $this->importExportCompatibleSheet($exportSheet, $stats);
+            } else {
+                $equipmentSheet = $spreadsheet->getSheetByName('EQUIPMENT');
+                if ($equipmentSheet) {
+                    $stats['equipment_imported'] = $this->importEquipment($equipmentSheet, $stats);
+                }
 
-            $stockSheet = $spreadsheet->getSheetByName('STOCK');
-            if ($stockSheet) {
-                $stats['stock_imported'] = $this->importStock($stockSheet, $stats);
-            }
+                $detailsSheet = $spreadsheet->getSheetByName('EQUIPMENT_DETAILS');
+                if ($detailsSheet) {
+                    $stats['equipment_details_imported'] = $this->importEquipmentDetails($detailsSheet, $stats);
+                }
 
-            $parcSheet = $spreadsheet->getSheetByName('PARC');
-            if ($parcSheet) {
-                $stats['parc_imported'] = $this->importParc($parcSheet, $stats);
+                $stockSheet = $spreadsheet->getSheetByName('STOCK');
+                if ($stockSheet) {
+                    $stats['stock_imported'] = $this->importStock($stockSheet, $stats);
+                }
+
+                $parcSheet = $spreadsheet->getSheetByName('PARC');
+                if ($parcSheet) {
+                    $stats['parc_imported'] = $this->importParc($parcSheet, $stats);
+                }
             }
 
             DB::commit();
@@ -113,6 +143,231 @@ class EquipmentImportController extends Controller
             Log::error('Erreur importation: ' . $e->getMessage());
             return back()->with('error', 'Erreur lors de l\'importation: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Template identique à l'export équipements (même onglet, mêmes colonnes).
+     */
+    private function buildExportCompatibleWorkbook(): Spreadsheet
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Équipements Complet');
+
+        $headings = array_values(EquipmentExcelMapper::headings());
+        $lastCol = Coordinate::stringFromColumnIndex(count($headings));
+
+        $sheet->mergeCells("A1:{$lastCol}1");
+        $sheet->setCellValue('A1', 'INVENTAIRE ÉQUIPEMENTS (COMPLET) — Modèle d\'import du '.now()->format('d/m/Y H:i'));
+        $sheet->getStyle('A1')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 13, 'color' => ['argb' => 'FFFFFFFF'], 'name' => 'Arial'],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getRowDimension(1)->setRowHeight(28);
+
+        foreach ($headings as $i => $label) {
+            $col = Coordinate::stringFromColumnIndex($i + 1);
+            $sheet->setCellValue($col.'2', $label);
+            $sheet->getColumnDimension($col)->setWidth(max(14, min(28, mb_strlen($label) + 4)));
+        }
+        $sheet->getStyle("A2:{$lastCol}2")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FFFFFFFF'], 'name' => 'Arial'],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F3864']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFFFFFFF']]],
+        ]);
+        $sheet->getRowDimension(2)->setRowHeight(22);
+        $sheet->freezePane('A3');
+        $sheet->setAutoFilter("A2:{$lastCol}2");
+
+        $instructions = $spreadsheet->createSheet();
+        $instructions->setTitle('Instructions');
+        $instructions->setCellValue('A1', 'Comment remplir ce fichier');
+        $instructions->setCellValue('A3', '1. Conservez l\'onglet « Équipements Complet » et la ligne d\'en-têtes (ligne 2).');
+        $instructions->setCellValue('A4', '2. Saisissez les données à partir de la ligne 3.');
+        $instructions->setCellValue('A5', '3. Le numéro de série est obligatoire. Une ligne sans numéro de série est ignorée.');
+        $instructions->setCellValue('A6', '4. Une cellule vide remplace la valeur déjà enregistrée pour cet équipement.');
+        $instructions->setCellValue('A7', '5. Les colonnes ID, Date création et Dernière modif. sont ignorées à l\'import.');
+        $instructions->getColumnDimension('A')->setWidth(110);
+        $instructions->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        return $spreadsheet;
+    }
+
+    private function sheetLooksLikeEquipmentExport($sheet): bool
+    {
+        $headerRow = $this->detectHeaderRow($sheet);
+
+        return EquipmentExcelMapper::hasSerialColumn($this->headerMap($sheet, $headerRow));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function headerMap($sheet, int $headerRow): array
+    {
+        $highestCol = $sheet->getHighestDataColumn();
+        $maxIndex = Coordinate::columnIndexFromString($highestCol);
+        $cells = [];
+        for ($i = 1; $i <= $maxIndex; $i++) {
+            $cells[$i] = $sheet->getCell(Coordinate::stringFromColumnIndex($i).$headerRow)->getValue();
+        }
+
+        return EquipmentExcelMapper::mapHeaders($cells);
+    }
+
+    private function detectHeaderRow($sheet): int
+    {
+        $row2 = $this->headerMap($sheet, 2);
+        if (EquipmentExcelMapper::hasSerialColumn($row2)) {
+            return 2;
+        }
+        $row1 = $this->headerMap($sheet, 1);
+        if (EquipmentExcelMapper::hasSerialColumn($row1)) {
+            return 1;
+        }
+
+        return 2;
+    }
+
+    private function importExportCompatibleSheet($sheet, array &$stats): int
+    {
+        $headerRow = $this->detectHeaderRow($sheet);
+        $map = $this->headerMap($sheet, $headerRow);
+        if (! EquipmentExcelMapper::hasSerialColumn($map)) {
+            $stats['errors'][] = 'Colonne « Numéro de série » introuvable dans le fichier.';
+
+            return 0;
+        }
+
+        $count = 0;
+        $highestRow = (int) $sheet->getHighestDataRow();
+        $readOnly = EquipmentExcelMapper::readOnlyKeys();
+
+        for ($row = $headerRow + 1; $row <= $highestRow; $row++) {
+            $payload = [];
+            foreach ($map as $colIndex => $key) {
+                $cell = Coordinate::stringFromColumnIndex($colIndex).$row;
+                $payload[$key] = in_array($key, ['date_livraison', 'date_mise_service', 'date_amortissement', 'date_expiration_licence'], true)
+                    ? $this->getDateValue($sheet, $cell)
+                    : $this->getCellValue($sheet, $cell);
+            }
+
+            $serial = trim((string) ($payload['numero_serie'] ?? ''));
+            if ($serial === '' || EquipmentExcelMapper::isEmptyValue($serial)) {
+                continue;
+            }
+
+            try {
+                $equipment = Equipment::where('numero_serie', $serial)->first() ?? new Equipment(['numero_serie' => $serial]);
+                $equipment->numero_serie = $serial;
+
+                foreach ($payload as $key => $value) {
+                    if (in_array($key, $readOnly, true) || in_array($key, EquipmentExcelMapper::specificDataKeys(), true)) {
+                        continue;
+                    }
+                    if ($key === 'numero_serie') {
+                        continue;
+                    }
+                    $this->applyEquipmentField($equipment, $key, $value);
+                }
+
+                if (empty($equipment->statut)) {
+                    $equipment->statut = 'stock';
+                }
+                if (empty($equipment->etat)) {
+                    $equipment->etat = 'bon';
+                }
+                if ($equipment->localisation === null) {
+                    $equipment->localisation = '';
+                }
+                if ($equipment->marque === null) {
+                    $equipment->marque = '';
+                }
+                if ($equipment->modele === null) {
+                    $equipment->modele = '';
+                }
+                if (empty($equipment->date_livraison)) {
+                    $equipment->date_livraison = now();
+                }
+                if ($equipment->prix === null) {
+                    $equipment->prix = 0;
+                }
+
+                $equipment->save();
+                $count++;
+            } catch (Exception $e) {
+                $stats['errors'][] = "Ligne {$row} : ".$e->getMessage();
+            }
+        }
+
+        return $count;
+    }
+
+    private function applyEquipmentField(Equipment $equipment, string $key, mixed $value): void
+    {
+        $empty = EquipmentExcelMapper::isEmptyValue($value);
+
+        match ($key) {
+            'type' => $equipment->type = $empty ? $equipment->type : $value,
+            'marque' => $equipment->marque = $empty ? '' : $value,
+            'modele' => $equipment->modele = $empty ? '' : $value,
+            'nom' => $equipment->nom = $empty ? null : $value,
+            'numero_codification' => $equipment->numero_codification = $empty ? null : $value,
+            'etat' => $equipment->etat = $empty ? ($equipment->etat ?: 'bon') : $this->normalizeEtat((string) $value),
+            'statut' => $equipment->statut = $empty ? ($equipment->statut ?: 'stock') : $value,
+            'prix' => $equipment->prix = $empty ? 0 : (float) str_replace([' ', ','], ['', '.'], (string) $value),
+            'date_livraison' => $equipment->date_livraison = $empty ? $equipment->date_livraison : $value,
+            'garantie' => $equipment->garantie = $empty ? null : $value,
+            'reference_facture' => $equipment->reference_facture = $empty ? null : $value,
+            'reference_installation' => $equipment->reference_installation = $empty ? null : $value,
+            'fournisseur' => $equipment->fournisseur_id = $empty ? null : $this->findSupplierId((string) $value),
+            'agence' => $equipment->agency_id = $empty ? null : $this->findAgencyId((string) $value),
+            'localisation' => $equipment->localisation = $empty ? '' : $value,
+            'lieu_stockage' => $equipment->lieu_stockage = $empty ? null : $value,
+            'adresse_mac' => $equipment->adresse_mac = $empty ? null : $value,
+            'adresse_ip' => $equipment->adresse_ip = $empty ? null : $value,
+            'departement' => $equipment->departement = $empty ? null : $value,
+            'poste_staff' => $equipment->poste_staff = $empty ? null : $value,
+            'date_mise_service' => $equipment->date_mise_service = $empty ? null : $value,
+            'date_amortissement' => $equipment->date_amortissement = $empty ? null : $value,
+            'notes' => $equipment->notes = $empty ? null : $value,
+            default => null,
+        };
+    }
+
+    private function normalizeEtat(string $value): string
+    {
+        $n = EquipmentExcelMapper::normalize($value);
+
+        return match ($n) {
+            'neuf' => 'neuf',
+            'bon' => 'bon',
+            'moyen' => 'moyen',
+            'mauvais' => 'mauvais',
+            default => 'bon',
+        };
+    }
+
+    private function findAgencyId(string $name): ?int
+    {
+        if (is_numeric($name)) {
+            return Agency::find((int) $name)?->id;
+        }
+
+        return Agency::query()->whereRaw('LOWER(nom) = ?', [mb_strtolower(trim($name))])->value('id');
+    }
+
+    private function findSupplierId(string $name): ?int
+    {
+        if (is_numeric($name)) {
+            return Supplier::find((int) $name)?->id;
+        }
+
+        return Supplier::query()->whereRaw('LOWER(nom) = ?', [mb_strtolower(trim($name))])->value('id');
     }
 
     // ─────────────────────────────────────────────────────────────────

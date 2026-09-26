@@ -22,29 +22,7 @@ return new class extends Migration
             }
             
             if (!Schema::hasColumn('parc', 'position')) {
-                $table->enum('position', [
-                    'Directeur',
-                    'Manager', 
-                    'Chef de Projet',
-                    'Technicien',
-                    'Développeur',
-                    'Analyste',
-                    'Consultant',
-                    'Administrateur',
-                    'Assistant',
-                    'Agent',
-                    'Stagiaire',
-                    'CC',
-                    'RH',
-                    'Finance',
-                    'Caissier',
-                    'recouvrement',
-                    'juridique',
-                    'CAF',
-                    'Logistique',
-                    'marketing',
-                    'Autre'
-                ])->nullable()->after('poste_affecte');
+                $table->string('position', 255)->nullable()->after('poste_affecte');
             }
             
             if (!Schema::hasColumn('parc', 'affectation_reason')) {

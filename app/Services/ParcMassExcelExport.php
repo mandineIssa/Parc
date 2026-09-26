@@ -14,39 +14,18 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class ParcMassExcelExport
 {
-    /** Colonnes alignées sur le modèle Excel COFINA (feuille Parc). */
-    private const COLUMNS = [
-        'A' => ['NOM', 18],
-        'B' => ['PRENOM', 18],
-        'C' => ['AGENCE', 22],
-        'D' => ['Departeme', 18],
-        'E' => ['POSTE', 22],
-        'F' => ['Dotation (ordinateur)', 20],
-        'G' => ['NOM DE L\'EQUIPEMENT', 26],
-        'H' => ['serial number', 18],
-        'I' => ['Marque/Modele', 16],
-        'J' => ['Model PC', 24],
-        'K' => ['DATE MISE EN SERVICE', 20],
-        'L' => ['DATE D\'ACHAT', 16],
-        'M' => ['PRIX D\'ACHAT', 14],
-        'N' => ['', 4],
-        'O' => ['Date prévue d\'amortissement', 26],
-        'P' => ['', 4],
-        'Q' => ['Fournisseur', 18],
-        'R' => ['État (Bon / Moyen / Mauvais)', 24],
-    ];
-
     public function build(Request $request): Spreadsheet
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Parc');
 
-        $lastCol = array_key_last(self::COLUMNS);
+        $columns = ParcMassExcelSchema::columns();
+        $lastCol = ParcMassExcelSchema::lastColumn();
 
-        foreach (self::COLUMNS as $col => [$label, $width]) {
-            $sheet->setCellValue("{$col}1", $label);
-            $sheet->getColumnDimension($col)->setWidth($width);
+        foreach ($columns as $col => $def) {
+            $sheet->setCellValue("{$col}1", $def['label']);
+            $sheet->getColumnDimension($col)->setWidth($def['width']);
         }
 
         $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([

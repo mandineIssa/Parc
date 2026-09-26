@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\ParcAssignmentNotifier;
 use App\Services\ParcMassExcelExport;
+use App\Services\ParcMassExcelImport;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ParcController extends Controller
@@ -975,7 +976,83 @@ public function downloadTemplate()
         }
     }
 
-    // ==================== EXPORT XLSX (modèle COFINA) ====================
+    // ==================== EXPORT / IMPORT XLSX (modèle COFINA) ====================
+
+    /**
+     * Import en masse — même fichier que l'export Excel Parc (types informatiques).
+     */
+    public function showMassImportForm()
+    {
+        return view('equipment.parc.mass-import');
+    }
+
+    public function massImport(Request $request, ParcMassExcelImport $importer)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $result = $importer->importFromPath($request->file('excel_file')->getRealPath());
+            DB::commit();
+
+            if (! empty($result['ignored_path'])) {
+                session(['parc_mass_import_ignored_path' => $result['ignored_path']]);
+            } else {
+                session()->forget('parc_mass_import_ignored_path');
+            }
+
+            $imported = $result['created'] + $result['updated'];
+            $ignored = (int) $result['ignored'];
+            $failed = (int) ($result['failed'] ?? $ignored);
+            $perfect = $imported > 0 && $failed === 0;
+
+            if ($perfect) {
+                $message = "Import réussi à 100 % : {$imported} équipement(s) informatique(s) traité(s) ({$result['created']} créé(s), {$result['updated']} mis à jour).";
+            } elseif ($imported === 0 && $ignored === 0) {
+                $message = 'Import terminé : aucune ligne à traiter.';
+            } else {
+                $message = "Import en masse terminé : {$imported} équipement(s) informatique(s) traité(s) ({$result['created']} créé(s), {$result['updated']} mis à jour).";
+                if ($ignored > 0) {
+                    $message .= " {$ignored} ligne(s) ignorée(s).";
+                }
+            }
+
+            $redirect = redirect()
+                ->route('parc.mass-import.form')
+                ->with('mass_import_stats', $result)
+                ->with('mass_import_perfect', $perfect)
+                ->with('mass_import_message', $message);
+
+            if ($perfect) {
+                return $redirect;
+            }
+
+            return $redirect->with('success', $message);
+        } catch (\Throwable $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            Log::error('Import masse parc', ['message' => $e->getMessage()]);
+
+            return redirect()
+                ->route('parc.mass-import.form')
+                ->with('error', 'Erreur lors de l\'import : '.$e->getMessage());
+        }
+    }
+
+    public function downloadMassImportIgnored()
+    {
+        $path = session('parc_mass_import_ignored_path');
+        if (! $path || ! is_file($path)) {
+            return redirect()
+                ->route('parc.mass-import.form')
+                ->with('error', 'Aucun fichier des équipements ignorés n\'est disponible.');
+        }
+
+        return response()->download($path, basename($path));
+    }
 
     /**
      * Export en masse — format Excel COFINA (feuille Parc).

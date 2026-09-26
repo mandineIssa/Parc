@@ -31,6 +31,8 @@ class Equipment extends Model
         'prix', 
         'garantie', 
         'reference_facture',
+        'reference_installation',
+        'numero_codification',
         'etat', 
         'adresse_mac',
         'adresse_ip',
