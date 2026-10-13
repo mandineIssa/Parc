@@ -45,6 +45,18 @@ class UsersIndexFilterTest extends TestCase
             ->assertDontSee('Fall');
 
         $this->actingAs($admin)
+            ->get(route('users.index', ['search' => 'Babacar Diouf']))
+            ->assertOk()
+            ->assertSee('Diouf')
+            ->assertDontSee('Fall');
+
+        $this->actingAs($admin)
+            ->get(route('users.index', ['search' => 'awa.fall@test.local']))
+            ->assertOk()
+            ->assertSee('Fall')
+            ->assertDontSee('Diouf');
+
+        $this->actingAs($admin)
             ->get(route('users.index', ['role' => 'user']))
             ->assertOk()
             ->assertSee('Fall')

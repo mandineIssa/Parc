@@ -111,14 +111,19 @@ class User extends Authenticatable
     {
         $search = trim((string) $request->input('search', ''));
         if ($search !== '') {
-            $query->where(function (Builder $q) use ($search) {
-                $like = '%'.$search.'%';
-                $q->where('matricule', 'like', $like)
-                    ->orWhere('name', 'like', $like)
-                    ->orWhere('prenom', 'like', $like)
-                    ->orWhere('email', 'like', $like)
-                    ->orWhere('telephone', 'like', $like)
-                    ->orWhere('fonction', 'like', $like);
+            $tokens = preg_split('/\s+/u', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [$search];
+            $query->where(function (Builder $q) use ($tokens) {
+                foreach ($tokens as $token) {
+                    $like = '%'.$token.'%';
+                    $q->where(function (Builder $inner) use ($like) {
+                        $inner->where('name', 'like', $like)
+                            ->orWhere('prenom', 'like', $like)
+                            ->orWhere('email', 'like', $like)
+                            ->orWhere('matricule', 'like', $like)
+                            ->orWhereRaw("CONCAT(COALESCE(prenom, ''), ' ', COALESCE(name, '')) LIKE ?", [$like])
+                            ->orWhereRaw("CONCAT(COALESCE(name, ''), ' ', COALESCE(prenom, '')) LIKE ?", [$like]);
+                    });
+                }
             });
         }
 

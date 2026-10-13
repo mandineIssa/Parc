@@ -56,69 +56,61 @@
                     </div>
                 @endif
 
-                <form method="GET" action="{{ route('users.index') }}" id="usersFiltersForm" class="mb-6 bg-gray-50 border border-gray-200 rounded-xl p-4">
-                    <div class="flex flex-col lg:flex-row gap-3">
-                        <div class="flex-1">
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                    </svg>
-                                </div>
-                                <input type="text"
-                                       name="search"
-                                       value="{{ request('search') }}"
-                                       placeholder="Matricule, nom, prénom, e-mail…"
-                                       class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none bg-white">
+                <form method="GET" action="{{ route('users.index') }}" id="usersFiltersForm" class="mb-6 bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+                    <div class="flex w-full flex-nowrap items-center gap-3">
+                        <div class="relative min-w-0 flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
                             </div>
+                            <input type="search"
+                                   name="search"
+                                   value="{{ request('search') }}"
+                                   placeholder="Rechercher par nom, prénom ou e-mail…"
+                                   aria-label="Rechercher par nom, prénom ou e-mail"
+                                   autocomplete="off"
+                                   class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none bg-white">
                         </div>
-                        <div class="w-full lg:w-48">
-                            <select name="role" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
-                                <option value="">Tous les rôles</option>
-                                @foreach($roleOptions as $value => $label)
-                                    <option value="{{ $value }}" @selected(request('role') === $value)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="w-full lg:w-52">
-                            <select name="role_change" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
-                                <option value="">Tous les rôles Change</option>
-                                @foreach($roleChangeOptions as $value => $label)
-                                    <option value="{{ $value }}" @selected(request('role_change') === $value)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="w-full lg:w-52">
-                            <select name="departement" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
-                                <option value="">Tous les départements</option>
-                                @foreach(($departementOptions ?? []) as $departement)
-                                    <option value="{{ $departement }}" @selected(request('departement') === $departement)>{{ $departement }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @if(auth()->user()->seesAllFiliales() && ($filiales ?? collect())->isNotEmpty())
-                        <div class="w-full lg:w-48">
-                            <select name="filiale_id" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
-                                <option value="">Toutes les filiales</option>
-                                @foreach($filiales as $filiale)
-                                    <option value="{{ $filiale->id }}" @selected((string) request('filiale_id') === (string) $filiale->id)>{{ $filiale->nom }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @endif
-                        <div class="w-full lg:w-40">
-                            <select name="statut" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
-                                <option value="">Tous les statuts</option>
-                                <option value="actif" @selected(request('statut') === 'actif')>Actif</option>
-                                <option value="inactif" @selected(request('statut') === 'inactif')>Inactif</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="bg-[#A61B29] hover:bg-[#7A0C1A] text-white font-semibold py-2.5 px-5 rounded-lg transition">
+                        <button type="submit" class="shrink-0 bg-[#A61B29] hover:bg-[#7A0C1A] text-white font-semibold py-2.5 px-5 rounded-lg transition">
                             Filtrer
                         </button>
-                        <a href="{{ route('users.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2.5 px-5 rounded-lg transition text-center">
+                        <a href="{{ route('users.index') }}" class="shrink-0 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2.5 px-5 rounded-lg transition text-center whitespace-nowrap">
                             Réinitialiser
                         </a>
+                    </div>
+                    <div class="grid w-full grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+                        <select name="role" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                            <option value="">Tous les rôles</option>
+                            @foreach($roleOptions as $value => $label)
+                                <option value="{{ $value }}" @selected(request('role') === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <select name="role_change" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                            <option value="">Tous les rôles Change</option>
+                            @foreach($roleChangeOptions as $value => $label)
+                                <option value="{{ $value }}" @selected(request('role_change') === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <select name="departement" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                            <option value="">Tous les départements</option>
+                            @foreach(($departementOptions ?? []) as $departement)
+                                <option value="{{ $departement }}" @selected(request('departement') === $departement)>{{ $departement }}</option>
+                            @endforeach
+                        </select>
+                        @if(auth()->user()->seesAllFiliales() && ($filiales ?? collect())->isNotEmpty())
+                        <select name="filiale_id" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                            <option value="">Toutes les filiales</option>
+                            @foreach($filiales as $filiale)
+                                <option value="{{ $filiale->id }}" @selected((string) request('filiale_id') === (string) $filiale->id)>{{ $filiale->nom }}</option>
+                            @endforeach
+                        </select>
+                        @endif
+                        <select name="statut" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                            <option value="">Tous les statuts</option>
+                            <option value="actif" @selected(request('statut') === 'actif')>Actif</option>
+                            <option value="inactif" @selected(request('statut') === 'inactif')>Inactif</option>
+                        </select>
                     </div>
                 </form>
 
