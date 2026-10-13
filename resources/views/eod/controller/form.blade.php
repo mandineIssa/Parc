@@ -203,7 +203,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Date</label>
-                        <input type="text" name="controller_validation_date" value="{{ old('controller_validation_date', date('d/m/Y')) }}" class="w-full rounded-lg border-gray-300 text-sm" required>
+                        <input type="date" name="controller_validation_date" value="{{ old('controller_validation_date', now()->format('Y-m-d')) }}" class="w-full rounded-lg border-gray-300 text-sm" required>
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Visa / Signature (texte)</label>
@@ -222,7 +222,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Date</label>
-                        <input type="text" name="controller_validation_date" value="{{ old('controller_validation_date', date('d/m/Y')) }}" class="w-full rounded-lg border-gray-300 text-sm" required>
+                        <input type="date" name="controller_validation_date" value="{{ old('controller_validation_date', now()->format('Y-m-d')) }}" class="w-full rounded-lg border-gray-300 text-sm" required>
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Visa texte (si pas d’image)</label>

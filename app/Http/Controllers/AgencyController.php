@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agency;
+use App\Models\Filiale;
 use Illuminate\Http\Request;
 
 class AgencyController extends Controller
@@ -12,7 +13,7 @@ class AgencyController extends Controller
      */
     public function index()
     {
-        $agencies = Agency::orderBy('nom')->paginate(20);
+        $agencies = Agency::with('filiale')->orderBy('nom')->paginate(20);
         return view('agencies.index', compact('agencies'));
     }
 
@@ -21,7 +22,7 @@ class AgencyController extends Controller
      */
     public function create()
     {
-        return view('agencies.create');
+        return view('agencies.create', $this->formData());
     }
 
     /**
@@ -29,14 +30,8 @@ class AgencyController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'code' => 'required|string|max:10|unique:agencies',
-            'nom' => 'required|string|max:100',
-            'ville' => 'required|string|max:50',
-            'adresse' => 'nullable|string|max:200',
-            'telephone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:100',
-        ]);
+        $validated = $request->validate($this->rules());
+        $validated = $this->constrainFiliale($validated);
 
         Agency::create($validated);
 
@@ -49,6 +44,8 @@ class AgencyController extends Controller
      */
     public function show(Agency $agency)
     {
+        $agency->loadMissing('filiale');
+
         return view('agencies.show', compact('agency'));
     }
 
@@ -57,7 +54,7 @@ class AgencyController extends Controller
      */
     public function edit(Agency $agency)
     {
-        return view('agencies.edit', compact('agency'));
+        return view('agencies.edit', array_merge(compact('agency'), $this->formData()));
     }
 
     /**
@@ -65,14 +62,8 @@ class AgencyController extends Controller
      */
     public function update(Request $request, Agency $agency)
     {
-        $validated = $request->validate([
-            'code' => 'required|string|max:10|unique:agencies,code,' . $agency->id,
-            'nom' => 'required|string|max:100',
-            'ville' => 'required|string|max:50',
-            'adresse' => 'nullable|string|max:200',
-            'telephone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:100',
-        ]);
+        $validated = $request->validate($this->rules($agency->id));
+        $validated = $this->constrainFiliale($validated);
 
         $agency->update($validated);
 
@@ -95,5 +86,56 @@ class AgencyController extends Controller
 
         return redirect()->route('agencies.index')
             ->with('success', 'Agence supprimée avec succès.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function rules(?int $agencyId = null): array
+    {
+        $codeRule = $agencyId
+            ? 'required|string|max:10|unique:agencies,code,'.$agencyId
+            : 'required|string|max:10|unique:agencies';
+
+        $filialeRule = auth()->user()->isFilialeRestricted()
+            ? ['nullable', 'exists:filiales,id']
+            : ['required', 'exists:filiales,id'];
+
+        return [
+            'code' => $codeRule,
+            'nom' => 'required|string|max:100',
+            'ville' => 'required|string|max:50',
+            'adresse' => 'nullable|string|max:200',
+            'telephone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:100',
+            'filiale_id' => $filialeRule,
+        ];
+    }
+
+    /**
+     * @return array{filiales: \Illuminate\Support\Collection, lockFiliale: bool, lockedFilialeId: int|null}
+     */
+    private function formData(): array
+    {
+        $user = auth()->user();
+
+        return [
+            'filiales' => Filiale::query()->where('actif', true)->orderBy('nom')->get(['id', 'nom']),
+            'lockFiliale' => $user->isFilialeRestricted(),
+            'lockedFilialeId' => $user->scopedFilialeId(),
+        ];
+    }
+
+    private function constrainFiliale(array $validated): array
+    {
+        $scoped = auth()->user()->scopedFilialeId();
+        if ($scoped !== null) {
+            if ($scoped === 0) {
+                abort(403, 'Votre compte n’est rattaché à aucune filiale.');
+            }
+            $validated['filiale_id'] = $scoped;
+        }
+
+        return $validated;
     }
 }

@@ -79,7 +79,7 @@ class SuperAdminController extends Controller
     {
         $role = strtolower(trim((string) ($user->role ?? '')));
         
-        return in_array($role, ['super_admin', 'admin'])
+        return in_array($role, ['super_admin'], true)
             || $user->hasBootstrapSuperAccess();
     }
     // Dans votre contrôleur AdminController

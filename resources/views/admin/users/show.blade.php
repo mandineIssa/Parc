@@ -66,15 +66,18 @@
                                 <p>
                                     <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
                                         @if($user->role === 'super_admin') bg-purple-100 text-purple-800
+                                        @elseif($user->role === 'admin') bg-rose-100 text-rose-800
                                         @elseif($user->role === 'agent_it') bg-blue-100 text-blue-800
                                         @else bg-gray-100 text-gray-800
                                         @endif">
                                         @if($user->role === 'super_admin')
                                             <i class="fas fa-crown mr-2"></i>Super Admin
+                                        @elseif($user->role === 'admin')
+                                            <i class="fas fa-user-shield mr-2"></i>Administrateur
                                         @elseif($user->role === 'agent_it')
                                             <i class="fas fa-laptop-code mr-2"></i>Agent IT
                                         @else
-                                            <i class="fas fa-user mr-2"></i>Utilisateur
+                                            <i class="fas fa-user mr-2"></i>{{ $user->principal_role_label }}
                                         @endif
                                     </span>
                                 </p>

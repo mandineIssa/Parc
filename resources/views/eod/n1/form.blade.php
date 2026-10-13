@@ -427,7 +427,7 @@
           action="{{ isset($fiche) ? route($eodRoutePrefix . '.update', $fiche) : route($eodRoutePrefix . '.store') }}" 
           id="eod-form"
           enctype="multipart/form-data"
-          class="space-y-6">
+          class="space-y-6 no-default-datetime">
         @csrf
         @if(isset($fiche))
             @method('PUT')
@@ -451,10 +451,10 @@
                 <div class="info-row">
                     <span class="info-label">Heure de lancement EOD :</span>
                     <span>
-                        <input type="text" name="heure_lancement" 
-                               value="{{ old('heure_lancement', $fiche->heure_lancement ?? now()->format('H:i')) }}"
+                        <input type="time" name="heure_lancement" step="60"
+                               value="{{ old('heure_lancement', isset($fiche) ? \App\Models\EodSuivi::timeForInput($fiche->heure_lancement) : '22:00') }}"
                                {{ !$isEditable ? 'disabled' : '' }}
-                               style="border: none; background: transparent; width: auto; font-size: 11px; color: var(--text-dark); outline: none; padding: 0;">
+                               style="border: 1px solid #d1d5db; border-radius: 4px; background: #fff; width: 8.5rem; font-size: 11px; color: var(--text-dark); outline: none; padding: 2px 4px;">
                     </span>
                 </div>
                 <div class="info-row">
@@ -464,11 +464,10 @@
                 <div class="info-row">
                     <span class="info-label">Heure de fin EOD :</span>
                     <span>
-                        <input type="text" name="heure_fin" 
-                               value="{{ old('heure_fin', $fiche->heure_fin ?? now()->format('H:i')) }}"
+                        <input type="time" name="heure_fin" step="60"
+                               value="{{ old('heure_fin', isset($fiche) ? \App\Models\EodSuivi::timeForInput($fiche->heure_fin) : '') }}"
                                {{ !$isEditable ? 'disabled' : '' }}
-                               style="border: none; background: transparent; width: auto; font-size: 11px; color: var(--text-dark); outline: none; padding: 0;" 
-                               placeholder="—">
+                               style="border: 1px solid #d1d5db; border-radius: 4px; background: #fff; width: 8.5rem; font-size: 11px; color: var(--text-dark); outline: none; padding: 2px 4px;">
                     </span>
                 </div>
                 <div class="info-row">
@@ -535,7 +534,7 @@
                             <td><input type="text" name="nafa_bd_apres_incremental" value="{{ old('nafa_bd_apres_incremental', $fiche->nafa_bd_apres_incremental ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="nafa_bd_apres_differentiel" value="{{ old('nafa_bd_apres_differentiel', $fiche->nafa_bd_apres_differentiel ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="nafa_bd_apres_complet" value="{{ old('nafa_bd_apres_complet', $fiche->nafa_bd_apres_complet ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
-                            <td><input type="text" name="nafa_bd_heure" value="{{ old('nafa_bd_heure', $fiche->nafa_bd_heure ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
+                            <td><input type="time" step="60" name="nafa_bd_heure" value="{{ old('nafa_bd_heure', isset($fiche) ? \App\Models\EodSuivi::timeForInput($fiche->nafa_bd_heure) : '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="nafa_bd_observation" value="{{ old('nafa_bd_observation', $fiche->nafa_bd_observation ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                         </tr>
                     </tbody>
@@ -566,7 +565,7 @@
                             <td><input type="text" name="sauvegarde_avant_incremental" value="{{ old('sauvegarde_avant_incremental', $fiche->sauvegarde_avant_incremental ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_avant_differentiel" value="{{ old('sauvegarde_avant_differentiel', $fiche->sauvegarde_avant_differentiel ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_avant_complet" value="{{ old('sauvegarde_avant_complet', $fiche->sauvegarde_avant_complet ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
-                            <td><input type="text" name="sauvegarde_avant_heure" value="{{ old('sauvegarde_avant_heure', $fiche->sauvegarde_avant_heure ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
+                            <td><input type="time" step="60" name="sauvegarde_avant_heure" value="{{ old('sauvegarde_avant_heure', isset($fiche) ? \App\Models\EodSuivi::timeForInput($fiche->sauvegarde_avant_heure) : '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_avant_observation" value="{{ old('sauvegarde_avant_observation', $fiche->sauvegarde_avant_observation ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                         </tr>
                         <tr>
@@ -574,7 +573,7 @@
                             <td><input type="text" name="sauvegarde_apres_incremental" value="{{ old('sauvegarde_apres_incremental', $fiche->sauvegarde_apres_incremental ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_apres_differentiel" value="{{ old('sauvegarde_apres_differentiel', $fiche->sauvegarde_apres_differentiel ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_apres_complet" value="{{ old('sauvegarde_apres_complet', $fiche->sauvegarde_apres_complet ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
-                            <td><input type="text" name="sauvegarde_apres_heure" value="{{ old('sauvegarde_apres_heure', $fiche->sauvegarde_apres_heure ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
+                            <td><input type="time" step="60" name="sauvegarde_apres_heure" value="{{ old('sauvegarde_apres_heure', isset($fiche) ? \App\Models\EodSuivi::timeForInput($fiche->sauvegarde_apres_heure) : '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                             <td><input type="text" name="sauvegarde_apres_observation" value="{{ old('sauvegarde_apres_observation', $fiche->sauvegarde_apres_observation ?? '') }}" {{ !$isEditable ? 'disabled' : '' }}></td>
                         </tr>
                     </tbody>
@@ -617,15 +616,15 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure début</label>
-                            <input type="text" data-batch="debut"
-                                   value="{{ $batch['debut'] ?? '' }}"
+                            <input type="time" step="60" data-batch="debut"
+                                   value="{{ \App\Models\EodSuivi::timeForInput($batch['debut'] ?? '') }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure fin</label>
-                            <input type="text" data-batch="fin"
-                                   value="{{ $batch['fin'] ?? '' }}"
+                            <input type="time" step="60" data-batch="fin"
+                                   value="{{ \App\Models\EodSuivi::timeForInput($batch['fin'] ?? '') }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
@@ -646,11 +645,11 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure début</label>
-                            <input type="text" data-batch="debut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                            <input type="time" step="60" data-batch="debut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure fin</label>
-                            <input type="text" data-batch="fin" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                            <input type="time" step="60" data-batch="fin" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Observation</label>
@@ -726,8 +725,8 @@
                     <div class="incident-item grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure</label>
-                            <input type="text" data-incident="heure"
-                                   value="{{ $incident['heure'] ?? '' }}"
+                            <input type="time" step="60" data-incident="heure"
+                                   value="{{ \App\Models\EodSuivi::timeForInput($incident['heure'] ?? '') }}"
                                    {{ !$isEditable ? 'disabled' : '' }}
                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E] {{ !$isEditable ? 'bg-gray-100' : '' }}">
                         </div>
@@ -768,7 +767,7 @@
                     <div class="incident-item grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Heure</label>
-                            <input type="text" data-incident="heure" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+                            <input type="time" step="60" data-incident="heure" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Incident</label>
@@ -963,11 +962,11 @@ function addBatchRow() {
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Heure début</label>
-            <input type="text" data-batch="debut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+            <input type="time" step="60" data-batch="debut" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Heure fin</label>
-            <input type="text" data-batch="fin" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+            <input type="time" step="60" data-batch="fin" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Observation</label>
@@ -999,7 +998,7 @@ function addIncidentRow() {
     div.innerHTML = `
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Heure</label>
-            <input type="text" data-incident="heure" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
+            <input type="time" step="60" data-incident="heure" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-[#C8102E] focus:ring-[#C8102E]">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Incident</label>

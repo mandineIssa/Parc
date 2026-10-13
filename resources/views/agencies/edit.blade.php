@@ -68,6 +68,25 @@
                 @enderror
             </div>
 
+            <div class="mb-4">
+                <label for="filiale_id" class="block text-gray-700 text-sm font-bold mb-2">Filiale *</label>
+                @if(!empty($lockFiliale))
+                    <input type="hidden" name="filiale_id" value="{{ $lockedFilialeId }}">
+                    <p class="text-sm text-gray-800">{{ $agency->filiale?->nom ?? optional(($filiales ?? collect())->firstWhere('id', $lockedFilialeId))->nom }}</p>
+                @else
+                    <select name="filiale_id" id="filiale_id" required
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700">
+                        <option value="">— Choisir une filiale —</option>
+                        @foreach($filiales ?? [] as $filiale)
+                            <option value="{{ $filiale->id }}" {{ (string) old('filiale_id', $agency->filiale_id) === (string) $filiale->id ? 'selected' : '' }}>{{ $filiale->nom }}</option>
+                        @endforeach
+                    </select>
+                @endif
+                @error('filiale_id')
+                    <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                     <label for="telephone" class="block text-gray-700 text-sm font-bold mb-2">

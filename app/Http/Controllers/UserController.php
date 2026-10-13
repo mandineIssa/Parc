@@ -26,6 +26,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $this->assertCanManageUser($user);
+
         try {
             $user->load([
                 'agence',
@@ -51,6 +53,7 @@ class UserController extends Controller
     {
         $users = User::query()
             ->with(['agence', 'filiale'])
+            ->visibleTo(auth()->user())
             ->filter($request)
             ->orderBy('name')
             ->orderBy('prenom')
@@ -60,6 +63,9 @@ class UserController extends Controller
         return view('admin.users.index', [
             'users' => $users,
             'departementOptions' => $this->departementFilterOptions(),
+            'filiales' => auth()->user()->seesAllFiliales()
+                ? Filiale::query()->orderBy('nom')->get(['id', 'nom'])
+                : collect(),
         ]);
     }
 
@@ -81,7 +87,7 @@ class UserController extends Controller
             'prenom' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['user', 'agent_it', 'super_admin', 'eod_n3', 'eod_controller'])],
+            'role' => ['required', Rule::in($this->allowedRoles())],
             'role_change' => ['nullable', Rule::in(['N1', 'N2', 'N3', 'CONTROLLER'])],
             'eod_signature_only_ui' => ['sometimes', 'boolean'],
             'departement' => ['nullable', 'string', 'max:255'],
@@ -106,6 +112,8 @@ class UserController extends Controller
         if (blank($validated['matricule'] ?? null)) {
             unset($validated['matricule']);
         }
+
+        $validated = $this->constrainFiliale($validated);
 
         unset($validated['signature_file'], $validated['signature_canvas']);
 
@@ -132,6 +140,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->assertCanManageUser($user);
+
         return view('admin.users.edit', array_merge(
             compact('user'),
             $this->profilFormData($user->id)
@@ -146,11 +156,13 @@ class UserController extends Controller
 
 public function update(Request $request, User $user)
 {
+    $this->assertCanManageUser($user);
+
     $validated = $request->validate([
         'name' => ['required', 'string', 'max:255'],
         'prenom' => ['required', 'string', 'max:255'],
         'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-        'role' => ['required', Rule::in(['user', 'agent_it', 'super_admin', 'eod_n3', 'eod_controller'])],
+        'role' => ['required', Rule::in($this->allowedRoles())],
         'role_change' => ['nullable', Rule::in(['N1', 'N2', 'N3', 'CONTROLLER'])],
         'eod_signature_only_ui' => ['sometimes', 'boolean'],
         'departement' => ['nullable', 'string', 'max:255'],
@@ -197,6 +209,8 @@ public function update(Request $request, User $user)
             $payload['password'] = $validated['password'];
         }
 
+        $payload = $this->constrainFiliale($payload);
+
         DB::table('users')
             ->where('id', $user->id)
             ->update($payload);
@@ -217,6 +231,8 @@ public function update(Request $request, User $user)
      */
     public function destroy(User $user)
     {
+        $this->assertCanManageUser($user);
+
         // Empêcher la suppression du dernier super admin
         if ($user->isSuperAdmin() && User::where('role', 'super_admin')->count() === 1) {
             return redirect()->route('users.index')
@@ -274,6 +290,32 @@ public function update(Request $request, User $user)
     /**
      * @return array{agencies: \Illuminate\Support\Collection, filiales: \Illuminate\Support\Collection, managers: \Illuminate\Support\Collection}
      */
+    /**
+     * @return list<string>
+     */
+    private function allowedRoles(): array
+    {
+        return auth()->user()->allowedAssignableRoles();
+    }
+
+    private function assertCanManageUser(User $user): void
+    {
+        if (! auth()->user()->belongsToSameFiliale($user->filiale_id ? (int) $user->filiale_id : null)) {
+            abort(403, 'Vous ne pouvez gérer que les utilisateurs de votre filiale.');
+        }
+    }
+
+    private function constrainFiliale(array $validated): array
+    {
+        $actor = auth()->user();
+        $scoped = $actor->scopedFilialeId();
+        if ($scoped !== null) {
+            $validated['filiale_id'] = $scoped ?: null;
+        }
+
+        return $validated;
+    }
+
     private function profilFormData(?int $exceptUserId = null): array
     {
         $managers = User::query()

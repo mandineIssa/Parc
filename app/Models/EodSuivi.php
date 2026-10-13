@@ -85,6 +85,62 @@ class EodSuivi extends Model
         };
     }
 
+    public static function timeForInput(?string $value): string
+    {
+        $value = trim((string) $value);
+        if ($value === '' || $value === '—' || strcasecmp($value, 'null') === 0) {
+            return '';
+        }
+
+        $value = str_ireplace(['h', '.'], ':', $value);
+        $value = preg_replace('/[^\d:]/', '', $value) ?? '';
+        $value = preg_replace('/:+/', ':', $value) ?? $value;
+        $value = trim($value, ':');
+
+        if (preg_match('/^(\d{1,2}):(\d{2})(?::\d{2})?$/', $value, $m)) {
+            $hour = (int) $m[1];
+            $minute = (int) $m[2];
+            if ($hour <= 23 && $minute <= 59) {
+                return sprintf('%02d:%02d', $hour, $minute);
+            }
+        }
+
+        if (preg_match('/^(\d{1,2})$/', $value, $m) && (int) $m[1] <= 23) {
+            return sprintf('%02d:00', (int) $m[1]);
+        }
+
+        return '';
+    }
+
+    public static function dateForInput(?string $value): string
+    {
+        $value = trim((string) $value);
+        if ($value === '' || $value === '—') {
+            return '';
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}/', $value)) {
+            return substr($value, 0, 10);
+        }
+
+        foreach (['d/m/Y', 'd-m-Y', 'd.m.Y'] as $format) {
+            try {
+                $parsed = \Carbon\Carbon::createFromFormat($format, substr($value, 0, 10));
+                if ($parsed) {
+                    return $parsed->format('Y-m-d');
+                }
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        try {
+            return \Carbon\Carbon::parse($value)->format('Y-m-d');
+        } catch (\Throwable) {
+            return '';
+        }
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

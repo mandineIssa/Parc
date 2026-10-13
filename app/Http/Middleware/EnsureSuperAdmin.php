@@ -20,7 +20,7 @@ class EnsureSuperAdmin
         // Vérifie si c'est un super admin
         // Accepte plusieurs formats de rôle
         $role = strtolower(trim($user->role ?? ''));
-        $isSuperAdmin = in_array($role, ['super_admin', 'superadmin', 'admin']) 
+        $isSuperAdmin = in_array($role, ['super_admin', 'superadmin'], true)
             || $user->hasBootstrapSuperAccess();
         
         if (!$isSuperAdmin) {

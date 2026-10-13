@@ -12,7 +12,7 @@
             $parcSectionOpen = $rapportsMenuOpen || $gestionMenuOpen || $equipementsMenuOpen || $stocksMenuOpen
                 || request()->routeIs('documentation.*');
             $configurationSectionOpen = $auditsPostesOpen
-                || request()->routeIs('agencies.*', 'categories.*', 'suppliers.*', 'admin.users.*', 'audits.*', 'parametres.*');
+                || request()->routeIs('agencies.*', 'filiales.*', 'categories.*', 'suppliers.*', 'users.*', 'admin.users.*', 'audits.*', 'parametres.*');
             $activeParcSubsection = match (true) {
                 $rapportsMenuOpen => 'rapports',
                 $gestionMenuOpen => 'gestion',
@@ -319,12 +319,15 @@
                 <span class="sidebar-chevron {{ $configurationSectionOpen ? 'open' : '' }}" aria-hidden="true"></span>
             </button>
             <div class="sidebar-section-body {{ $configurationSectionOpen ? 'open' : '' }}">
+                @if(auth()->user()->isSuperAdmin())
+                <a href="{{ route('filiales.index') }}" class="sidebar-item {{ request()->routeIs('filiales.*') ? 'sidebar-active' : '' }}">Filiales</a>
+                @endif
                 <a href="{{ route('agencies.index') }}" class="sidebar-item {{ request()->routeIs('agencies.*') ? 'sidebar-active' : '' }}">Agences</a>
                 <a href="{{ route('parametres.departements.index') }}" class="sidebar-item {{ request()->routeIs('parametres.departements.*') ? 'sidebar-active' : '' }}">Départements</a>
                 <a href="{{ route('parametres.postes.index') }}" class="sidebar-item {{ request()->routeIs('parametres.postes.*') ? 'sidebar-active' : '' }}">Postes</a>
                 <a href="{{ route('categories.index') }}" class="sidebar-item {{ request()->routeIs('categories.*') ? 'sidebar-active' : '' }}">Catégories</a>
                 <a href="{{ route('suppliers.index') }}" class="sidebar-item {{ request()->routeIs('suppliers.*') ? 'sidebar-active' : '' }}">Fournisseurs</a>
-                <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('admin.users.*') ? 'sidebar-active' : '' }}">Administration</a>
+                <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('users.*') ? 'sidebar-active' : '' }}">Administration</a>
                 <div class="sidebar-divider"></div>
                 <a href="{{ route('audits-postes.index') }}" class="sidebar-item {{ request()->routeIs('audits-postes.*') ? 'sidebar-active' : '' }}">Audits postes</a>
                 <a href="{{ route('audits.index') }}" class="sidebar-item {{ request()->routeIs('audits.*') ? 'sidebar-active' : '' }}">Journal d'activité</a>

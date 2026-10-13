@@ -715,7 +715,7 @@
                         <div class="signature-row">
                             <div class="signature-label">Date</div>
                             <div class="signature-value">
-                                <input type="text" name="validation_head_it_date" value="{{ date('d/m/Y') }}" placeholder="JJ/MM/AAAA">
+                                <input type="date" name="validation_head_it_date" value="{{ old('validation_head_it_date', now()->format('Y-m-d')) }}">
                             </div>
                         </div>
                         <div class="signature-row">
@@ -732,7 +732,7 @@
                         <div class="signature-row">
                             <div class="signature-label">Date</div>
                             <div class="signature-value">
-                                <input type="text" name="validation_audit_date" value="{{ date('d/m/Y') }}" placeholder="JJ/MM/AAAA">
+                                <input type="date" name="validation_audit_date" value="{{ old('validation_audit_date', now()->format('Y-m-d')) }}">
                             </div>
                         </div>
                         <div class="signature-row">

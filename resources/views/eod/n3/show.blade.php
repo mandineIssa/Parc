@@ -373,7 +373,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Date</label>
-                        <input type="text" name="n3_validation_date" value="{{ old('n3_validation_date', date('d/m/Y')) }}" required class="w-full rounded-lg border-gray-300 text-sm">
+                        <input type="date" name="n3_validation_date" value="{{ old('n3_validation_date', now()->format('Y-m-d')) }}" required class="w-full rounded-lg border-gray-300 text-sm">
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Importer une signature (image)</label>

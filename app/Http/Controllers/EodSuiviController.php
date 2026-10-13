@@ -828,8 +828,9 @@ class EodSuiviController extends Controller
     {
         $data = $request->validate([
             'date_traitement' => 'required|date',
-            'heure_lancement' => 'required|string',
-            'heure_fin' => 'nullable|string',
+            'heure_lancement' => 'required|date_format:H:i',
+            'heure_fin' => 'nullable|date_format:H:i',
+            'sauvegarde_avant_heure' => 'nullable|date_format:H:i',
             'statut_global' => 'nullable|string',
             'responsable_suivi' => 'nullable|string',
             'sauvegarde_avant_incremental' => 'nullable|string',

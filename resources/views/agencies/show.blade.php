@@ -20,7 +20,11 @@
                     </a>
                 </div>
             </div>
-            <p class="text-gray-600">Code: <span class="font-bold">{{ $agency->code }}</span></p>
+            <p class="text-gray-600">Code: <span class="font-bold">{{ $agency->code }}</span>
+                @if($agency->filiale)
+                    · Filiale : <span class="font-bold">{{ $agency->filiale->nom }}</span>
+                @endif
+            </p>
         </div>
 
         <div class="p-6">

@@ -31,6 +31,10 @@ class ProfilExport implements FromCollection, WithHeadings, WithMapping, WithSty
             $query->filter($this->filters);
         }
 
+        if ($viewer = auth()->user()) {
+            $query->visibleTo($viewer);
+        }
+
         return $query
             ->orderBy('name')
             ->orderBy('prenom')

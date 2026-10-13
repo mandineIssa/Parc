@@ -22,7 +22,7 @@ class User extends Authenticatable
         'email',
         'telephone',
         'password',
-        'role',              // user, agent_it, super_admin, eod_n3, eod_controller
+        'role',              // user, agent_it, admin, super_admin, eod_n3, eod_controller
         'role_change',        // Rôle Change / EOD (N1, N2, N3, CONTROLLER, null)
         'eod_signature_only_ui',
         'departement',
@@ -145,7 +145,25 @@ class User extends Authenticatable
             }
         }
 
+        if ($request->filled('filiale_id')) {
+            $query->where('filiale_id', $request->integer('filiale_id'));
+        }
+
         return $query;
+    }
+
+    public function scopeVisibleTo(Builder $query, User $viewer): Builder
+    {
+        $filialeId = $viewer->scopedFilialeId();
+        if ($filialeId === null) {
+            return $query;
+        }
+
+        if ($filialeId === 0) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        return $query->where('filiale_id', $filialeId);
     }
 
     public function fullName(): string
@@ -285,6 +303,7 @@ class User extends Authenticatable
     {
         return match ($this->role) {
             'super_admin' => 'Super Admin',
+            'admin' => 'Administrateur',
             'agent_it' => 'Agent IT',
             'user' => 'Utilisateur',
             'eod_n3' => 'Signataire EOD N+3',
@@ -351,6 +370,69 @@ class User extends Authenticatable
     /**
      * Vérifier si l'utilisateur est Agent IT
      */
+    public function isAdministrateur(): bool
+    {
+        return strtolower(trim((string) ($this->role ?? ''))) === 'admin';
+    }
+
+    /**
+     * Super admin : toutes les filiales. Sinon, restriction dès qu'une filiale est renseignée
+     * (et toujours pour le rôle Administrateur).
+     */
+    public function isFilialeRestricted(): bool
+    {
+        if ($this->seesAllFiliales()) {
+            return false;
+        }
+
+        if ($this->isAdministrateur()) {
+            return true;
+        }
+
+        return $this->filiale_id !== null;
+    }
+
+    public function seesAllFiliales(): bool
+    {
+        return $this->isSuperAdmin();
+    }
+
+    /**
+     * null = pas de filtre ; 0 = aucune filiale visible ; sinon id de la filiale.
+     */
+    public function scopedFilialeId(): ?int
+    {
+        if (! $this->isFilialeRestricted()) {
+            return null;
+        }
+
+        return $this->filiale_id ? (int) $this->filiale_id : 0;
+    }
+
+    public function belongsToSameFiliale(?int $filialeId): bool
+    {
+        if (! $this->isFilialeRestricted()) {
+            return true;
+        }
+
+        $own = $this->scopedFilialeId();
+
+        return $own !== null && $own !== 0 && $filialeId !== null && $own === (int) $filialeId;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function allowedAssignableRoles(): array
+    {
+        $roles = ['user', 'agent_it', 'admin', 'eod_n3', 'eod_controller'];
+        if ($this->isSuperAdmin()) {
+            $roles[] = 'super_admin';
+        }
+
+        return $roles;
+    }
+
     public function isAgentIT()
     {
         return $this->role === 'agent_it' || $this->isSuperAdmin();
@@ -369,7 +451,9 @@ class User extends Authenticatable
      */
     public function canManageUsers(): bool
     {
-        return $this->isSuperAdmin();
+        return $this->isSuperAdmin()
+            || $this->isAdministrateur()
+            || strtolower(trim((string) ($this->role ?? ''))) === 'agent_it';
     }
 
     // ==================== RÔLES CHANGE MANAGEMENT ====================

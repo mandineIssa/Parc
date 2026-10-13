@@ -18,6 +18,7 @@ use App\Http\Controllers\DecelerDashboardController;
 use App\Http\Controllers\DecelerReseauDashboardController;
 use App\Http\Controllers\DecelerElectroniqueDashboardController;
 use App\Http\Controllers\AgencyController;
+use App\Http\Controllers\FilialeController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SuperAdminController;
@@ -370,6 +371,9 @@ Route::resource('parc', ParcController::class);
     // GESTION DES AGENCES (CRUD complet)
     // ============================================
     Route::resource('agencies', AgencyController::class);
+    Route::resource('filiales', FilialeController::class)
+        ->except(['show'])
+        ->middleware('can:super-admin-only');
 
     // ============================================
     // PARAMÈTRES — Départements et Postes (listes séparées)

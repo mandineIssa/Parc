@@ -4,12 +4,14 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Auth;
 use App\Traits\Auditable;
 use App\Models\Reaffectation;
 
@@ -54,6 +56,31 @@ class Equipment extends Model
         'date_amortissement' => 'date',
         'prix' => 'decimal:2'
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('filiale', function (Builder $builder) {
+            $user = Auth::user();
+            if (! $user instanceof User) {
+                return;
+            }
+
+            $filialeId = $user->scopedFilialeId();
+            if ($filialeId === null) {
+                return;
+            }
+
+            if ($filialeId === 0) {
+                $builder->whereRaw('0 = 1');
+
+                return;
+            }
+
+            $builder->whereHas('agence', function (Builder $query) use ($filialeId) {
+                $query->where('filiale_id', $filialeId);
+            });
+        });
+    }
     
     /**
      * Relation avec l'agence

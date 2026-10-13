@@ -45,8 +45,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Définir les gates pour les permissions
         Gate::define('manage-users', function (User $user) {
-            return $user->isSuperAdmin()
-                || strtolower(trim((string) ($user->role ?? ''))) === 'agent_it';
+            return $user->canManageUsers();
         });
 
         Gate::define('manage-all', function (User $user) {

@@ -45,12 +45,18 @@
     </div>
     <div>
         <label for="filiale_id" class="block font-medium text-gray-700">Filiale</label>
+        @if(auth()->user()->isFilialeRestricted())
+            <input type="hidden" name="filiale_id" value="{{ auth()->user()->filiale_id }}">
+            <p class="mt-2 text-sm text-gray-800">{{ auth()->user()->filiale?->nom ?? '—' }}</p>
+            <p class="mt-1 text-xs text-gray-500">Les comptes que vous créez restent dans votre filiale.</p>
+        @else
         <select id="filiale_id" name="filiale_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
             <option value="">—</option>
             @foreach($filiales ?? [] as $filiale)
                 <option value="{{ $filiale->id }}" {{ (string) $selectedFiliale === (string) $filiale->id ? 'selected' : '' }}>{{ $filiale->nom }}</option>
             @endforeach
         </select>
+        @endif
         @error('filiale_id')
             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
         @enderror

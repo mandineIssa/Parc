@@ -5,10 +5,11 @@
 
 @section('content')
 @php
-    $filterQuery = request()->only(['search', 'role', 'role_change', 'departement', 'statut']);
+    $filterQuery = request()->only(['search', 'role', 'role_change', 'departement', 'statut', 'filiale_id']);
     $hasFilters = collect($filterQuery)->filter(fn ($v) => $v !== null && $v !== '')->isNotEmpty();
     $roleOptions = [
         'super_admin' => 'Super Admin',
+        'admin' => 'Administrateur',
         'agent_it' => 'Agent IT',
         'user' => 'Utilisateur',
         'eod_n3' => 'Signataire EOD N+3',
@@ -95,6 +96,16 @@
                                 @endforeach
                             </select>
                         </div>
+                        @if(auth()->user()->seesAllFiliales() && ($filiales ?? collect())->isNotEmpty())
+                        <div class="w-full lg:w-48">
+                            <select name="filiale_id" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
+                                <option value="">Toutes les filiales</option>
+                                @foreach($filiales as $filiale)
+                                    <option value="{{ $filiale->id }}" @selected((string) request('filiale_id') === (string) $filiale->id)>{{ $filiale->nom }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
                         <div class="w-full lg:w-40">
                             <select name="statut" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#A61B29] focus:border-[#A61B29] outline-none" onchange="this.form.submit()">
                                 <option value="">Tous les statuts</option>
@@ -120,6 +131,7 @@
                             @if(request('role_change')) • Change : {{ $roleChangeOptions[request('role_change')] ?? request('role_change') }} @endif
                             @if(request('departement')) • Département : {{ request('departement') }} @endif
                             @if(request('statut')) • Statut : {{ request('statut') }} @endif
+                            @if(request('filiale_id')) • Filiale : {{ optional(($filiales ?? collect())->firstWhere('id', (int) request('filiale_id')))->nom ?? request('filiale_id') }} @endif
                         </p>
                         <a href="{{ route('users.index') }}" class="text-sm font-medium text-blue-700 hover:text-blue-900">Tout effacer</a>
                     </div>
@@ -133,6 +145,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prénom</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filiale</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rôle Principal</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rôle Change</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Département</th>
@@ -146,6 +159,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $user->name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $user->prenom }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $user->filiale?->nom ?: '—' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($user->role === 'eod_n3')
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-violet-100 text-violet-900">
@@ -158,6 +172,10 @@
                                     @elseif($user->isSuperAdmin())
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                                             Super Admin
+                                        </span>
+                                    @elseif($user->isAdministrateur())
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-rose-100 text-rose-800">
+                                            Administrateur
                                         </span>
                                     @elseif($user->isAgentIT())
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -201,7 +219,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="9" class="px-6 py-12 text-center text-gray-500">
                                     Aucun utilisateur ne correspond aux filtres.
                                 </td>
                             </tr>

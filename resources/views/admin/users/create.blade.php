@@ -50,6 +50,7 @@
                                 <option value="">{{ __('Sélectionnez un rôle') }}</option>
                                 <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>Utilisateur</option>
                                 <option value="agent_it" {{ old('role') === 'agent_it' ? 'selected' : '' }}>Agent IT</option>
+                                <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Administrateur</option>
                                 <option value="eod_n3" {{ old('role') === 'eod_n3' ? 'selected' : '' }}>Signataire EOD N+3 (/eod/n3)</option>
                                 <option value="eod_controller" {{ old('role') === 'eod_controller' ? 'selected' : '' }}>Contrôleur EOD batch (/eod/controller)</option>
                                 @if(auth()->user()->isSuperAdmin())

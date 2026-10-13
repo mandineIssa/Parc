@@ -199,6 +199,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filiale</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agence</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Ville</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Adresse</th>
@@ -211,6 +212,7 @@
                     @forelse($agencies as $agency)
                     <tr class="agency-row hover:bg-gray-50 transition-colors"
                         data-code="{{ strtolower($agency->code) }}"
+                        data-filiale="{{ strtolower($agency->filiale?->nom ?? '') }}"
                         data-nom="{{ strtolower($agency->nom) }}"
                         data-ville="{{ strtolower($agency->ville ?? '') }}"
                         data-adresse="{{ strtolower($agency->adresse ?? '') }}"
@@ -221,6 +223,7 @@
                                 {{ $agency->code }}
                             </span>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $agency->filiale?->nom ?: '—' }}</td>
                         
                         <td class="px-6 py-4">
                             <div class="flex items-center">
@@ -315,7 +318,7 @@
                     </tr>
                     @empty
                     <tr id="noResultsRow" style="display: none;">
-                        <td colspan="7" class="px-6 py-12 text-center">
+                        <td colspan="8" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center">
                                 <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>

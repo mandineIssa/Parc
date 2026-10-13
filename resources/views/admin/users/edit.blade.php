@@ -50,6 +50,7 @@
                             <select id="role" name="role" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                                 <option value="user" {{ old('role', $user->role) === 'user' ? 'selected' : '' }}>Utilisateur</option>
                                 <option value="agent_it" {{ old('role', $user->role) === 'agent_it' ? 'selected' : '' }}>Agent IT</option>
+                                <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Administrateur</option>
                                 <option value="eod_n3" {{ old('role', $user->role) === 'eod_n3' ? 'selected' : '' }}>Signataire EOD N+3 (/eod/n3)</option>
                                 <option value="eod_controller" {{ old('role', $user->role) === 'eod_controller' ? 'selected' : '' }}>Contrôleur EOD batch (/eod/controller)</option>
                                 @if(auth()->user()->isSuperAdmin())
