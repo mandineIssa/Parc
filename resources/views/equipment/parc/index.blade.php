@@ -65,20 +65,19 @@
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
         @php
-            use App\Models\Equipment;
-            
-            $countReseau = Equipment::where('statut', 'parc')->where('type', 'Réseau')->count();
-            $countInformatique = Equipment::where('statut', 'parc')->where('type', 'Informatique')->count();
-            $countElectronique = Equipment::where('statut', 'parc')->where('type', 'Électronique')->count();
-            $countEnService = Equipment::where('statut', 'parc')->whereIn('etat', ['neuf', 'bon','moyen'])->count();
-            $countARemplacer = Equipment::where('statut', 'parc')->where('etat', 'mauvais')->count();
-            
-            $valeurReseau = Equipment::where('statut', 'parc')->where('type', 'Réseau')->sum('prix');
-            $valeurInformatique = Equipment::where('statut', 'parc')->where('type', 'Informatique')->sum('prix');
-            $valeurElectronique = Equipment::where('statut', 'parc')->where('type', 'Électronique')->sum('prix');
-            
-            $totalParcCount = Equipment::where('statut', 'parc')->count();
-            $totalParcValue = Equipment::where('statut', 'parc')->sum('prix');
+            $parcQuery = \App\Models\Equipment::query()->where('statut', 'parc');
+            $countReseau = (clone $parcQuery)->where('type', 'Réseau')->count();
+            $countInformatique = (clone $parcQuery)->where('type', 'Informatique')->count();
+            $countElectronique = (clone $parcQuery)->where('type', 'Électronique')->count();
+            $countEnService = (clone $parcQuery)->whereIn('etat', ['neuf', 'bon','moyen'])->count();
+            $countARemplacer = (clone $parcQuery)->where('etat', 'mauvais')->count();
+
+            $valeurReseau = (clone $parcQuery)->where('type', 'Réseau')->sum('prix');
+            $valeurInformatique = (clone $parcQuery)->where('type', 'Informatique')->sum('prix');
+            $valeurElectronique = (clone $parcQuery)->where('type', 'Électronique')->sum('prix');
+
+            $totalParcCount = (clone $parcQuery)->count();
+            $totalParcValue = (clone $parcQuery)->sum('prix');
             
             $stats = [
                 ['label' => 'Réseau', 'count' => $countReseau, 'valeur' => $valeurReseau, 'icon' => '🌐', 'filtre' => 'reseau', 'gradient' => 'linear-gradient(135deg, #7A0C1A 0%, #A61B29 100%)'],

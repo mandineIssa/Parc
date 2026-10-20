@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Auth;
+use App\Support\FilialeScope;
 use App\Traits\Auditable;
 use App\Models\Reaffectation;
 
@@ -60,25 +60,7 @@ class Equipment extends Model
     protected static function booted(): void
     {
         static::addGlobalScope('filiale', function (Builder $builder) {
-            $user = Auth::user();
-            if (! $user instanceof User) {
-                return;
-            }
-
-            $filialeId = $user->scopedFilialeId();
-            if ($filialeId === null) {
-                return;
-            }
-
-            if ($filialeId === 0) {
-                $builder->whereRaw('0 = 1');
-
-                return;
-            }
-
-            $builder->whereHas('agence', function (Builder $query) use ($filialeId) {
-                $query->where('filiale_id', $filialeId);
-            });
+            FilialeScope::applyToEquipment($builder);
         });
     }
     

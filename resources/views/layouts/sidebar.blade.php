@@ -319,7 +319,7 @@
                 <span class="sidebar-chevron {{ $configurationSectionOpen ? 'open' : '' }}" aria-hidden="true"></span>
             </button>
             <div class="sidebar-section-body {{ $configurationSectionOpen ? 'open' : '' }}">
-                @if(auth()->user()->isSuperAdmin())
+                @if(auth()->user()->isSuperAdmin() && \Illuminate\Support\Facades\Route::has('filiales.index'))
                 <a href="{{ route('filiales.index') }}" class="sidebar-item {{ request()->routeIs('filiales.*') ? 'sidebar-active' : '' }}">Filiales</a>
                 @endif
                 <a href="{{ route('agencies.index') }}" class="sidebar-item {{ request()->routeIs('agencies.*') ? 'sidebar-active' : '' }}">Agences</a>
