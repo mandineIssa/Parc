@@ -234,8 +234,12 @@
 
                         {{-- Date --}}
                         <td class="px-5 py-4 whitespace-nowrap">
-                            <p class="text-sm font-medium text-gray-900">{{ $r->date_reaffectation->format('d/m/Y') }}</p>
-                            <p class="text-xs text-gray-400">{{ $r->date_reaffectation->diffForHumans() }}</p>
+                            @if($r->date_reaffectation)
+                                <p class="text-sm font-medium text-gray-900">{{ $r->date_reaffectation->format('d/m/Y') }}</p>
+                                <p class="text-xs text-gray-400">{{ $r->date_reaffectation->diffForHumans() }}</p>
+                            @else
+                                <p class="text-sm text-gray-400 italic">—</p>
+                            @endif
                         </td>
 
                         {{-- Motif --}}

@@ -43,7 +43,7 @@
                 
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">Date d'affectation</h3>
-                    <p class="mt-1 text-lg text-gray-900">{{ $parc->date_affectation->format('d/m/Y') }}</p>
+                    <p class="mt-1 text-lg text-gray-900">{{ $parc->date_affectation?->format('d/m/Y') ?? '—' }}</p>
                 </div>
                 
                 <div>

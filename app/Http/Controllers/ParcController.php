@@ -32,7 +32,7 @@ class ParcController extends Controller
     {
         // Construction de la requête de base
         $query = Equipment::where('statut', 'parc')
-            ->with(['fournisseur', 'parc', 'agence']);
+            ->with(['fournisseur', 'parc', 'agence', 'latestTransitionApproval']);
         
         // Recherche globale
         if ($request->filled('search')) {
