@@ -64,31 +64,6 @@
 
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
-        @php
-            $parcQuery = \App\Models\Equipment::query()->where('statut', 'parc');
-            $countReseau = (clone $parcQuery)->where('type', 'Réseau')->count();
-            $countInformatique = (clone $parcQuery)->where('type', 'Informatique')->count();
-            $countElectronique = (clone $parcQuery)->where('type', 'Électronique')->count();
-            $countEnService = (clone $parcQuery)->whereIn('etat', ['neuf', 'bon','moyen'])->count();
-            $countARemplacer = (clone $parcQuery)->where('etat', 'mauvais')->count();
-
-            $valeurReseau = (clone $parcQuery)->where('type', 'Réseau')->sum('prix');
-            $valeurInformatique = (clone $parcQuery)->where('type', 'Informatique')->sum('prix');
-            $valeurElectronique = (clone $parcQuery)->where('type', 'Électronique')->sum('prix');
-
-            $totalParcCount = (clone $parcQuery)->count();
-            $totalParcValue = (clone $parcQuery)->sum('prix');
-            
-            $stats = [
-                ['label' => 'Réseau', 'count' => $countReseau, 'valeur' => $valeurReseau, 'icon' => '🌐', 'filtre' => 'reseau', 'gradient' => 'linear-gradient(135deg, #7A0C1A 0%, #A61B29 100%)'],
-                ['label' => 'Informatique', 'count' => $countInformatique, 'valeur' => $valeurInformatique, 'icon' => '💻', 'filtre' => 'informatique', 'gradient' => 'linear-gradient(135deg, #8F2432 0%, #BF3142 100%)'],
-                ['label' => 'Électronique', 'count' => $countElectronique, 'valeur' => $valeurElectronique, 'icon' => '🔌', 'filtre' => 'electronique', 'gradient' => 'linear-gradient(135deg, #525866 0%, #6B7280 100%)'],
-                ['label' => 'En Service', 'count' => $countEnService, 'valeur' => 0, 'icon' => '✓', 'filtre' => 'en_service', 'gradient' => 'linear-gradient(135deg, #3E4654 0%, #5D6472 100%)'],
-                ['label' => 'À Remplacer', 'count' => $countARemplacer, 'valeur' => 0, 'icon' => '⚠️', 'filtre' => 'a_remplacer', 'gradient' => 'linear-gradient(135deg, #9F1F2C 0%, #D03140 100%)'],
-                ['label' => 'Valeur totale', 'count' => $totalParcCount, 'valeur' => $totalParcValue, 'icon' => '💰', 'filtre' => '', 'gradient' => 'linear-gradient(135deg, #3D3D44 0%, #5E616B 100%)'],
-            ];
-        @endphp
-        
         @foreach($stats as $stat)
         @php
             $isActive = request('filtre_rapide') === $stat['filtre'] || ($stat['filtre'] === '' && !request()->filled('filtre_rapide') && !request()->filled('type') && !request()->filled('etat') && !request()->filled('search'));

@@ -156,8 +156,17 @@ class ParcController extends Controller
         }
         
         $prixTotal = $prixTotalQuery->sum('prix');
-        
-        return view('equipment.parc.index', compact('equipments', 'prixTotal'));
+
+        $stats = [
+            ['label' => 'Réseau', 'count' => Equipment::where('statut', 'parc')->where('type', 'Réseau')->count(), 'valeur' => Equipment::where('statut', 'parc')->where('type', 'Réseau')->sum('prix'), 'icon' => '🌐', 'filtre' => 'reseau', 'gradient' => 'linear-gradient(135deg, #7A0C1A 0%, #A61B29 100%)'],
+            ['label' => 'Informatique', 'count' => Equipment::where('statut', 'parc')->where('type', 'Informatique')->count(), 'valeur' => Equipment::where('statut', 'parc')->where('type', 'Informatique')->sum('prix'), 'icon' => '💻', 'filtre' => 'informatique', 'gradient' => 'linear-gradient(135deg, #8F2432 0%, #BF3142 100%)'],
+            ['label' => 'Électronique', 'count' => Equipment::where('statut', 'parc')->where('type', 'Électronique')->count(), 'valeur' => Equipment::where('statut', 'parc')->where('type', 'Électronique')->sum('prix'), 'icon' => '🔌', 'filtre' => 'electronique', 'gradient' => 'linear-gradient(135deg, #525866 0%, #6B7280 100%)'],
+            ['label' => 'En Service', 'count' => Equipment::where('statut', 'parc')->whereIn('etat', ['neuf', 'bon', 'moyen'])->count(), 'valeur' => 0, 'icon' => '✓', 'filtre' => 'en_service', 'gradient' => 'linear-gradient(135deg, #3E4654 0%, #5D6472 100%)'],
+            ['label' => 'À Remplacer', 'count' => Equipment::where('statut', 'parc')->where('etat', 'mauvais')->count(), 'valeur' => 0, 'icon' => '⚠️', 'filtre' => 'a_remplacer', 'gradient' => 'linear-gradient(135deg, #9F1F2C 0%, #D03140 100%)'],
+            ['label' => 'Valeur totale', 'count' => Equipment::where('statut', 'parc')->count(), 'valeur' => Equipment::where('statut', 'parc')->sum('prix'), 'icon' => '💰', 'filtre' => '', 'gradient' => 'linear-gradient(135deg, #3D3D44 0%, #5E616B 100%)'],
+        ];
+
+        return view('equipment.parc.index', compact('equipments', 'prixTotal', 'stats'));
     }
 
 
